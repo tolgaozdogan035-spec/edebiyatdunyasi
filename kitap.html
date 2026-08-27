@@ -103,7 +103,7 @@
                     <a href="index.html" class="hover:text-brand-red transition">Anasayfa</a> <span class="mx-2">/</span> <span class="text-brand-red">Yeni Çıkan Kitaplar</span>
                 </nav>
                 <h1 class="text-4xl md:text-5xl font-serif font-bold text-brand-text">Haftalık Yeni Çıkan Kitaplar</h1>
-                <p class="text-gray-500 text-sm mt-3 max-w-2xl">Kitapyurdu platformundan doğrudan derlenen haftalık en taze kitap kapakları ve tanıtım metinleri.</p>
+                <p class="text-gray-500 text-sm mt-3 max-w-2xl">Kitapyurdu platformundan doğrudan derlenen haftalık en taze kitap kapakları ve tanıtım metinleri[cite: 1].</p>
             </div>
 
             <div class="flex flex-col lg:flex-row gap-10">
@@ -176,7 +176,7 @@
         mobileMenuOverlay.addEventListener('click', toggleMenu);
 
         let globalArticles = []; 
-        // Sadece kitaplar için ayrılan özel JSON dosyası
+        // Kesin olarak sadece özel kitaplar JSON dosyasını okur
         const BOOKS_JSON_URL = 'haberler/kitaplar.json';
 
         const mockBookData = [
@@ -190,7 +190,7 @@
                 const data = await response.json();
                 
                 if(data && Array.isArray(data) && data.length > 0) {
-                    allArticles = data; // Filtreye gerek yok, dosya zaten saf kitap arşivi
+                    allArticles = data; 
                 }
             } catch (error) { 
                 console.error("Kitap arşivi yüklenemedi, yedek veriler kullanılıyor."); 
