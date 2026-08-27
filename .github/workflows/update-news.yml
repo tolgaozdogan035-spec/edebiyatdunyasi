@@ -2,35 +2,34 @@ name: Otomatik Haber Güncelleyici
 
 on:
   schedule:
-    - cron: '0 */3 * * *' # Her 3 saatte bir çalışır
-  workflow_dispatch: # Manuel olarak da tetiklenebilir
+    - cron: '0 */6 * * *' # Her 6 saatte bir çalışır
+  workflow_dispatch: # Manuel çalıştırma desteği
 
 jobs:
   update-news:
     runs-on: ubuntu-latest
     permissions:
-      contents: write
+      contents: write # GitHub deposuna yazma izni verir
     steps:
-      - name: Repoyu Kopyala
-        uses: actions/checkout@v3
+      - name: Depoyu Kopyala (Checkout)
+        uses: actions/checkout@v4
 
       - name: Python Kurulumu
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: '3.10'
 
-      - name: Gerekli Kütüphaneleri Yükle
+      - name: Bağımlılıkları Yükle
         run: |
           pip install feedparser beautifulsoup4 requests
 
-      - name: Botu Çalıştır (Haberleri Çek)
-        run: |
-          python scraper.py
+      - name: Botu Çalıştır (Scraper)
+        run: python scraper.py
 
-      - name: Değişiklikleri GitHub'a Otomatik Kaydet
+      - name: Değişiklikleri GitHub'a Otomatik Kaydet ve Gönder
         run: |
-          git config --global user.name "Haber Botu"
-          git config --global user.email "bot@users.noreply.github.com"
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
           git add haberler/haberler.json
-          git commit -m "Otomatik haber güncellemesi: $(date +'%Y-%m-%d %H:%M:%S')" || exit 0
+          git diff --staged --quiet || git commit -m "Otomatik arşiv güncellemesi: Yeni kitaplar eklendi"
           git push
