@@ -53,7 +53,7 @@
             <div class="flex items-center space-x-4">
                 <span id="top-date">Yükleniyor...</span>
                 <span class="border-l border-gray-300 pl-4 flex items-center text-brand-red font-bold">
-                    <span class="w-2 h-2 rounded-full bg-brand-red mr-2 animate-pulse"></span> Kitapyurdu Yeni Çıkanlar Arşivi
+                    <span class="w-2 h-2 rounded-full bg-brand-red mr-2 animate-pulse"></span> Kitapyurdu Yeni Çıkanlar Aktif
                 </span>
             </div>
             <div class="flex items-center space-x-6">
@@ -176,29 +176,50 @@
         mobileMenuOverlay.addEventListener('click', toggleMenu);
 
         let globalArticles = []; 
-        // Kesinlikle ayrı ve saf kitap dosyasını çağırıyoruz (Önbellek kırıcı eklenmiştir)
-        const BOOKS_JSON_URL = 'haberler/kitaplar.json';
-
-        const mockBookData = [
-            { title: "Yeni Çıkan Eserler Raflardaki Yerini Aldı", category: "YENİ ÇIKAN KİTAP", image: "https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?auto=format&fit=crop&w=600&q=80", content: "<p>Haftalık yeni çıkan kitaplar listesi ve eser tanıtımları güncellenmektedir.</p>", date: new Date().toISOString() }
-        ];
+        // Kitapyurdu RSS beslemesini doğrudan tarayıcı üzerinden rss2json köprüsüyle çekiyoruz
+        const RSS_URL = 'https://www.kitapyurdu.com/index.php?route=common/rss/whatsnew';
+        const API_URL = 'https://api.rss2json.com/v1/api.json?rss_url=' + encodeURIComponent(RSS_URL);
 
         async function fetchBookNews() {
             let allArticles = [];
             try {
-                // Zaman damgası eklenerek tarayıcının eski dosyayı önbellekten okuması engellendi
-                const response = await fetch(BOOKS_JSON_URL + '?v=' + new Date().getTime());
+                const response = await fetch(API_URL);
                 const data = await response.json();
                 
-                if(data && Array.isArray(data) && data.length > 0) {
-                    allArticles = data; 
+                if(data && data.status === 'ok' && data.items) {
+                    allArticles = data.items.map(item => {
+                        // Görseli içerikten veya maddeden bul
+                        let img = item.thumbnail || item.enclosure?.link;
+                        if (!img && item.content) {
+                            let div = document.createElement('div');
+                            div.innerHTML = item.content;
+                            let imgTag = div.querySelector('img');
+                            if (imgTag) img = imgTag.src;
+                        }
+
+                        let rawContent = item.content || item.description || "Tanıtım metni bulunmuyor.";
+                        let parser = new DOMParser();
+                        let doc = parser.parseFromString(rawContent, 'text/html');
+                        let cleanDesc = doc.body.textContent || "";
+
+                        return {
+                            title: item.title,
+                            date: item.pubDate,
+                            category: "YENİ ÇIKAN KİTAP",
+                            desc: cleanDesc.substring(0, 180) + "...",
+                            content: rawContent,
+                            image: img || "https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?auto=format&fit=crop&w=600&q=80"
+                        };
+                    });
                 }
             } catch (error) { 
-                console.error("Kitap arşivi yüklenemedi, yedek veriler kullanılıyor."); 
+                console.error("Kitaplar doğrudan çekilemedi:", error); 
             }
 
             if(allArticles.length === 0) {
-                allArticles = mockBookData;
+                allArticles = [
+                    { title: "Yeni Çıkan Eserler Listeleniyor", category: "YENİ ÇIKAN KİTAP", image: "https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?auto=format&fit=crop&w=600&q=80", content: "<p>Kitapyurdu yeni çıkanlar listesi yükleniyor.</p>", date: new Date().toISOString() }
+                ];
             }
 
             globalArticles = allArticles; 
