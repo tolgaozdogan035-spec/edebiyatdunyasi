@@ -5,7 +5,6 @@ import re
 from bs4 import BeautifulSoup
 import requests
 
-# Taranacak RSS Kaynakları
 RSS_SOURCES = [
     "https://kayiprihtim.com/feed/",
     "https://www.edebiyathaber.net/feed/",
@@ -19,10 +18,7 @@ RSS_SOURCES = [
 def clean_html(raw_html):
     if not raw_html:
         return ""
-    
     soup = BeautifulSoup(raw_html, 'html.parser')
-    
-    # İstenmeyen imza ve kaynak ibarelerini içeren etiketleri tamamen kaldır
     for element in soup.find_all(['p', 'div', 'span', 'strong', 'em']):
         text = element.get_text().lower()
         if any(keyword in text for keyword in [
@@ -37,8 +33,35 @@ def clean_html(raw_html):
             'the post'
         ]):
             element.decompose()
-            
     return str(soup)
+
+def extract_image(entry, content):
+    # 1. media_content kontrolü
+    if hasattr(entry, 'media_content') and entry.media_content:
+        for media in entry.media_content:
+            if 'url' in media:
+                return media['url']
+                
+    # 2. media_thumbnail kontrolü
+    if hasattr(entry, 'media_thumbnail') and entry.media_thumbnail:
+        if 'url' in entry.media_thumbnail[0]:
+            return entry.media_thumbnail[0]['url']
+            
+    # 3. enclosure (eklenti) kontrolü
+    if hasattr(entry, 'enclosures') and entry.enclosures:
+        for enc in entry.enclosures:
+            if 'type' in enc and 'image' in enc['type']:
+                return enc['href']
+                
+    # 4. İçerik (HTML) içindeki ilk img etiketini bulma
+    if content:
+        soup = BeautifulSoup(content, 'html.parser')
+        img = soup.find('img')
+        if img and img.get('src'):
+            return img['src']
+            
+    # Varsayılan şık bir edebiyat/kitap görseli yedek olarak
+    return "https://images.unsplash.com/photo-1457369804613-52c61a468e7d?auto=format&fit=crop&w=1200&q=80"
 
 def assign_category(title, categories):
     combined = (str(categories) + " " + str(title)).upper()
@@ -54,7 +77,6 @@ def assign_category(title, categories):
 
 def fetch_news():
     all_articles = []
-    
     for url in RSS_SOURCES:
         try:
             feed = feedparser.parse(url)
@@ -63,7 +85,6 @@ def fetch_news():
                 link = entry.get('link', '#')
                 published = entry.get('published', entry.get('updated', ''))
                 
-                # İçeriği al (content varsa öncelikli, yoksa summary)
                 content = ""
                 if hasattr(entry, 'content') and entry.content:
                     content = entry.content[0].value
@@ -72,19 +93,10 @@ def fetch_news():
                 elif hasattr(entry, 'description'):
                     content = entry.description
                 
-                # Temizlik işlemleri
-                cleaned_content = clean_html(content)
+                # Güçlendirilmiş görsel çekme fonksiyonu
+                image = extract_image(entry, content)
                 
-                # Görsel bulma
-                image = "https://images.unsplash.com/photo-1457369804613-52c61a468e7d?auto=format&fit=crop&w=600&q=80"
-                if hasattr(entry, 'media_content') and entry.media_content:
-                    image = entry.media_content[0].get('url', image)
-                elif 'links' in entry:
-                    for l in entry.links:
-                        if 'image' in l.get('type', ''):
-                            image = l.get('href')
-                            break
-                            
+                cleaned_content = clean_html(content)
                 soup_desc = BeautifulSoup(cleaned_content, 'html.parser')
                 plain_desc = soup_desc.get_text()[:180] + "..."
                 
@@ -105,15 +117,11 @@ def fetch_news():
 
 if __name__ == "__main__":
     articles = fetch_news()
-    
-    # Hatalı dosya çakışmasını önle ve klasör oluştur
     if os.path.exists("haberler") and not os.path.isdir("haberler"):
         os.remove("haberler")
-        
     os.makedirs("haberler", exist_ok=True)
     
-    # JSON dosyasına kaydet
     output_path = os.path.join("haberler", "haberler.json")
     with open(output_path, "w", encoding="utf-8") as f:
         json.dump(articles, f, ensure_ascii=False, indent=4)
-    print(f"Toplam {len(articles)} haber başarıyla kaydedildi.")
+    print(f"Toplam {len(articles)} haber görselleştirilerek kaydedildi.")
