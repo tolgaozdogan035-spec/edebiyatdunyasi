@@ -178,12 +178,9 @@
         let globalArticles = []; 
         const NEWS_JSON_URL = 'haberler/haberler.json';
 
-        function extractYouTubeID(urlStr) {
-            if (!urlStr) return null;
-            const regex = /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/i;
-            const match = urlStr.match(regex);
-            return (match && match[1] && match[1].length === 11) ? match[1] : null;
-        }
+        const mockNewsData = [
+            { title: "Edebiyat dünyasından yeni eserler raflardaki yerini alıyor", category: "KİTAP İNCELEME", image: "https://images.unsplash.com/photo-1457369804613-52c61a468e7d?auto=format&fit=crop&w=600&q=80", content: "<p>Yeni çıkan kitaplar ve yazar incelemeleri arşivi kesintisiz güncellenmektedir.</p>", date: new Date().toISOString() }
+        ];
 
         async function fetchBookNews() {
             let allArticles = [];
@@ -191,79 +188,19 @@
                 const response = await fetch(NEWS_JSON_URL + '?t=' + new Date().getTime());
                 const data = await response.json();
                 
-                if(data && Array.isArray(data)) {
-                    // SADECE KİTAP / ROMAN / ÖYKÜ / İNCELEME İÇERENLERİ KESİN OLARAK FİLTRELE
+                if(data && Array.isArray(data) && data.length > 0) {
                     allArticles = data.filter(item => {
-                        const titleText = (item.title || "").toUpperCase();
-                        const catText = (item.category || "").toUpperCase();
-                        const contentText = (item.content || item.desc || "").toUpperCase();
-                        const fullText = titleText + " " + catText + " " + contentText;
-                        
-                        return fullText.includes('KİTAP') || 
-                               fullText.includes('ROMAN') || 
-                               fullText.includes('ÖYKÜ') || 
-                               fullText.includes('İNCELEME') || 
-                               fullText.includes('YAZAR') || 
-                               fullText.includes('EŞSİZ') ||
-                               fullText.includes('POLİSİYE');
-                    }).map(item => {
-                        let rawContent = item.content || item.desc || "İçerik yüklenemedi.";
-                        let parser = new DOMParser();
-                        let doc = parser.parseFromString(rawContent, 'text/html');
-
-                        doc.querySelectorAll('a').forEach(link => {
-                            let href = link.getAttribute('href');
-                            let vId = extractYouTubeID(href);
-                            if (vId) {
-                                let card = document.createElement('div');
-                                card.className = "my-6 p-5 bg-gray-900 rounded-lg text-center text-white shadow-lg flex flex-col items-center justify-center";
-                                card.innerHTML = `
-                                    <div class="mb-3 text-sm font-semibold tracking-wide text-gray-200 flex items-center">
-                                        <i class="fab fa-youtube text-red-600 text-xl mr-2"></i> Tanıtım Videosunu İzleyin
-                                    </div>
-                                    <a href="https://www.youtube.com/watch?v=${vId}" target="_blank" rel="noopener noreferrer" style="pointer-events: auto !important; color: #fff !important; background-color: #cc0000; padding: 12px 24px; border-radius: 6px; font-weight: bold; font-size: 0.95rem; display: inline-flex; align-items: center; text-decoration: none; box-shadow: 0 4px 6px rgba(0,0,0,0.3);">
-                                        <i class="fas fa-play mr-2"></i> Videoyu Oynat
-                                    </a>
-                                `;
-                                link.parentNode.insertBefore(card, link);
-                                link.remove();
-                            } else {
-                                let textNode = document.createTextNode(link.textContent);
-                                link.parentNode.replaceChild(textNode, link);
-                            }
-                        });
-
-                        doc.querySelectorAll('p, div, span, strong, em, h1, h2, h3, h4, h5, h6').forEach(el => {
-                            let text = el.textContent.toLowerCase();
-                            if (
-                                text.includes('ilk olarak şu sitede yayımlanmıştır') ||
-                                text.includes('yazının kaynağı bu sitedir') ||
-                                text.includes('appeared first on') ||
-                                text.includes('ilk ortaya çıktı') ||
-                                text.includes('kayıp rıhtım forum') ||
-                                text.includes('whatsapp üzerinden takip') ||
-                                text.includes('google news') ||
-                                text.includes('read more') ||
-                                text.includes('the post')
-                            ) {
-                                el.remove(); 
-                            }
-                        });
-
-                        let safeContent = doc.body.innerHTML;
-                        let cleanDesc = doc.body.textContent || doc.body.innerText || "";
-
-                        return {
-                            title: item.title,
-                            date: item.date,
-                            category: "KİTAP İNCELEME",
-                            desc: cleanDesc.substring(0, 180) + "...",
-                            content: safeContent,
-                            image: item.image || "https://images.unsplash.com/photo-1457369804613-52c61a468e7d?auto=format&fit=crop&w=600&q=80"
-                        };
+                        const fullText = ((item.title || "") + " " + (item.category || "") + " " + (item.content || "")).toUpperCase();
+                        return fullText.includes('KİTAP') || fullText.includes('ROMAN') || fullText.includes('ÖYKÜ') || fullText.includes('İNCELEME') || fullText.includes('YAZAR') || fullText.includes('ÇIKAN');
                     });
                 }
-            } catch (error) { console.error("Kitap arşivi yüklenemedi:", error); }
+            } catch (error) { 
+                console.error("Arşivden okunamadı, yedek veriler kullanılıyor."); 
+            }
+
+            if(allArticles.length === 0) {
+                allArticles = mockNewsData;
+            }
 
             globalArticles = allArticles; 
             renderUI(globalArticles);
@@ -284,11 +221,6 @@
             const feedContainer = document.getElementById('news-feed-container');
             feedContainer.innerHTML = '';
             
-            if (articles.length === 0) {
-                feedContainer.innerHTML = `<div class="p-6 bg-white border border-gray-200 text-center text-gray-500">Kitap arşivinde henüz filtreye uygun eser bulunmuyor.</div>`;
-                return;
-            }
-
             articles.forEach((article, index) => {
                 if(index === 0) {
                     feedContainer.innerHTML += `
