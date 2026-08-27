@@ -39,18 +39,8 @@
     <style>
         body { color: #1a1a1a; background-color: #fcfcfc; }
         
-        .line-clamp-2 {
-            display: -webkit-box;
-            -webkit-line-clamp: 2;
-            -webkit-box-orient: vertical;  
-            overflow: hidden;
-        }
-        .line-clamp-3 {
-            display: -webkit-box;
-            -webkit-line-clamp: 3;
-            -webkit-box-orient: vertical;  
-            overflow: hidden;
-        }
+        .line-clamp-2 { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+        .line-clamp-3 { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
         
         /* Ticker Animation */
         .ticker-wrap {
@@ -68,40 +58,19 @@
             animation-name: ticker;
             animation-duration: 120s; 
         }
-        .ticker-wrap:hover .ticker {
-            animation-play-state: paused;
-        }
-        
-        .ticker__item {
-            display: inline-block;
-            padding: 0 2rem;
-            color: white;
-            font-size: 0.85rem;
-        }
+        .ticker-wrap:hover .ticker { animation-play-state: paused; }
+        .ticker__item { display: inline-block; padding: 0 2rem; color: white; font-size: 0.85rem; }
         @keyframes ticker {
             0% { transform: translate3d(0, 0, 0); }
             100% { transform: translate3d(-100%, 0, 0); }
         }
 
         /* Mobile Menu */
-        #mobile-menu-container {
-            transition: transform 0.3s ease-in-out;
-            transform: translateX(-100%);
-        }
-        #mobile-menu-container.open {
-            transform: translateX(0);
-        }
-        #mobile-menu-overlay {
-            transition: opacity 0.3s ease-in-out;
-            opacity: 0;
-            pointer-events: none;
-        }
-        #mobile-menu-overlay.open {
-            opacity: 1;
-            pointer-events: auto;
-        }
+        #mobile-menu-container { transition: transform 0.3s ease-in-out; transform: translateX(-100%); }
+        #mobile-menu-container.open { transform: translateX(0); }
+        #mobile-menu-overlay { transition: opacity 0.3s ease-in-out; opacity: 0; pointer-events: none; }
+        #mobile-menu-overlay.open { opacity: 1; pointer-events: auto; }
 
-        /* Ad Block Style */
         .ad-block {
             background-color: #f8f9fa;
             border: 1px dashed #ced4da;
@@ -115,13 +84,8 @@
             letter-spacing: 0.05em;
         }
 
-        .live-pulse {
-            animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-        }
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: .5; }
-        }
+        .live-pulse { animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: .5; } }
 
         /* Article Content Styling */
         .article-body p { margin-bottom: 1.5rem; line-height: 1.8; color: #374151; font-size: 1.05rem; }
@@ -139,7 +103,7 @@
                 <span id="top-date">Yükleniyor...</span>
                 <span class="border-l border-gray-300 pl-4 flex items-center text-brand-red font-bold" id="update-status">
                     <span class="w-2 h-2 rounded-full bg-brand-red mr-2 live-pulse"></span> 
-                    Son Güncelleme: <span id="last-update-time" class="ml-1">--:--</span>
+                    GitHub Arşiv Aktif
                 </span>
             </div>
             <div class="flex items-center space-x-6">
@@ -156,11 +120,10 @@
         <div class="flex flex-col">
             <span id="mobile-top-date">Yükleniyor...</span>
             <span class="text-brand-red font-bold flex items-center mt-1">
-                <span class="w-1.5 h-1.5 rounded-full bg-brand-red mr-1 live-pulse"></span> Canlı İzleme
+                <span class="w-1.5 h-1.5 rounded-full bg-brand-red mr-1 live-pulse"></span> GitHub Arşiv
             </span>
         </div>
         <div class="flex space-x-3 mt-1">
-            <a href="yazar-hakkinda.html">Künye</a>
             <a href="iletisim.html">İletişim <i class="fas fa-lock ml-1"></i></a>
         </div>
     </div>
@@ -191,7 +154,7 @@
 
     <!-- Son Dakika Ticker -->
     <div class="flex bg-brand-red text-white border-b-4 border-white">
-        <div class="bg-brand-red font-bold px-4 py-2 text-[11px] md:text-xs tracking-wider uppercase flex items-center whitespace-nowrap z-10 shadow-[2px_0_5px_rgba(0,0,0,0.2)] z-20 relative">
+        <div class="bg-brand-red font-bold px-4 py-2 text-[11px] md:text-xs tracking-wider uppercase flex items-center whitespace-nowrap z-10 shadow-[2px_0_5px_rgba(0,0,0,0.2)] relative">
             <i class="fas fa-bolt mr-2 text-yellow-300"></i> SON DAKİKA
         </div>
         <div class="ticker-wrap flex items-center cursor-default z-10" title="Okumak için fareyi üzerine getirin">
@@ -475,52 +438,104 @@
         });
 
         let globalArticles = []; 
-
-        // Doğrudan GitHub deponuzdaki yerel haberler.json dosyasını okur
         const NEWS_JSON_URL = 'haberler/haberler.json';
 
-        const mockNewsData = [
-            { title: "Genç şairler için yeni bir şiir dergisi yayıma hazırlanıyor", category: "ŞİİR", image: "https://images.unsplash.com/photo-1455390582262-044cdead27d8?auto=format&fit=crop&w=600&q=80", content: "<p>Şiir camiasında yeni bir dergi girişimi konuşuluyor. Ayrıntılar yakında matbaada olacak.</p>", date: new Date().toISOString() },
-            { title: "Roman atölyesi başvuruları gelecek ay açılıyor", category: "ROMAN", image: "https://images.unsplash.com/photo-1505682850523-16c897103233?auto=format&fit=crop&w=600&q=80", content: "<p>Roman yazımına ilgi duyanlar için atölye duyurusu. Kayıtlar başladı.</p>", date: new Date(Date.now() - 86400000).toISOString() },
-            { title: "Yazarlarla söyleşi dizisi başlıyor", category: "SÖYLEŞİ", image: "https://images.unsplash.com/photo-1524578971033-030997f740db?auto=format&fit=crop&w=600&q=80", content: "<p>İlk konuk son dönem edebiyatının yükselen isimlerinden olacak.</p>", date: new Date(Date.now() - 172800000).toISOString() },
-            { title: "Kültür merkezinde okuma günleri düzenlenecek", category: "KÜLTÜR-SANAT", image: "https://images.unsplash.com/photo-1507842217343-583bb7270b66?auto=format&fit=crop&w=600&q=80", content: "<p>Kültür-sanat etkinliklerine dair duyurular bu blokta özetlenecektir.</p>", date: new Date(Date.now() - 259200000).toISOString() }
-        ];
+        // YOUTUBE KİMLİK ÇIKARICI
+        function extractYouTubeID(urlStr) {
+            if (!urlStr) return null;
+            const regex = /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/i;
+            const match = urlStr.match(regex);
+            return (match && match[1] && match[1].length === 11) ? match[1] : null;
+        }
 
-        async function fetchRealNews(isAutoUpdate = false) {
-            if(!isAutoUpdate) {
-                document.getElementById('content-area').classList.add('opacity-0');
-            }
-
+        async function fetchRealNews() {
             let allArticles = [];
             try {
-                // Tarayıcının önbelleğe (cache) takılmaması için sonuna zaman damgası eklenir
                 const response = await fetch(NEWS_JSON_URL + '?t=' + new Date().getTime());
                 const data = await response.json();
                 
-                if(data && Array.isArray(data) && data.length > 0) {
-                    allArticles = data;
-                }
-            } catch (error) { 
-                console.error("Haberler GitHub JSON dosyasından yüklenemedi, yedek veriler kullanılıyor.", error); 
-            }
+                if(data && Array.isArray(data)) {
+                    allArticles = data.map(item => {
+                        let rawContent = item.content || item.desc || "Haber içeriği yüklenemedi.";
+                        
+                        let parser = new DOMParser();
+                        let doc = parser.parseFromString(rawContent, 'text/html');
 
-            if(allArticles.length < 5) {
-                allArticles = [...allArticles, ...mockNewsData];
-            }
+                        // 1. YouTube linklerini tespit edip şık bir Video Oynatma Kartına dönüştür
+                        doc.querySelectorAll('a').forEach(link => {
+                            let href = link.getAttribute('href');
+                            let vId = extractYouTubeID(href);
+                            
+                            if (vId) {
+                                let card = document.createElement('div');
+                                card.className = "my-6 p-5 bg-gray-900 rounded-lg text-center text-white shadow-lg flex flex-col items-center justify-center";
+                                card.innerHTML = `
+                                    <div class="mb-3 text-sm font-semibold tracking-wide text-gray-200 flex items-center">
+                                        <i class="fab fa-youtube text-red-600 text-xl mr-2"></i> Fragmanı Sitemizde İzleyin
+                                    </div>
+                                    <a href="https://www.youtube.com/watch?v=${vId}" target="_blank" rel="noopener noreferrer" style="pointer-events: auto !important; color: #fff !important; background-color: #cc0000; padding: 12px 24px; border-radius: 6px; font-weight: bold; font-size: 0.95rem; display: inline-flex; align-items: center; text-decoration: none; box-shadow: 0 4px 6px rgba(0,0,0,0.3);">
+                                        <i class="fas fa-play mr-2"></i> Videoyu Oynat
+                                    </a>
+                                `;
+                                link.parentNode.insertBefore(card, link);
+                                link.remove();
+                            } else {
+                                let textNode = document.createTextNode(link.textContent);
+                                link.parentNode.replaceChild(textNode, link);
+                            }
+                        });
+
+                        // 2. İstenmeyen Cümleleri ve İmza Kalıntılarını Temizle
+                        doc.querySelectorAll('p, div, span, strong, em, h1, h2, h3, h4, h5, h6').forEach(el => {
+                            let text = el.textContent.toLowerCase();
+                            if (
+                                text.includes('ilk olarak şu sitede yayımlanmıştır') ||
+                                text.includes('yazının kaynağı bu sitedir') ||
+                                text.includes('appeared first on') ||
+                                text.includes('ilk ortaya çıktı') ||
+                                text.includes('kayıp rıhtım forum') ||
+                                text.includes('whatsapp üzerinden takip') ||
+                                text.includes('youtube üzerinden izlemek için') ||
+                                text.includes('fragmanı youtube') ||
+                                text.includes('google news') ||
+                                text.includes('read more') ||
+                                text.includes('the post')
+                            ) {
+                                el.remove(); 
+                            }
+                        });
+
+                        let safeContent = doc.body.innerHTML;
+                        let cleanDesc = doc.body.textContent || doc.body.innerText || "";
+
+                        return {
+                            title: item.title,
+                            date: item.date,
+                            category: item.category || "EDEBİYAT HABERLERİ",
+                            desc: cleanDesc.substring(0, 180) + "...",
+                            content: safeContent,
+                            image: item.image || "https://images.unsplash.com/photo-1457369804613-52c61a468e7d?auto=format&fit=crop&w=600&q=80"
+                        };
+                    });
+                }
+            } catch (error) { console.error("GitHub arşivinden veri okunamadı:", error); }
 
             allArticles.sort((a,b) => new Date(b.date) - new Date(a.date));
             globalArticles = allArticles; 
-            renderUI(allArticles, isAutoUpdate);
+            renderUI(globalArticles);
         }
 
         function formatDateTr(dateStr) {
-            return new Date(dateStr).toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric' });
+            const d = new Date(dateStr);
+            if (isNaN(d)) return "Güncel Arşiv";
+            return d.toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric' });
         }
 
-        function createCategoryCard(article, index) {
+        function createCategoryCard(article) {
             if(!article) return '';
+            const idx = globalArticles.indexOf(article);
             return `
-                <div onclick="openArticle(${globalArticles.indexOf(article)})" class="flex flex-col h-full cursor-pointer group">
+                <div onclick="openArticle(${idx})" class="flex flex-col h-full cursor-pointer group">
                     <img src="${article.image}" alt="${article.title}" class="w-full h-48 md:h-56 object-cover mb-4 rounded-sm transition group-hover:opacity-90" onerror="this.src='https://images.unsplash.com/photo-1457369804613-52c61a468e7d?auto=format&fit=crop&w=600&q=80'">
                     <div class="flex items-center text-[10px] font-bold mb-2 uppercase tracking-wide">
                         <span class="text-brand-red">${article.category}</span>
@@ -535,7 +550,7 @@
             `;
         }
 
-        function renderUI(articles, isAutoUpdate) {
+        function renderUI(articles) {
             document.getElementById('loading-spinner').classList.add('hidden');
             const contentArea = document.getElementById('content-area');
             contentArea.classList.remove('hidden');
@@ -545,9 +560,7 @@
                 contentArea.classList.add('opacity-100');
             }, 50);
 
-            const now = new Date();
-            const timeStr = now.getHours().toString().padStart(2, '0') + ':' + now.getMinutes().toString().padStart(2, '0');
-            document.getElementById('last-update-time').innerText = timeStr;
+            if (articles.length === 0) return;
 
             // 1. Kayan Yazı
             const ticker = document.getElementById('ticker-content');
@@ -586,7 +599,7 @@
                         <div class="flex items-center text-[10px] font-bold mb-2 uppercase tracking-wide">
                             <span class="text-brand-red">${article.category}</span>
                         </div>
-                        <h3 class="text-lg md:text-xl font-serif font-bold leading-snug mb-3 group-hover:text-brand-red transition line-clamp-2">${article.title}</h3>
+                        <h3 class="text-lg md:text-xl font-serif font-bold leading-snug mb-3 hover:text-brand-red transition line-clamp-2">${article.title}</h3>
                         <p class="text-sm text-gray-500 mb-4 line-clamp-2 flex-grow">${article.desc}</p>
                         <div class="flex justify-between items-center text-xs border-t border-gray-100 pt-3 mt-auto">
                             <span class="text-gray-400">${formatDateTr(article.date)}</span>
@@ -644,7 +657,6 @@
             document.getElementById('cat-kultur').innerHTML = createCategoryCard(getCat('KÜLTÜR'));
         }
 
-        // --- SİTE İÇİ OKUMA MODU FONKSİYONLARI ---
         function openArticle(index) {
             const article = globalArticles[index];
             if(!article) return;
@@ -683,14 +695,8 @@
             }, 300);
         }
 
-        // --- 4. ENGINE BOOTSTRAP ---
         document.addEventListener('DOMContentLoaded', () => {
-            fetchRealNews(false); 
-
-            const UPDATE_INTERVAL_MS = 3 * 60 * 1000; 
-            setInterval(() => {
-                fetchRealNews(true); 
-            }, UPDATE_INTERVAL_MS);
+            fetchRealNews(); 
         });
     </script>
 </body>
