@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Yeni Çıkan Kitaplar ve İncelemeler - Edebiyat Gündemi</title>
+    <title>Haftalık Yeni Çıkan Kitaplar - Edebiyat Gündemi</title>
     
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -53,7 +53,7 @@
             <div class="flex items-center space-x-4">
                 <span id="top-date">Yükleniyor...</span>
                 <span class="border-l border-gray-300 pl-4 flex items-center text-brand-red font-bold">
-                    <span class="w-2 h-2 rounded-full bg-brand-red mr-2 animate-pulse"></span> Kitapyurdu Yeni Çıkanlar Aktif
+                    <span class="w-2 h-2 rounded-full bg-brand-red mr-2 animate-pulse"></span> Kitapyurdu Yeni Çıkanlar Arşivi
                 </span>
             </div>
             <div class="flex items-center space-x-6">
@@ -80,7 +80,7 @@
                 <i class="fas fa-bars mr-3"></i> <span class="text-xs font-bold uppercase tracking-wider hidden md:block">Menü</span>
             </button>
             <div class="text-xs font-bold text-gray-400 uppercase tracking-widest hidden md:block">
-                HAFTALIK YENİ ÇIKAN KİTAPLAR VE TANITIMLARI
+                HAFTALIK YENİ ÇIKAN KİTAPLAR VE KAPAK İNCELEMELERİ
             </div>
             <button class="text-gray-800 text-xl hover:text-brand-red transition focus:outline-none p-1">
                 <i class="fas fa-search"></i>
@@ -92,8 +92,8 @@
     <main class="container mx-auto px-4 lg:px-8 py-8 min-h-screen relative">
         <div id="loading-spinner" class="py-20 text-center text-brand-red">
             <i class="fas fa-book-open text-5xl mb-4 animate-pulse"></i>
-            <h3 class="text-xl font-serif font-bold mb-2 text-gray-800">Kitap Arşivi Yükleniyor</h3>
-            <p class="text-sm font-medium text-gray-500">Kitapyurdu yeni çıkanlar listesi aktarılıyor...</p>
+            <h3 class="text-xl font-serif font-bold mb-2 text-gray-800">Yeni Çıkan Kitaplar Yükleniyor</h3>
+            <p class="text-sm font-medium text-gray-500">Kitapyurdu haftalık listesi kapak görselleriyle aktarılıyor...</p>
         </div>
 
         <!-- LİSTE GÖRÜNÜMÜ -->
@@ -103,7 +103,7 @@
                     <a href="index.html" class="hover:text-brand-red transition">Anasayfa</a> <span class="mx-2">/</span> <span class="text-brand-red">Yeni Çıkan Kitaplar</span>
                 </nav>
                 <h1 class="text-4xl md:text-5xl font-serif font-bold text-brand-text">Haftalık Yeni Çıkan Kitaplar</h1>
-                <p class="text-gray-500 text-sm mt-3 max-w-2xl">Kitapyurdu raflarında yerini alan en taze eserler, kapak görselleri ve tanıtım metinleriyle birlikte listelenmektedir.</p>
+                <p class="text-gray-500 text-sm mt-3 max-w-2xl">Kitapyurdu platformundan doğrudan derlenen haftalık en taze kitap kapakları ve tanıtım metinleri.</p>
             </div>
 
             <div class="flex flex-col lg:flex-row gap-10">
@@ -176,30 +176,28 @@
         mobileMenuOverlay.addEventListener('click', toggleMenu);
 
         let globalArticles = []; 
-        const NEWS_JSON_URL = 'haberler/haberler.json';
+        // Sadece kitaplar için ayrılan özel JSON dosyası
+        const BOOKS_JSON_URL = 'haberler/kitaplar.json';
 
-        const mockNewsData = [
+        const mockBookData = [
             { title: "Yeni Çıkan Eserler Raflardaki Yerini Aldı", category: "YENİ ÇIKAN KİTAP", image: "https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?auto=format&fit=crop&w=600&q=80", content: "<p>Haftalık yeni çıkan kitaplar listesi ve eser tanıtımları güncellenmektedir.</p>", date: new Date().toISOString() }
         ];
 
         async function fetchBookNews() {
             let allArticles = [];
             try {
-                const response = await fetch(NEWS_JSON_URL + '?t=' + new Date().getTime());
+                const response = await fetch(BOOKS_JSON_URL + '?t=' + new Date().getTime());
                 const data = await response.json();
                 
                 if(data && Array.isArray(data) && data.length > 0) {
-                    allArticles = data.filter(item => {
-                        const fullText = ((item.title || "") + " " + (item.category || "") + " " + (item.content || "")).toUpperCase();
-                        return fullText.includes('KİTAP') || fullText.includes('ROMAN') || fullText.includes('ÖYKÜ') || fullText.includes('İNCELEME') || fullText.includes('YAZAR') || fullText.includes('ÇIKAN');
-                    });
+                    allArticles = data; // Filtreye gerek yok, dosya zaten saf kitap arşivi
                 }
             } catch (error) { 
-                console.error("Arşivden okunamadı, yedek veriler kullanılıyor."); 
+                console.error("Kitap arşivi yüklenemedi, yedek veriler kullanılıyor."); 
             }
 
             if(allArticles.length === 0) {
-                allArticles = mockNewsData;
+                allArticles = mockBookData;
             }
 
             globalArticles = allArticles; 
