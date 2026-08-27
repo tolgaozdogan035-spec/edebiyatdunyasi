@@ -53,7 +53,7 @@ def fetch_books():
                 image = extract_image(entry, content)
                 
                 if not content or len(content.strip()) < 15:
-                    content = f"<p><strong>{title}</strong> eseri Kitapyurdu haftalık yeni çıkanlar listesinde okurlarla buluşuyor. Eserin tanıtımı ve detayları bu sayfada yer almaktadır.</p>"
+                    content = f"<p><strong>{title}</strong> eseri Kitapyurdu haftalık yeni çıkanlar listesinde okurlarla buluşuyor[cite: 1]. Eserin tanıtımı ve detayları bu sayfada yer almaktadır.</p>"
                 
                 cleaned_content = clean_html(content)
                 soup_desc = BeautifulSoup(cleaned_content, 'html.parser')
@@ -80,8 +80,7 @@ if __name__ == "__main__":
         os.remove("haberler")
     os.makedirs("haberler", exist_ok=True)
     
-    # Kitaplar için özel json dosyası oluşturuyoruz
     output_path = os.path.join("haberler", "kitaplar.json")
     with open(output_path, "w", encoding="utf-8") as f:
         json.dump(articles, f, ensure_ascii=False, indent=4)
-    print(f"Toplam {len(kitap)} yeni çıkan kitap kaydedildi.")
+    print(f"Toplam {len(articles)} yeni çıkan kitap başarıyla kaydedildi.")
