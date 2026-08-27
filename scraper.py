@@ -9,7 +9,11 @@ RSS_SOURCES = [
     "https://kayiprihtim.com/feed/",
     "https://www.edebiyathaber.net/feed/",
     "https://kitapeki.com/feed/",
-    "https://www.kitapyurdu.com/index.php?route=common/rss/whatsnew" # Kitapyurdu Yeni Çıkanlar
+    "https://www.haberturk.com/rss/kategori/kultur-sanat.xml",
+    "https://www.ntv.com.tr/sanat.rss",
+    "https://www.trthaber.com/kultur-sanat_articles.rss",
+    "https://www.cumhuriyet.com.tr/rss/kultur-sanat.xml",
+    "https://www.kitapyurdu.com/index.php?route=common/rss/whatsnew"
 ]
 
 def clean_html(raw_html):
@@ -26,25 +30,6 @@ def clean_html(raw_html):
             element.decompose()
     return str(soup)
 
-def scrape_full_article(link):
-    try:
-        headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'}
-        response = requests.get(link, headers=headers, timeout=10)
-        if response.status_code == 200:
-            soup = BeautifulSoup(response.text, 'html.parser')
-            og_image = soup.find('meta', property='og:image')
-            img_url = og_image['content'] if og_image and og_image.get('content') else None
-            
-            article_body = soup.find('article') or soup.find('div', class_=re.compile('content|entry|post|product', re.I))
-            if article_body:
-                paragraphs = article_body.find_all(['p', 'h2', 'h3'])
-                full_text = "".join([str(p) for p in paragraphs])
-                if len(full_text.strip()) > 50:
-                    return clean_html(full_text), img_url
-        return None, None
-    except Exception:
-        return None, None
-
 def extract_image(entry, content):
     if hasattr(entry, 'media_content') and entry.media_content:
         for media in entry.media_content:
@@ -55,13 +40,19 @@ def extract_image(entry, content):
         soup = BeautifulSoup(content, 'html.parser')
         img = soup.find('img')
         if img and img.get('src'): return img['src']
-    return "https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?auto=format&fit=crop&w=1200&q=80"
+    return "https://images.unsplash.com/photo-1457369804613-52c61a468e7d?auto=format&fit=crop&w=1200&q=80"
 
 def assign_category(title, categories):
     combined = (str(categories) + " " + str(title)).upper()
-    if any(k in combined for k in ['KİTAP', 'ROMAN', 'ÖYKÜ', 'İNCELENEN', 'YAZAR', 'EDEBİYAT']):
+    if any(k in combined for k in ['KİTAP', 'ROMAN', 'ÖYKÜ', 'İNCELEME', 'YENİ ÇIKAN']):
         return 'KİTAP İNCELEME'
-    return 'KİTAP İNCELEME'
+    if 'ŞİİR' in combined:
+        return 'ŞİİR'
+    if any(k in combined for k in ['SÖYLEŞİ', 'RÖPORTAJ']):
+        return 'SÖYLEŞİ'
+    if any(k in combined for k in ['SİNEMA', 'TİYATRO', 'SERGİ', 'KÜLTÜR']):
+        return 'KÜLTÜR-SANAT'
+    return 'EDEBİYAT HABERLERİ'
 
 def fetch_news():
     all_articles = []
@@ -69,7 +60,7 @@ def fetch_news():
         try:
             feed = feedparser.parse(url)
             for entry in feed.entries:
-                title = entry.get('title', 'Başlıksız')
+                title = entry.get('title', 'Başlıksız Eser/Haber')
                 link = entry.get('link', '#')
                 published = entry.get('published', entry.get('updated', ''))
                 
@@ -83,15 +74,8 @@ def fetch_news():
                 
                 image = extract_image(entry, content)
                 
-                scraped_content, scraped_img = None, None
-                if not content or len(content.strip()) < 150:
-                    scraped_content, scraped_img = scrape_full_article(link)
-                
-                if scraped_content: content = scraped_content
-                if scraped_img: image = scraped_img
-                
-                if not content or len(content.strip()) < 15:
-                    content = f"<p><strong>{title}</strong> eseri edebiyat raflarındaki yerini aldı. Kitap hakkında merak edilenler, yazarın kalemi ve inceleme detayları yakında bu sayfada.</p>"
+                if not content or len(content.strip()) < 20:
+                    content = f"<p><strong>{title}</strong> hakkında edebiyat dünyasından derlenen en güncel detaylar, yazar bilgileri ve inceleme notları bu alanda yer almaktadır. Gelişmeleri ve yeni çıkan eserleri takip edebilirsiniz.</p>"
                 
                 cleaned_content = clean_html(content)
                 soup_desc = BeautifulSoup(cleaned_content, 'html.parser')
@@ -100,8 +84,8 @@ def fetch_news():
                 article = {
                     "title": title,
                     "link": link,
-                    "date": published,
-                    "category": "KİTAP İNCELEME",
+                    "date": published if published else "Güncel",
+                    "category": assign_category(title, entry.get('tags', [])),
                     "desc": plain_desc,
                     "content": cleaned_content,
                     "image": image
@@ -121,4 +105,4 @@ if __name__ == "__main__":
     output_path = os.path.join("haberler", "haberler.json")
     with open(output_path, "w", encoding="utf-8") as f:
         json.dump(articles, f, ensure_ascii=False, indent=4)
-    print(f"Toplam {len(articles)} kitap içeriği başarıyla kaydedildi.")
+    print(f"Toplam {len(articles)} içerik başarıyla kaydedildi.")
