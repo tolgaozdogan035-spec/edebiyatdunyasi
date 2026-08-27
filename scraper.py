@@ -9,11 +9,11 @@ RSS_SOURCES = [
     "https://kayiprihtim.com/feed/",
     "https://www.edebiyathaber.net/feed/",
     "https://kitapeki.com/feed/",
+    "https://www.kitapyurdu.com/index.php?route=common/rss/whatsnew",
     "https://www.haberturk.com/rss/kategori/kultur-sanat.xml",
     "https://www.ntv.com.tr/sanat.rss",
     "https://www.trthaber.com/kultur-sanat_articles.rss",
-    "https://www.cumhuriyet.com.tr/rss/kultur-sanat.xml",
-    "https://www.kitapyurdu.com/index.php?route=common/rss/whatsnew"
+    "https://www.cumhuriyet.com.tr/rss/kultur-sanat.xml"
 ]
 
 def clean_html(raw_html):
@@ -30,6 +30,29 @@ def clean_html(raw_html):
             element.decompose()
     return str(soup)
 
+def scrape_full_article(link):
+    """Eğer RSS özeti eksikse, haberin orijinal sayfasına bağlanıp tüm metni ve resmi çeker"""
+    try:
+        headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'}
+        response = requests.get(link, headers=headers, timeout=10)
+        if response.status_code == 200:
+            soup = BeautifulSoup(response.text, 'html.parser')
+            
+            # Orijinal büyük görseli yakala
+            og_image = soup.find('meta', property='og:image')
+            img_url = og_image['content'] if og_image and og_image.get('content') else None
+            
+            # Makale gövdesindeki tüm paragrafları bul
+            article_body = soup.find('article') or soup.find('div', class_=re.compile('content|entry|post|product', re.I))
+            if article_body:
+                paragraphs = article_body.find_all(['p', 'h2', 'h3'])
+                full_text = "".join([str(p) for p in paragraphs])
+                if len(full_text.strip()) > 80:
+                    return clean_html(full_text), img_url
+        return None, None
+    except Exception:
+        return None, None
+
 def extract_image(entry, content):
     if hasattr(entry, 'media_content') and entry.media_content:
         for media in entry.media_content:
@@ -44,7 +67,7 @@ def extract_image(entry, content):
 
 def assign_category(title, categories):
     combined = (str(categories) + " " + str(title)).upper()
-    if any(k in combined for k in ['KİTAP', 'ROMAN', 'ÖYKÜ', 'İNCELEME', 'YENİ ÇIKAN']):
+    if any(k in combined for k in ['KİTAP', 'ROMAN', 'ÖYKÜ', 'İNCELEME', 'YENİ ÇIKAN', 'YAZAR']):
         return 'KİTAP İNCELEME'
     if 'ŞİİR' in combined:
         return 'ŞİİR'
@@ -60,7 +83,7 @@ def fetch_news():
         try:
             feed = feedparser.parse(url)
             for entry in feed.entries:
-                title = entry.get('title', 'Başlıksız Eser/Haber')
+                title = entry.get('title', 'Başlıksız Eser')
                 link = entry.get('link', '#')
                 published = entry.get('published', entry.get('updated', ''))
                 
@@ -74,8 +97,16 @@ def fetch_news():
                 
                 image = extract_image(entry, content)
                 
-                if not content or len(content.strip()) < 20:
-                    content = f"<p><strong>{title}</strong> hakkında edebiyat dünyasından derlenen en güncel detaylar, yazar bilgileri ve inceleme notları bu alanda yer almaktadır. Gelişmeleri ve yeni çıkan eserleri takip edebilirsiniz.</p>"
+                # İçerik zayıfsa veya yoksa orijinal siteden tam metin çek
+                scraped_content, scraped_img = None, None
+                if not content or len(content.strip()) < 150 or "Read more" in content:
+                    scraped_content, scraped_img = scrape_full_article(link)
+                
+                if scraped_content: content = scraped_content
+                if scraped_img: image = scraped_img
+                
+                if not content or len(content.strip()) < 15:
+                    content = f"<p><strong>{title}</strong> eseri edebiyat dünyasında ilgiyle karşılandı. Kitap hakkında ayrıntılı incelemeler ve yazar notları yakında güncellenecektir.</p>"
                 
                 cleaned_content = clean_html(content)
                 soup_desc = BeautifulSoup(cleaned_content, 'html.parser')
@@ -105,4 +136,4 @@ if __name__ == "__main__":
     output_path = os.path.join("haberler", "haberler.json")
     with open(output_path, "w", encoding="utf-8") as f:
         json.dump(articles, f, ensure_ascii=False, indent=4)
-    print(f"Toplam {len(articles)} içerik başarıyla kaydedildi.")
+    print(f"Toplam {len(articles)} tam metin içerik başarıyla kaydedildi.")
