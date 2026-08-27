@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kitap ve İncelemeler - Edebiyat Gündemi</title>
+    <title>Yeni Çıkan Kitaplar ve İncelemeler - Edebiyat Gündemi</title>
     
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -53,7 +53,7 @@
             <div class="flex items-center space-x-4">
                 <span id="top-date">Yükleniyor...</span>
                 <span class="border-l border-gray-300 pl-4 flex items-center text-brand-red font-bold">
-                    <span class="w-2 h-2 rounded-full bg-brand-red mr-2 animate-pulse"></span> Kitap Arşivi Aktif
+                    <span class="w-2 h-2 rounded-full bg-brand-red mr-2 animate-pulse"></span> Kitapyurdu Yeni Çıkanlar Aktif
                 </span>
             </div>
             <div class="flex items-center space-x-6">
@@ -80,7 +80,7 @@
                 <i class="fas fa-bars mr-3"></i> <span class="text-xs font-bold uppercase tracking-wider hidden md:block">Menü</span>
             </button>
             <div class="text-xs font-bold text-gray-400 uppercase tracking-widest hidden md:block">
-                YENİ ÇIKAN KİTAPLAR VE İNCELEMELER
+                HAFTALIK YENİ ÇIKAN KİTAPLAR VE TANITIMLARI
             </div>
             <button class="text-gray-800 text-xl hover:text-brand-red transition focus:outline-none p-1">
                 <i class="fas fa-search"></i>
@@ -93,17 +93,17 @@
         <div id="loading-spinner" class="py-20 text-center text-brand-red">
             <i class="fas fa-book-open text-5xl mb-4 animate-pulse"></i>
             <h3 class="text-xl font-serif font-bold mb-2 text-gray-800">Kitap Arşivi Yükleniyor</h3>
-            <p class="text-sm font-medium text-gray-500">Yeni çıkan kitaplar ve incelemeler filtreleniyor...</p>
+            <p class="text-sm font-medium text-gray-500">Kitapyurdu yeni çıkanlar listesi aktarılıyor...</p>
         </div>
 
         <!-- LİSTE GÖRÜNÜMÜ -->
         <div id="list-view" class="hidden transition-opacity duration-500 opacity-0">
             <div class="mb-8 border-b border-gray-200 pb-6">
                 <nav class="text-[10px] uppercase tracking-wider text-gray-400 font-bold mb-4">
-                    <a href="index.html" class="hover:text-brand-red transition">Anasayfa</a> <span class="mx-2">/</span> <span class="text-brand-red">Kitap İncelemeleri</span>
+                    <a href="index.html" class="hover:text-brand-red transition">Anasayfa</a> <span class="mx-2">/</span> <span class="text-brand-red">Yeni Çıkan Kitaplar</span>
                 </nav>
-                <h1 class="text-4xl md:text-5xl font-serif font-bold text-brand-text">Kitap ve İncelemeler</h1>
-                <p class="text-gray-500 text-sm mt-3 max-w-2xl">Edebiyat dünyasının en yeni kitapları, yazar incelemeleri ve raflardaki taze eserler.</p>
+                <h1 class="text-4xl md:text-5xl font-serif font-bold text-brand-text">Haftalık Yeni Çıkan Kitaplar</h1>
+                <p class="text-gray-500 text-sm mt-3 max-w-2xl">Kitapyurdu raflarında yerini alan en taze eserler, kapak görselleri ve tanıtım metinleriyle birlikte listelenmektedir.</p>
             </div>
 
             <div class="flex flex-col lg:flex-row gap-10">
@@ -127,12 +127,12 @@
             </button>
             <div class="max-w-3xl mx-auto">
                 <div class="flex items-center text-[10px] font-bold mb-4 uppercase tracking-wide">
-                    <span id="article-category" class="bg-brand-red text-white px-2 py-1 rounded-sm">KİTAP İNCELEME</span>
+                    <span id="article-category" class="bg-brand-red text-white px-2 py-1 rounded-sm">YENİ ÇIKAN KİTAP</span>
                     <span id="article-date" class="text-gray-400 ml-auto"><i class="far fa-clock mr-1"></i> Tarih</span>
                 </div>
                 <h1 id="article-title" class="text-3xl md:text-5xl font-serif font-bold text-gray-900 leading-tight mb-8">Kitap Başlığı</h1>
-                <img id="article-image" src="" alt="Kitap Görseli" class="w-full max-h-[500px] object-cover rounded-sm mb-10 shadow-sm">
-                <div id="article-content" class="article-body">İçerik yükleniyor...</div>
+                <img id="article-image" src="" alt="Kitap Kapağı" class="w-full max-h-[500px] object-contain bg-gray-50 rounded-sm mb-10 shadow-sm border border-gray-100 p-4">
+                <div id="article-content" class="article-body">Tanıtım metni yükleniyor...</div>
             </div>
         </div>
     </main>
@@ -140,7 +140,7 @@
     <!-- Footer -->
     <footer class="bg-[#0f172a] text-white pt-16 pb-8 mt-16 font-sans">
         <div class="container mx-auto px-4 lg:px-8 text-center text-xs text-gray-500 border-t border-gray-800 pt-8">
-            <p>&copy; <span id="year"></span> edebiyatgundemi.com — Kitap arşivi.</p>
+            <p>&copy; <span id="year"></span> edebiyatgundemi.com — Yeni çıkan kitaplar arşivi.</p>
         </div>
     </footer>
 
@@ -155,7 +155,7 @@
             <ul class="text-[15px] font-medium text-[#1a1a1a] space-y-0.5">
                 <li><a href="index.html" class="block px-6 py-3 hover:bg-gray-50">Anasayfa</a></li>
                 <li><a href="edebiyat-haberleri.html" class="block px-6 py-2.5 hover:bg-gray-50">Edebiyat Haberleri</a></li>
-                <li><a href="kitap.html" class="block px-6 py-2.5 bg-gray-50 text-brand-red border-l-4 border-brand-red">Kitap İnceleme</a></li>
+                <li><a href="kitap.html" class="block px-6 py-2.5 bg-gray-50 text-brand-red border-l-4 border-brand-red">Yeni Çıkan Kitaplar</a></li>
             </ul>
         </nav>
     </div>
@@ -179,7 +179,7 @@
         const NEWS_JSON_URL = 'haberler/haberler.json';
 
         const mockNewsData = [
-            { title: "Edebiyat dünyasından yeni eserler raflardaki yerini alıyor", category: "KİTAP İNCELEME", image: "https://images.unsplash.com/photo-1457369804613-52c61a468e7d?auto=format&fit=crop&w=600&q=80", content: "<p>Yeni çıkan kitaplar ve yazar incelemeleri arşivi kesintisiz güncellenmektedir.</p>", date: new Date().toISOString() }
+            { title: "Yeni Çıkan Eserler Raflardaki Yerini Aldı", category: "YENİ ÇIKAN KİTAP", image: "https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?auto=format&fit=crop&w=600&q=80", content: "<p>Haftalık yeni çıkan kitaplar listesi ve eser tanıtımları güncellenmektedir.</p>", date: new Date().toISOString() }
         ];
 
         async function fetchBookNews() {
@@ -208,7 +208,7 @@
 
         function formatDateTr(dateStr) {
             const d = new Date(dateStr);
-            if (isNaN(d)) return "Güncel Eser";
+            if (isNaN(d)) return "Yeni Çıkan Eser";
             return d.toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric' });
         }
 
@@ -222,45 +222,26 @@
             feedContainer.innerHTML = '';
             
             articles.forEach((article, index) => {
-                if(index === 0) {
-                    feedContainer.innerHTML += `
-                        <article class="bg-white rounded-sm border border-gray-200 overflow-hidden shadow-sm group cursor-pointer" onclick="openArticle(${index})">
-                            <div class="relative w-full h-[300px] md:h-[400px]">
-                                <img src="${article.image}" class="w-full h-full object-cover group-hover:scale-105 transition duration-700" onerror="this.src='https://images.unsplash.com/photo-1457369804613-52c61a468e7d?auto=format&fit=crop&w=600&q=80'">
-                                <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent"></div>
-                                <div class="absolute bottom-0 left-0 p-6 w-full">
-                                    <div class="flex items-center text-[10px] font-bold mb-2 uppercase tracking-wide">
-                                        <span class="bg-brand-red text-white px-2 py-1 rounded-sm">${article.category}</span>
-                                    </div>
-                                    <h2 class="text-2xl md:text-3xl font-serif font-bold text-white leading-tight mb-2 group-hover:text-gray-200">${article.title}</h2>
-                                    <p class="text-gray-300 text-sm line-clamp-2 md:w-4/5">${article.desc}</p>
-                                    <div class="mt-3 text-xs text-gray-400"><i class="far fa-clock mr-1"></i> ${formatDateTr(article.date)}</div>
+                feedContainer.innerHTML += `
+                    <article class="flex flex-col sm:flex-row gap-5 bg-white p-4 border border-gray-100 rounded-sm hover:shadow-md transition cursor-pointer group" onclick="openArticle(${index})">
+                        <div class="sm:w-1/3 flex-shrink-0 overflow-hidden rounded-sm bg-gray-50 flex items-center justify-center p-2 border border-gray-100">
+                            <img src="${article.image}" class="w-full h-48 sm:h-36 object-contain group-hover:scale-105 transition duration-500" onerror="this.src='https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?auto=format&fit=crop&w=600&q=80'">
+                        </div>
+                        <div class="sm:w-2/3 flex flex-col justify-between py-1">
+                            <div>
+                                <div class="flex items-center text-[10px] font-bold mb-2 uppercase tracking-wide">
+                                    <span class="text-brand-red">YENİ ÇIKAN KİTAP</span>
                                 </div>
+                                <h3 class="text-lg md:text-xl font-serif font-bold text-gray-900 leading-snug mb-2 group-hover:text-brand-red transition line-clamp-2">${article.title}</h3>
+                                <p class="text-sm text-gray-500 line-clamp-2 hidden sm:block">${article.desc}</p>
                             </div>
-                        </article>
-                    `;
-                } else {
-                    feedContainer.innerHTML += `
-                        <article class="flex flex-col sm:flex-row gap-5 bg-white p-4 border border-gray-100 rounded-sm hover:shadow-md transition cursor-pointer group" onclick="openArticle(${index})">
-                            <div class="sm:w-1/3 flex-shrink-0 overflow-hidden rounded-sm">
-                                <img src="${article.image}" class="w-full h-48 sm:h-36 object-cover group-hover:scale-105 transition duration-500" onerror="this.src='https://images.unsplash.com/photo-1457369804613-52c61a468e7d?auto=format&fit=crop&w=600&q=80'">
+                            <div class="mt-4 flex justify-between items-center text-xs text-gray-400 font-medium">
+                                <span><i class="far fa-clock mr-1"></i> ${formatDateTr(article.date)}</span>
+                                <span class="text-brand-red font-bold">Tanıtımı Oku <i class="fas fa-book-open ml-1"></i></span>
                             </div>
-                            <div class="sm:w-2/3 flex flex-col justify-between py-1">
-                                <div>
-                                    <div class="flex items-center text-[10px] font-bold mb-2 uppercase tracking-wide">
-                                        <span class="text-brand-red">${article.category}</span>
-                                    </div>
-                                    <h3 class="text-lg md:text-xl font-serif font-bold text-gray-900 leading-snug mb-2 group-hover:text-brand-red transition line-clamp-2">${article.title}</h3>
-                                    <p class="text-sm text-gray-500 line-clamp-2 hidden sm:block">${article.desc}</p>
-                                </div>
-                                <div class="mt-4 flex justify-between items-center text-xs text-gray-400 font-medium">
-                                    <span><i class="far fa-clock mr-1"></i> ${formatDateTr(article.date)}</span>
-                                    <span class="text-brand-red font-bold">Eseri İncele <i class="fas fa-book-open ml-1"></i></span>
-                                </div>
-                            </div>
-                        </article>
-                    `;
-                }
+                        </div>
+                    </article>
+                `;
             });
         }
 
@@ -277,7 +258,7 @@
             
             const imgEl = document.getElementById('article-image');
             imgEl.src = article.image;
-            imgEl.onerror = () => { imgEl.src = 'https://images.unsplash.com/photo-1457369804613-52c61a468e7d?auto=format&fit=crop&w=600&q=80'; };
+            imgEl.onerror = () => { imgEl.src = 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?auto=format&fit=crop&w=600&q=80'; };
 
             document.getElementById('article-content').innerHTML = article.content;
             window.scrollTo({ top: 0, behavior: 'smooth' });
