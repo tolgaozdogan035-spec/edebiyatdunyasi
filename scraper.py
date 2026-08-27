@@ -106,8 +106,11 @@ def fetch_news():
 if __name__ == "__main__":
     articles = fetch_news()
     
-    # Klasör yoksa oluştur
-    os.makedirs("haberler", exist_ok=True);
+    # Hatalı dosya çakışmasını önle ve klasör oluştur
+    if os.path.exists("haberler") and not os.path.isdir("haberler"):
+        os.remove("haberler")
+        
+    os.makedirs("haberler", exist_ok=True)
     
     # JSON dosyasına kaydet
     output_path = os.path.join("haberler", "haberler.json")
