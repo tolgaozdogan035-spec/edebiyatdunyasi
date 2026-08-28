@@ -82,7 +82,7 @@
                 <i class="fas fa-bars mr-3"></i> <span class="text-xs font-bold uppercase tracking-wider hidden md:block">Menü</span>
             </button>
             <div class="text-xs font-bold text-gray-400 uppercase tracking-widest hidden md:block">
-                EDEBİYAT SÖYLEŞİLERİ VE RÖPORTAJLAR
+                ÜNLÜ YAZARLARLA SÖYLEŞİLER VE RÖPORTAJLAR
             </div>
             <button class="text-gray-800 text-xl hover:text-brand-red transition focus:outline-none p-1">
                 <i class="fas fa-search"></i>
@@ -95,7 +95,7 @@
         <div id="loading-spinner" class="py-20 text-center text-brand-red">
             <i class="fas fa-comments text-5xl mb-4 animate-pulse"></i>
             <h3 class="text-xl font-serif font-bold mb-2 text-gray-800">Söyleşiler Yükleniyor</h3>
-            <p class="text-sm font-medium text-gray-500">Arşivden röportajlar aktarılıyor...</p>
+            <p class="text-sm font-medium text-gray-500">Röportajlar arşivden aktarılıyor...</p>
         </div>
 
         <!-- LİSTE GÖRÜNÜMÜ -->
@@ -105,7 +105,7 @@
                     <a href="index.html" class="hover:text-brand-red transition">Anasayfa</a> <span class="mx-2">/</span> <span class="text-brand-red">Söyleşi ve Röportajlar</span>
                 </nav>
                 <h1 class="text-4xl md:text-5xl font-serif font-bold text-brand-text">Söyleşiler</h1>
-                <p class="text-gray-500 text-sm mt-3 max-w-2xl">edebiyatsoylesileri.com sitesinden doğrudan derlenen yazarlar ve şairlerle özel röportajlar.</p>
+                <p class="text-gray-500 text-sm mt-3 max-w-2xl">Edebiyat dünyasının tanınmış simaları ve yazarlarla gerçekleştirilen özel röportajlar.</p>
             </div>
 
             <div class="flex flex-col lg:flex-row gap-10">
@@ -178,20 +178,21 @@
         mobileMenuOverlay.addEventListener('click', toggleMenu);
 
         let globalArticles = []; 
-        const SOYLESI_JSON_URL = 'haberler/soylesiler.json';
+        const NEWS_JSON_URL = 'haberler/haberler.json';
 
         const mockSoylesiData = [
-            { title: "Edebiyat Dünyasından Ünlü İsimlerle Özel Söyleşiler", category: "SÖYLEŞİ", image: "https://images.unsplash.com/photo-1457369804613-52c61a468e7d?auto=format&fit=crop&w=600&q=80", content: "<p>edebiyatsoylesileri.com üzerinden alınan röportajlar güncellenmektedir.</p>", date: new Date().toISOString() }
+            { title: "Edebiyat Dünyasından Ünlü İsimlerle Özel Söyleşiler", category: "SÖYLEŞİ", image: "https://images.unsplash.com/photo-1457369804613-52c61a468e7d?auto=format&fit=crop&w=600&q=80", content: "<p>Ünlü yazarlar ve şairlerle röportajlar güncellenmektedir.</p>", date: new Date().toISOString() }
         ];
 
         async function fetchSoylesiNews() {
             let allArticles = [];
             try {
-                const response = await fetch(SOYLESI_JSON_URL + '?t=' + new Date().getTime());
+                const response = await fetch(NEWS_JSON_URL + '?t=' + new Date().getTime());
                 const data = await response.json();
                 
                 if(data && Array.isArray(data) && data.length > 0) {
-                    allArticles = data; 
+                    // Sadece SÖYLEŞİ kategorisindeki içerikleri filtrele
+                    allArticles = data.filter(item => (item.category || "").toUpperCase() === "SÖYLEŞİ");
                 }
             } catch (error) { 
                 console.error("Söyleşi arşivi yüklenemedi:", error); 
@@ -229,7 +230,7 @@
                         <div class="sm:w-2/3 flex flex-col justify-between py-1">
                             <div>
                                 <div class="flex items-center text-[10px] font-bold mb-2 uppercase tracking-wide">
-                                    <span class="text-brand-red">EDEBİYAT SÖYLEŞİLERİ</span>
+                                    <span class="text-brand-red">SÖYLEŞİ / RÖPORTAJ</span>
                                 </div>
                                 <h3 class="text-lg md:text-xl font-serif font-bold text-gray-900 leading-snug mb-2 group-hover:text-brand-red transition line-clamp-2">${article.title}</h3>
                                 <p class="text-sm text-gray-500 line-clamp-2 hidden sm:block">${article.desc}</p>
