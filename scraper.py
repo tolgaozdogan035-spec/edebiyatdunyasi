@@ -11,7 +11,6 @@ RSS_SOURCES = [
     "https://kitapeki.com/feed/",
     "https://www.haberturk.com/rss/kategori/kultur-sanat.xml",
     "https://www.ntv.com.tr/sanat.rss",
-    "https://www.trthaber.com/kultur-sanat_articles.rss",
     "https://www.cumhuriyet.com.tr/rss/kultur-sanat.xml"
 ]
 
@@ -30,13 +29,11 @@ def clean_html(raw_html):
     return str(soup)
 
 def scrape_full_article(link):
-    """RSS özeti eksik olan haberlerin orijinal sayfasına bağlanıp tam metni ve resmi çeker"""
     try:
         headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'}
         response = requests.get(link, headers=headers, timeout=10)
         if response.status_code == 200:
             soup = BeautifulSoup(response.text, 'html.parser')
-            
             og_image = soup.find('meta', property='og:image')
             img_url = og_image['content'] if og_image and og_image.get('content') else None
             
@@ -62,14 +59,15 @@ def extract_image(entry, content):
         if img and img.get('src'): return img['src']
     return "https://images.unsplash.com/photo-1457369804613-52c61a468e7d?auto=format&fit=crop&w=1200&q=80"
 
-def assign_category(title, categories):
-    combined = (str(categories) + " " + str(title)).upper()
+def assign_category(title, content):
+    combined = (str(title) + " " + str(content)).upper()
+    # Kesin olarak söyleşi veya röportaj içerenleri doğrudan SÖYLEŞİ yapıyoruz
+    if 'SÖYLEŞİ' in combined or 'RÖPORTAJ' in combined or 'KONUŞTUK' in combined:
+        return 'SÖYLEŞİ'
     if 'ŞİİR' in combined:
         return 'ŞİİR'
     if any(k in combined for k in ['ROMAN', 'ÖYKÜ', 'KİTAP']):
         return 'ROMAN/ÖYKÜ'
-    if any(k in combined for k in ['SÖYLEŞİ', 'RÖPORTAJ']):
-        return 'SÖYLEŞİ'
     if any(k in combined for k in ['SİNEMA', 'TİYATRO', 'SERGİ', 'KÜLTÜR']):
         return 'KÜLTÜR-SANAT'
     return 'EDEBİYAT HABERLERİ'
@@ -94,7 +92,6 @@ def fetch_news():
                 
                 image = extract_image(entry, content)
                 
-                # İçerik zayıfsa orijinal siteden tam metin ve görsel çek
                 scraped_content, scraped_img = None, None
                 if not content or len(content.strip()) < 150 or "Read more" in content:
                     scraped_content, scraped_img = scrape_full_article(link)
@@ -103,17 +100,19 @@ def fetch_news():
                 if scraped_img: image = scraped_img
                 
                 if not content or len(content.strip()) < 15:
-                    content = f"<p><strong>{title}</strong> hakkında edebiyat dünyasından derlenen en güncel detaylar ve ayrıntılar bu alanda yer almaktadır.</p>"
+                    content = f"<p><strong>{title}</strong> hakkında edebiyat dünyasından derlenen en güncel detaylar bu alanda yer almaktadır.</p>"
                 
                 cleaned_content = clean_html(content)
                 soup_desc = BeautifulSoup(cleaned_content, 'html.parser')
                 plain_desc = soup_desc.get_text()[:180] + "..."
                 
+                category = assign_category(title, cleaned_content)
+                
                 article = {
                     "title": title,
                     "link": link,
                     "date": published if published else "Güncel",
-                    "category": assign_category(title, entry.get('tags', [])),
+                    "category": category,
                     "desc": plain_desc,
                     "content": cleaned_content,
                     "image": image
@@ -133,4 +132,4 @@ if __name__ == "__main__":
     output_path = os.path.join("haberler", "haberler.json")
     with open(output_path, "w", encoding="utf-8") as f:
         json.dump(articles, f, ensure_ascii=False, indent=4)
-    print(f"Toplam {len(articles)} haber başarıyla kaydedildi.")
+    print(f"Toplam {len(articles)} içerik başarıyla kaydedildi.")
