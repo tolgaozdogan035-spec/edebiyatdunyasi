@@ -6,7 +6,12 @@ from bs4 import BeautifulSoup
 import requests
 
 RSS_SOURCES = [
-    "https://edebiyatsoylesileri.com/feed/"
+    "https://kayiprihtim.com/feed/",
+    "https://www.edebiyathaber.net/feed/",
+    "https://kitapeki.com/feed/",
+    "https://www.haberturk.com/rss/kategori/kultur-sanat.xml",
+    "https://www.ntv.com.tr/sanat.rss",
+    "https://www.cumhuriyet.com.tr/rss/kultur-sanat.xml"
 ]
 
 def clean_html(raw_html):
@@ -54,13 +59,25 @@ def extract_image(entry, content):
         if img and img.get('src'): return img['src']
     return "https://images.unsplash.com/photo-1457369804613-52c61a468e7d?auto=format&fit=crop&w=1200&q=80"
 
-def fetch_soylesiler():
+def assign_category(title, content):
+    combined = (str(title) + " " + str(content)).upper()
+    if 'SÖYLEŞİ' in combined or 'RÖPORTAJ' in combined or 'KONUŞTUK' in combined:
+        return 'SÖYLEŞİ'
+    if 'ŞİİR' in combined:
+        return 'ŞİİR'
+    if any(k in combined for k in ['ROMAN', 'ÖYKÜ', 'KİTAP']):
+        return 'ROMAN/ÖYKÜ'
+    if any(k in combined for k in ['SİNEMA', 'TİYATRO', 'SERGİ', 'KÜLTÜR']):
+        return 'KÜLTÜR-SANAT'
+    return 'EDEBİYAT HABERLERİ'
+
+def fetch_news():
     all_articles = []
     for url in RSS_SOURCES:
         try:
             feed = feedparser.parse(url)
             for entry in feed.entries:
-                title = entry.get('title', 'Başlıksız Söyleşi')
+                title = entry.get('title', 'Başlıksız Haber')
                 link = entry.get('link', '#')
                 published = entry.get('published', entry.get('updated', ''))
                 
@@ -82,17 +99,19 @@ def fetch_soylesiler():
                 if scraped_img: image = scraped_img
                 
                 if not content or len(content.strip()) < 15:
-                    content = f"<p><strong>{title}</strong> başlığıyla gerçekleştirilen özel söyleşi ve röportaj detayları bu alanda yer almaktadır.</p>"
+                    content = f"<p><strong>{title}</strong> hakkında edebiyat dünyasından derlenen en güncel detaylar bu alanda yer almaktadır.</p>"
                 
                 cleaned_content = clean_html(content)
                 soup_desc = BeautifulSoup(cleaned_content, 'html.parser')
                 plain_desc = soup_desc.get_text()[:180] + "..."
                 
+                category = assign_category(title, cleaned_content)
+                
                 article = {
                     "title": title,
                     "link": link,
                     "date": published if published else "Güncel",
-                    "category": "SÖYLEŞİ",
+                    "category": category,
                     "desc": plain_desc,
                     "content": cleaned_content,
                     "image": image
@@ -104,12 +123,12 @@ def fetch_soylesiler():
     return all_articles
 
 if __name__ == "__main__":
-    articles = fetch_soylesiler()
+    articles = fetch_news()
     if os.path.exists("haberler") and not os.path.isdir("haberler"):
         os.remove("haberler")
     os.makedirs("haberler", exist_ok=True)
     
-    output_path = os.path.join("haberler", "soylesiler.json")
+    output_path = os.path.join("haberler", "haberler.json")
     with open(output_path, "w", encoding="utf-8") as f:
         json.dump(articles, f, ensure_ascii=False, indent=4)
-    print(f"Toplam {len(articles)} söyleşi başarıyla kaydedildi.")
+    print(f"Toplam {len(articles)} içerik başarıyla kaydedildi.")
