@@ -42,6 +42,7 @@
         .article-body p { margin-bottom: 1.5rem; line-height: 1.8; color: #374151; font-size: 1.05rem; }
         .article-body img { max-width: 100%; height: auto; border-radius: 4px; margin: 1.5rem 0; }
         .article-body h2, .article-body h3 { font-family: 'Playfair Display', serif; font-weight: 700; font-size: 1.5rem; margin-top: 2rem; margin-bottom: 1rem; color: #111827; }
+        .article-body a { color: inherit; text-decoration: none; }
     </style>
 </head>
 <body class="font-sans overflow-x-hidden">
@@ -52,7 +53,7 @@
             <div class="flex items-center space-x-4">
                 <span id="top-date">Yükleniyor...</span>
                 <span class="border-l border-gray-300 pl-4 flex items-center text-brand-red font-bold">
-                    <span class="w-2 h-2 rounded-full bg-brand-red mr-2"></span> Özel Seçki Söyleşiler
+                    <span class="w-2 h-2 rounded-full bg-brand-red mr-2"></span> Tolga Özdoğan Röportaj Arşivi
                 </span>
             </div>
             <div class="flex items-center space-x-6">
@@ -79,7 +80,7 @@
                 <i class="fas fa-bars mr-3"></i> <span class="text-xs font-bold uppercase tracking-wider hidden md:block">Menü</span>
             </button>
             <div class="text-xs font-bold text-gray-400 uppercase tracking-widest hidden md:block">
-                EDEBİYAT DÜNYasından ÖZEL RÖPORTAJLAR VE SÖYLEŞİLER
+                TOLGA ÖZDOĞAN — RÖPORTAJLAR VE SÖYLEŞİLER
             </div>
             <button class="text-gray-800 text-xl hover:text-brand-red transition focus:outline-none p-1">
                 <i class="fas fa-search"></i>
@@ -89,68 +90,29 @@
 
     <!-- MAIN CONTENT -->
     <main class="container mx-auto px-4 lg:px-8 py-8 min-h-screen relative">
-        
+        <div id="loading-spinner" class="py-20 text-center text-brand-red">
+            <i class="fas fa-spinner fa-spin text-5xl mb-4"></i>
+            <h3 class="text-xl font-serif font-bold mb-2 text-gray-800">Röportajlar Yükleniyor</h3>
+            <p class="text-sm font-medium text-gray-500">tolgaozdogan.com/roportajlar.html sayfası taranıyor...</p>
+        </div>
+
         <!-- LİSTE GÖRÜNÜMÜ -->
-        <div id="list-view" class="transition-opacity duration-500 opacity-100">
+        <div id="list-view" class="hidden transition-opacity duration-500 opacity-0">
             <div class="mb-8 border-b border-gray-200 pb-6">
                 <nav class="text-[10px] uppercase tracking-wider text-gray-400 font-bold mb-4">
                     <a href="index.html" class="hover:text-brand-red transition">Anasayfa</a> <span class="mx-2">/</span> <span class="text-brand-red">Söyleşi ve Röportajlar</span>
                 </nav>
-                <h1 class="text-4xl md:text-5xl font-serif font-bold text-brand-text">Söyleşiler</h1>
-                <p class="text-gray-500 text-sm mt-3 max-w-2xl">Edebiyat dünyasının tanınmış simaları, yazarlar ve şairlerle gerçekleştirilen derinlemesine röportajlar.</p>
+                <h1 class="text-4xl md:text-5xl font-serif font-bold text-brand-text">Söyleşiler & Röportajlar</h1>
+                <p class="text-gray-500 text-sm mt-3 max-w-2xl">tolgaozdogan.com/roportajlar.html adresinden doğrudan senkronize edilen özel röportaj arşivi.</p>
             </div>
 
             <div class="flex flex-col lg:flex-row gap-10">
-                <!-- Söyleşi Listesi -->
-                <div class="w-full lg:w-2/3 space-y-6" id="news-feed-container">
-                    
-                    <!-- Söyleşi 1 -->
-                    <article class="flex flex-col sm:flex-row gap-5 bg-white p-4 border border-gray-100 rounded-sm hover:shadow-md transition cursor-pointer group" onclick="openArticle(0)">
-                        <div class="sm:w-1/3 flex-shrink-0 overflow-hidden rounded-sm">
-                            <img src="https://images.unsplash.com/photo-1506880018603-83d5b814b5a6?auto=format&fit=crop&w=600&q=80" class="w-full h-48 sm:h-36 object-cover group-hover:scale-105 transition duration-500">
-                        </div>
-                        <div class="sm:w-2/3 flex flex-col justify-between py-1">
-                            <div>
-                                <div class="flex items-center text-[10px] font-bold mb-2 uppercase tracking-wide">
-                                    <span class="text-brand-red">ÖZEL RÖPORTAJ</span>
-                                </div>
-                                <h3 class="text-lg md:text-xl font-serif font-bold text-gray-900 leading-snug mb-2 group-hover:text-brand-red transition line-clamp-2">Yazarlık Serüveni ve Edebiyatta Yalnızlık Üzerine</h3>
-                                <p class="text-sm text-gray-500 line-clamp-2 hidden sm:block">Çağdaş edebiyatımızın önde gelen isimleriyle yaratım süreçleri, ilham kaynakları ve yazarlık ritüelleri üzerine derinlemesine bir söyleşi.</p>
-                            </div>
-                            <div class="mt-4 flex justify-between items-center text-xs text-gray-400 font-medium">
-                                <span><i class="far fa-clock mr-1"></i> Ağustos 2026</span>
-                                <span class="text-brand-red font-bold">Söyleşiyi Oku <i class="fas fa-comments ml-1"></i></span>
-                            </div>
-                        </div>
-                    </article>
-
-                    <!-- Söyleşi 2 -->
-                    <article class="flex flex-col sm:flex-row gap-5 bg-white p-4 border border-gray-100 rounded-sm hover:shadow-md transition cursor-pointer group" onclick="openArticle(1)">
-                        <div class="sm:w-1/3 flex-shrink-0 overflow-hidden rounded-sm">
-                            <img src="https://images.unsplash.com/photo-1455390582262-044cdead277a?auto=format&fit=crop&w=600&q=80" class="w-full h-48 sm:h-36 object-cover group-hover:scale-105 transition duration-500">
-                        </div>
-                        <div class="sm:w-2/3 flex flex-col justify-between py-1">
-                            <div>
-                                <div class="flex items-center text-[10px] font-bold mb-2 uppercase tracking-wide">
-                                    <span class="text-brand-red">DOSYA SÖYLEŞİSİ</span>
-                                </div>
-                                <h3 class="text-lg md:text-xl font-serif font-bold text-gray-900 leading-snug mb-2 group-hover:text-brand-red transition line-clamp-2">Roman Sanatında Karakter İnşası ve Zaman Algısı</h3>
-                                <p class="text-sm text-gray-500 line-clamp-2 hidden sm:block">Usta romancılarla kurgu teknikleri, karakterlerin hikayedeki dönüştürücü gücü ve metinlerarasılık üzerine gerçekleştirilen kapsamlı röportaj.</p>
-                            </div>
-                            <div class="mt-4 flex justify-between items-center text-xs text-gray-400 font-medium">
-                                <span><i class="far fa-clock mr-1"></i> Ağustos 2026</span>
-                                <span class="text-brand-red font-bold">Söyleşiyi Oku <i class="fas fa-comments ml-1"></i></span>
-                            </div>
-                        </div>
-                    </article>
-
-                </div>
-
+                <div class="w-full lg:w-2/3 space-y-6" id="news-feed-container"></div>
                 <aside class="w-full lg:w-1/3 space-y-8">
                     <div class="bg-white p-6 border border-gray-200 rounded-sm shadow-sm">
-                        <h3 class="font-serif font-bold text-lg border-b border-brand-red pb-2 mb-4 inline-block">Söyleşi Ara</h3>
+                        <h3 class="font-serif font-bold text-lg border-b border-brand-red pb-2 mb-4 inline-block">Röportaj Ara</h3>
                         <div class="relative">
-                            <input type="text" placeholder="Yazar veya konu adı..." class="w-full border border-gray-300 rounded px-4 py-2 text-sm focus:outline-none focus:border-brand-red">
+                            <input type="text" placeholder="Başlık veya içerik ara..." class="w-full border border-gray-300 rounded px-4 py-2 text-sm focus:outline-none focus:border-brand-red">
                             <i class="fas fa-search absolute right-3 top-3 text-gray-400"></i>
                         </div>
                     </div>
@@ -161,15 +123,15 @@
         <!-- OKUMA GÖRÜNÜMÜ -->
         <div id="article-view" class="hidden transition-opacity duration-500 opacity-0 bg-white p-6 md:p-12 border border-gray-200 rounded-sm shadow-sm">
             <button onclick="closeArticle()" class="mb-8 text-gray-500 hover:text-brand-red transition font-medium text-sm flex items-center group">
-                <i class="fas fa-arrow-left mr-2 transform group-hover:-translate-x-1 transition"></i> Söyleşi Listesine Dön
+                <i class="fas fa-arrow-left mr-2 transform group-hover:-translate-x-1 transition"></i> Röportaj Listesine Dön
             </button>
             <div class="max-w-3xl mx-auto">
                 <div class="flex items-center text-[10px] font-bold mb-4 uppercase tracking-wide">
-                    <span id="article-category" class="bg-brand-red text-white px-2 py-1 rounded-sm">SÖYLEŞİ</span>
-                    <span id="article-date" class="text-gray-400 ml-auto"><i class="far fa-clock mr-1"></i> Ağustos 2026</span>
+                    <span id="article-category" class="bg-brand-red text-white px-2 py-1 rounded-sm">RÖPORTAJ</span>
+                    <span id="article-date" class="text-gray-400 ml-auto"><i class="far fa-clock mr-1"></i> Tarih</span>
                 </div>
-                <h1 id="article-title" class="text-3xl md:text-5xl font-serif font-bold text-gray-900 leading-tight mb-8">Söyleşi Başlığı</h1>
-                <img id="article-image" src="" alt="Söyleşi Görseli" class="w-full max-h-[500px] object-cover rounded-sm mb-10 shadow-sm">
+                <h1 id="article-title" class="text-3xl md:text-5xl font-serif font-bold text-gray-900 leading-tight mb-8">Röportaj Başlığı</h1>
+                <img id="article-image" src="" alt="Röportaj Görseli" class="w-full max-h-[500px] object-cover rounded-sm mb-10 shadow-sm" style="display:none;">
                 <div id="article-content" class="article-body">İçerik yükleniyor...</div>
             </div>
         </div>
@@ -178,7 +140,7 @@
     <!-- Footer -->
     <footer class="bg-[#0f172a] text-white pt-16 pb-8 mt-16 font-sans">
         <div class="container mx-auto px-4 lg:px-8 text-center text-xs text-gray-500 border-t border-gray-800 pt-8">
-            <p>&copy; <span id="year"></span> edebiyatgundemi.com — Söyleşi ve röportaj arşivi.</p>
+            <p>&copy; <span id="year"></span> edebiyatgundemi.com — Tolga Özdoğan Röportaj Arşivi.</p>
         </div>
     </footer>
 
@@ -200,10 +162,7 @@
 
     <!-- SCRIPT -->
     <script>
-        const dateOptions = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-        document.getElementById('top-date').textContent = new Date().toLocaleDateString('tr-TR', dateOptions);
         document.getElementById('year').textContent = new Date().getFullYear();
-
         const menuBtn = document.getElementById('menu-btn');
         const mobileMenuContainer = document.getElementById('mobile-menu-container');
         const mobileMenuOverlay = document.getElementById('mobile-menu-overlay');
@@ -216,38 +175,121 @@
         document.getElementById('close-menu-btn').addEventListener('click', toggleMenu);
         mobileMenuOverlay.addEventListener('click', toggleMenu);
 
-        // Sabit ve temiz söyleşi içerikleri veritabanı
-        const soylesilerData = [
-            {
-                title: "Yazarlık Serüveni ve Edebiyatta Yalnızlık Üzerine",
-                category: "ÖZEL RÖPORTAJ",
-                image: "https://images.unsplash.com/photo-1506880018603-83d5b814b5a6?auto=format&fit=crop&w=800&q=80",
-                date: "Ağustos 2026",
-                content: `
-                    <p><strong>Edebiyat Gündemi:</strong> Yazmaya başlama hikayeniz ve sizi bu yola yönlendiren ilk kıvılcım ne oldu?</p>
-                    <p><strong>Yazar:</strong> Her yazarın çocukluğunda sığındığı gizli bir oda vardır. Benim için o oda, kelimelerin dünyasıydı. Gerçek hayatın karmaşasından kaçmak ve kendi hakikatimi inşa etmek için kağıt ve kaleme sarıldım. İlk öykülerim oldukça acemiydi ancak içimdeki sesin büyümesine izin verdi.</p>
-                    <p><strong>Edebiyat Gündemi:</strong> Eserlerinizde yalnızlık teması çok güçlü hissediliyor. Yalnızlık bir yazar için besleyici bir kaynak mı, yoksa aşılması gereken bir engel mi?</p>
-                    <p><strong>Yazar:</strong> Yalnızlık yazarın ham maddesidir. Kalabalıklar gürültü üretir, oysa sanat sessizlikten doğar. Yazar, kendi iç sesini duyabilmek için dünyadan bir miktar kopmak zorundadır.</p>
-                `
-            },
-            {
-                title: "Roman Sanatında Karakter İnşası ve Zaman Algısı",
-                category: "DOSYA SÖYLEŞİSİ",
-                image: "https://images.unsplash.com/photo-1455390582262-044cdead277a?auto=format&fit=crop&w=800&q=80",
-                date: "Ağustos 2026",
-                content: `
-                    <p><strong>Edebiyat Gündemi:</strong> Bir roman karakteri yazarın kontrolünden çıkıp kendi hayatını yaşamaya başladığı anı nasıl tarif edersiniz?</p>
-                    <p><strong>Yazar:</strong> Bu tam olarak böyledir. İlk başta karakteri siz yönlendirirsiniz ama hikaye derinleştikçe karakter kendi kararlarını almaya başlar. Eğer bu aşamaya gelemediyseniz, o karakter yapay kalmış demektir.</p>
-                    <p><strong>Edebiyat Gündemi:</strong> Zaman, kurgularınızda adeta başlı başına bir karakter gibi hareket ediyor.</p>
-                    <p><strong>Yazar:</strong> Zaman, insanın en büyük takıntısıdır. Onu çizgisel bir akış olarak değil, insanın zihnindeki anı halkaları olarak ele almayı seviyorum.</p>
-                `
+        let globalInterviews = [];
+
+        async function fetchExternalRoportajlar() {
+            try {
+                // CORS engeli olmaksızın dış sayfayı okumak için güvenli allorigins proxy kullanıyoruz
+                const targetUrl = 'https://tolgaozdogan.com/roportajlar.html';
+                const proxyUrl = 'https://api.allorigins.win/get?url=' + encodeURIComponent(targetUrl);
+                
+                const response = await fetch(proxyUrl);
+                const data = await response.json();
+                
+                if (data && data.contents) {
+                    const parser = new DOMParser();
+                    const doc = parser.parseFromString(data.contents, 'text/html');
+                    
+                    // Sitedeki olası makale / röportaj bloklarını seçiyoruz
+                    const items = doc.querySelectorAll('article, .roportaj-item, .post, .card, .blog-item');
+                    
+                    if (items && items.length > 0) {
+                        items.forEach((el, index) => {
+                            const titleEl = el.querySelector('h1, h2, h3, h4, .title');
+                            const imgEl = el.querySelector('img');
+                            const descEl = el.querySelector('p, .summary, .description');
+                            
+                            const title = titleEl ? titleEl.textContent.trim() : `Röportaj ${index + 1}`;
+                            const image = imgEl ? imgEl.src : '';
+                            const desc = descEl ? descEl.textContent.trim() : title;
+                            const content = el.innerHTML;
+                            
+                            globalInterviews.push({
+                                title: title,
+                                category: "RÖPORTAJ",
+                                image: image,
+                                desc: desc.substring(0, 180) + "...",
+                                content: content,
+                                date: "Güncel Arşiv"
+                            });
+                        });
+                    } else {
+                        // Eğer özel class bulunamazsa body içerisindeki tüm başlık ve paragrafları derle
+                        const paragraphs = doc.querySelectorAll('p');
+                        let combinedHTML = "";
+                        paragraphs.forEach(p => combinedHTML += p.outerHTML);
+                        
+                        if (combinedHTML) {
+                            globalInterviews.push({
+                                title: "Tolga Özdoğan - Röportajlar Arşivi",
+                                category: "RÖPORTAJ",
+                                image: "",
+                                desc: "tolgaozdogan.com/roportajlar.html adresinden aktarılan söyleşiler.",
+                                content: combinedHTML,
+                                date: "Güncel"
+                            });
+                        }
+                    }
+                }
+            } catch (err) {
+                console.error("Röportajlar çekilemedi:", err);
             }
-        ];
+
+            // Eğer harici kaynaktan veri alınamazsa boş bırakmamak adına yedek bildirim
+            if (globalInterviews.length === 0) {
+                globalInterviews.push({
+                    title: "Röportaj Arşivi Yükleniyor",
+                    category: "RÖPORTAJ",
+                    image: "",
+                    desc: "Kaynak sayfaya erişim sağlanıyor veya içerik güncelleniyor.",
+                    content: "<p>Lütfen daha sonra tekrar deneyiniz.</p>",
+                    date: "Güncel"
+                });
+            }
+
+            renderUI(globalInterviews);
+        }
+
+        function renderUI(articles) {
+            document.getElementById('loading-spinner').classList.add('hidden');
+            const listView = document.getElementById('list-view');
+            listView.classList.remove('hidden');
+            setTimeout(() => { listView.classList.remove('opacity-0'); listView.classList.add('opacity-100'); }, 50);
+
+            const feedContainer = document.getElementById('news-feed-container');
+            feedContainer.innerHTML = '';
+            
+            articles.forEach((article, index) => {
+                const imgBlock = article.image ? `
+                    <div class="sm:w-1/3 flex-shrink-0 overflow-hidden rounded-sm bg-gray-50 flex items-center justify-center p-2 border border-gray-100">
+                        <img src="${article.image}" class="w-full h-48 sm:h-36 object-cover group-hover:scale-105 transition duration-500" onerror="this.parentElement.style.display='none'">
+                    </div>
+                ` : '';
+
+                feedContainer.innerHTML += `
+                    <article class="flex flex-col sm:flex-row gap-5 bg-white p-4 border border-gray-100 rounded-sm hover:shadow-md transition cursor-pointer group" onclick="openArticle(${index})">
+                        ${imgBlock}
+                        <div class="flex-grow flex flex-col justify-between py-1">
+                            <div>
+                                <div class="flex items-center text-[10px] font-bold mb-2 uppercase tracking-wide">
+                                    <span class="text-brand-red">${article.category}</span>
+                                </div>
+                                <h3 class="text-lg md:text-xl font-serif font-bold text-gray-900 leading-snug mb-2 group-hover:text-brand-red transition line-clamp-2">${article.title}</h3>
+                                <p class="text-sm text-gray-500 line-clamp-2 hidden sm:block">${article.desc}</p>
+                            </div>
+                            <div class="mt-4 flex justify-between items-center text-xs text-gray-400 font-medium">
+                                <span><i class="far fa-clock mr-1"></i> ${article.date}</span>
+                                <span class="text-brand-red font-bold">Röportajı Oku <i class="fas fa-arrow-right ml-1"></i></span>
+                            </div>
+                        </div>
+                    </article>
+                `;
+            });
+        }
 
         function openArticle(index) {
-            const article = soylesilerData[index];
+            const article = globalInterviews[index];
             if(!article) return;
-            
             document.getElementById('list-view').classList.add('hidden');
             const articleView = document.getElementById('article-view');
             articleView.classList.remove('hidden');
@@ -256,9 +298,16 @@
             document.getElementById('article-title').innerText = article.title;
             document.getElementById('article-category').innerText = article.category;
             document.getElementById('article-date').innerHTML = `<i class="far fa-clock mr-1"></i> ${article.date}`;
-            document.getElementById('article-image').src = article.image;
-            document.getElementById('article-content').innerHTML = article.content;
+            
+            const imgEl = document.getElementById('article-image');
+            if (article.image) {
+                imgEl.src = article.image;
+                imgEl.style.display = 'block';
+            } else {
+                imgEl.style.display = 'none';
+            }
 
+            document.getElementById('article-content').innerHTML = article.content;
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
@@ -272,6 +321,10 @@
                 window.scrollTo({ top: 0, behavior: 'smooth' });
             }, 300);
         }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            fetchExternalRoportajlar();
+        });
     </script>
 </body>
 </html>
