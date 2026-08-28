@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Söyleşi ve Röportajlar - Edebiyat Gündemi</title>
+    <title>Tolga Özdoğan Röportajı - Edebiyat Gündemi</title>
     
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -33,16 +33,14 @@
     </script>
     <style>
         body { color: #1a1a1a; background-color: #fcfcfc;}
-        .line-clamp-2 { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
-        .line-clamp-3 { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+        .article-body p { margin-bottom: 1.5rem; line-height: 1.8; color: #374151; font-size: 1.05rem; }
+        .article-body img { max-width: 100%; height: auto; border-radius: 4px; margin: 1.5rem 0; }
+        .article-body h2, .article-body h3 { font-family: 'Playfair Display', serif; font-weight: 700; font-size: 1.5rem; margin-top: 2rem; margin-bottom: 1rem; color: #111827; }
+        .article-body a { color: #721c24; text-decoration: underline; }
         #mobile-menu-container { transition: transform 0.3s ease-in-out; transform: translateX(-100%); }
         #mobile-menu-container.open { transform: translateX(0); }
         #mobile-menu-overlay { transition: opacity 0.3s ease-in-out; opacity: 0; pointer-events: none; }
         #mobile-menu-overlay.open { opacity: 1; pointer-events: auto; }
-        .article-body p { margin-bottom: 1.5rem; line-height: 1.8; color: #374151; font-size: 1.05rem; }
-        .article-body img { max-width: 100%; height: auto; border-radius: 4px; margin: 1.5rem 0; }
-        .article-body h2, .article-body h3 { font-family: 'Playfair Display', serif; font-weight: 700; font-size: 1.5rem; margin-top: 2rem; margin-bottom: 1rem; color: #111827; }
-        .article-body a { color: inherit; text-decoration: none; }
     </style>
 </head>
 <body class="font-sans overflow-x-hidden">
@@ -53,7 +51,7 @@
             <div class="flex items-center space-x-4">
                 <span id="top-date">Yükleniyor...</span>
                 <span class="border-l border-gray-300 pl-4 flex items-center text-brand-red font-bold">
-                    <span class="w-2 h-2 rounded-full bg-brand-red mr-2"></span> Tolga Özdoğan Röportaj Arşivi
+                    <span class="w-2 h-2 rounded-full bg-brand-red mr-2"></span> Özel Röportaj
                 </span>
             </div>
             <div class="flex items-center space-x-6">
@@ -80,7 +78,7 @@
                 <i class="fas fa-bars mr-3"></i> <span class="text-xs font-bold uppercase tracking-wider hidden md:block">Menü</span>
             </button>
             <div class="text-xs font-bold text-gray-400 uppercase tracking-widest hidden md:block">
-                TOLGA ÖZDOĞAN — RÖPORTAJLAR VE SÖYLEŞİLER
+                TOLGA ÖZDOĞAN İLE RÖPORTAJ — VARYASYON KALEMLER
             </div>
             <button class="text-gray-800 text-xl hover:text-brand-red transition focus:outline-none p-1">
                 <i class="fas fa-search"></i>
@@ -92,47 +90,22 @@
     <main class="container mx-auto px-4 lg:px-8 py-8 min-h-screen relative">
         <div id="loading-spinner" class="py-20 text-center text-brand-red">
             <i class="fas fa-spinner fa-spin text-5xl mb-4"></i>
-            <h3 class="text-xl font-serif font-bold mb-2 text-gray-800">Röportajlar Yükleniyor</h3>
-            <p class="text-sm font-medium text-gray-500">tolgaozdogan.com/roportajlar.html sayfası taranıyor...</p>
+            <h3 class="text-xl font-serif font-bold mb-2 text-gray-800">Röportaj Yükleniyor</h3>
+            <p class="text-sm font-medium text-gray-500">varyasyonkalemler.com üzerinden veriler aktarılıyor...</p>
         </div>
 
-        <!-- LİSTE GÖRÜNÜMÜ -->
-        <div id="list-view" class="hidden transition-opacity duration-500 opacity-0">
-            <div class="mb-8 border-b border-gray-200 pb-6">
-                <nav class="text-[10px] uppercase tracking-wider text-gray-400 font-bold mb-4">
-                    <a href="index.html" class="hover:text-brand-red transition">Anasayfa</a> <span class="mx-2">/</span> <span class="text-brand-red">Söyleşi ve Röportajlar</span>
-                </nav>
-                <h1 class="text-4xl md:text-5xl font-serif font-bold text-brand-text">Söyleşiler & Röportajlar</h1>
-                <p class="text-gray-500 text-sm mt-3 max-w-2xl">tolgaozdogan.com/roportajlar.html adresinden doğrudan senkronize edilen özel röportaj arşivi.</p>
+        <div id="article-view" class="hidden transition-opacity duration-500 opacity-0 bg-white p-6 md:p-12 border border-gray-200 rounded-sm shadow-sm max-w-3xl mx-auto">
+            <div class="flex items-center text-[10px] font-bold mb-4 uppercase tracking-wide">
+                <span class="bg-brand-red text-white px-2 py-1 rounded-sm">ÖZEL RÖPORTAJ</span>
+                <span id="article-date" class="text-gray-400 ml-auto"><i class="far fa-clock mr-1"></i> Güncel</span>
             </div>
-
-            <div class="flex flex-col lg:flex-row gap-10">
-                <div class="w-full lg:w-2/3 space-y-6" id="news-feed-container"></div>
-                <aside class="w-full lg:w-1/3 space-y-8">
-                    <div class="bg-white p-6 border border-gray-200 rounded-sm shadow-sm">
-                        <h3 class="font-serif font-bold text-lg border-b border-brand-red pb-2 mb-4 inline-block">Röportaj Ara</h3>
-                        <div class="relative">
-                            <input type="text" placeholder="Başlık veya içerik ara..." class="w-full border border-gray-300 rounded px-4 py-2 text-sm focus:outline-none focus:border-brand-red">
-                            <i class="fas fa-search absolute right-3 top-3 text-gray-400"></i>
-                        </div>
-                    </div>
-                </aside>
+            <h1 id="article-title" class="text-3xl md:text-5xl font-serif font-bold text-gray-900 leading-tight mb-8">Röportaj Yükleniyor...</h1>
+            <div id="article-content" class="article-body">
+                <p>İçerik yükleniyor, lütfen bekleyiniz...</p>
             </div>
-        </div>
-
-        <!-- OKUMA GÖRÜNÜMÜ -->
-        <div id="article-view" class="hidden transition-opacity duration-500 opacity-0 bg-white p-6 md:p-12 border border-gray-200 rounded-sm shadow-sm">
-            <button onclick="closeArticle()" class="mb-8 text-gray-500 hover:text-brand-red transition font-medium text-sm flex items-center group">
-                <i class="fas fa-arrow-left mr-2 transform group-hover:-translate-x-1 transition"></i> Röportaj Listesine Dön
-            </button>
-            <div class="max-w-3xl mx-auto">
-                <div class="flex items-center text-[10px] font-bold mb-4 uppercase tracking-wide">
-                    <span id="article-category" class="bg-brand-red text-white px-2 py-1 rounded-sm">RÖPORTAJ</span>
-                    <span id="article-date" class="text-gray-400 ml-auto"><i class="far fa-clock mr-1"></i> Tarih</span>
-                </div>
-                <h1 id="article-title" class="text-3xl md:text-5xl font-serif font-bold text-gray-900 leading-tight mb-8">Röportaj Başlığı</h1>
-                <img id="article-image" src="" alt="Röportaj Görseli" class="w-full max-h-[500px] object-cover rounded-sm mb-10 shadow-sm" style="display:none;">
-                <div id="article-content" class="article-body">İçerik yükleniyor...</div>
+            <div class="mt-8 pt-6 border-t border-gray-200 text-sm">
+                <span class="text-gray-500">Kaynak: </span>
+                <a href="https://varyasyonkalemler.com/roportajtolga-ozdogan/" target="_blank" rel="noopener noreferrer" class="text-brand-red font-semibold hover:underline">Varyasyon Kalemler Orijinal Bağlantı</a>
             </div>
         </div>
     </main>
@@ -140,7 +113,7 @@
     <!-- Footer -->
     <footer class="bg-[#0f172a] text-white pt-16 pb-8 mt-16 font-sans">
         <div class="container mx-auto px-4 lg:px-8 text-center text-xs text-gray-500 border-t border-gray-800 pt-8">
-            <p>&copy; <span id="year"></span> edebiyatgundemi.com — Tolga Özdoğan Röportaj Arşivi.</p>
+            <p>&copy; <span id="year"></span> edebiyatgundemi.com — Tüm hakları saklıdır.</p>
         </div>
     </footer>
 
@@ -175,12 +148,9 @@
         document.getElementById('close-menu-btn').addEventListener('click', toggleMenu);
         mobileMenuOverlay.addEventListener('click', toggleMenu);
 
-        let globalInterviews = [];
-
-        async function fetchExternalRoportajlar() {
+        async function fetchTargetRoportaj() {
             try {
-                // CORS engeli olmaksızın dış sayfayı okumak için güvenli allorigins proxy kullanıyoruz
-                const targetUrl = 'https://tolgaozdogan.com/roportajlar.html';
+                const targetUrl = 'https://varyasyonkalemler.com/roportajtolga-ozdogan/';
                 const proxyUrl = 'https://api.allorigins.win/get?url=' + encodeURIComponent(targetUrl);
                 
                 const response = await fetch(proxyUrl);
@@ -190,140 +160,46 @@
                     const parser = new DOMParser();
                     const doc = parser.parseFromString(data.contents, 'text/html');
                     
-                    // Sitedeki olası makale / röportaj bloklarını seçiyoruz
-                    const items = doc.querySelectorAll('article, .roportaj-item, .post, .card, .blog-item');
+                    // Sitedeki başlık ve içerik alanını bulmaya çalışalım
+                    const titleEl = doc.querySelector('h1, .entry-title, .post-title');
+                    const contentEl = doc.querySelector('article, .entry-content, .post-content, .content');
                     
-                    if (items && items.length > 0) {
-                        items.forEach((el, index) => {
-                            const titleEl = el.querySelector('h1, h2, h3, h4, .title');
-                            const imgEl = el.querySelector('img');
-                            const descEl = el.querySelector('p, .summary, .description');
-                            
-                            const title = titleEl ? titleEl.textContent.trim() : `Röportaj ${index + 1}`;
-                            const image = imgEl ? imgEl.src : '';
-                            const desc = descEl ? descEl.textContent.trim() : title;
-                            const content = el.innerHTML;
-                            
-                            globalInterviews.push({
-                                title: title,
-                                category: "RÖPORTAJ",
-                                image: image,
-                                desc: desc.substring(0, 180) + "...",
-                                content: content,
-                                date: "Güncel Arşiv"
-                            });
-                        });
+                    const title = titleEl ? titleEl.textContent.trim() : "Tolga Özdoğan ile Röportaj";
+                    
+                    let contentHTML = "";
+                    if (contentEl) {
+                        // Gereksiz buton veya sosyal medya paylaşım öğelerini temizle
+                        contentEl.querySelectorAll('.social-share, .sharedaddy, script, style').forEach(el => el.remove());
+                        contentHTML = contentEl.innerHTML;
                     } else {
-                        // Eğer özel class bulunamazsa body içerisindeki tüm başlık ve paragrafları derle
+                        // Bulunamazsa tüm paragrafları al
                         const paragraphs = doc.querySelectorAll('p');
-                        let combinedHTML = "";
-                        paragraphs.forEach(p => combinedHTML += p.outerHTML);
-                        
-                        if (combinedHTML) {
-                            globalInterviews.push({
-                                title: "Tolga Özdoğan - Röportajlar Arşivi",
-                                category: "RÖPORTAJ",
-                                image: "",
-                                desc: "tolgaozdogan.com/roportajlar.html adresinden aktarılan söyleşiler.",
-                                content: combinedHTML,
-                                date: "Güncel"
-                            });
-                        }
+                        paragraphs.forEach(p => contentHTML += p.outerHTML);
                     }
+
+                    document.getElementById('article-title').innerText = title;
+                    document.getElementById('article-content').innerHTML = contentHTML || "<p>İçerik yüklenemedi.</p>";
+                } else {
+                    throw new Error("İçerik alınamadı");
                 }
             } catch (err) {
-                console.error("Röportajlar çekilemedi:", err);
-            }
-
-            // Eğer harici kaynaktan veri alınamazsa boş bırakmamak adına yedek bildirim
-            if (globalInterviews.length === 0) {
-                globalInterviews.push({
-                    title: "Röportaj Arşivi Yükleniyor",
-                    category: "RÖPORTAJ",
-                    image: "",
-                    desc: "Kaynak sayfaya erişim sağlanıyor veya içerik güncelleniyor.",
-                    content: "<p>Lütfen daha sonra tekrar deneyiniz.</p>",
-                    date: "Güncel"
-                });
-            }
-
-            renderUI(globalInterviews);
-        }
-
-        function renderUI(articles) {
-            document.getElementById('loading-spinner').classList.add('hidden');
-            const listView = document.getElementById('list-view');
-            listView.classList.remove('hidden');
-            setTimeout(() => { listView.classList.remove('opacity-0'); listView.classList.add('opacity-100'); }, 50);
-
-            const feedContainer = document.getElementById('news-feed-container');
-            feedContainer.innerHTML = '';
-            
-            articles.forEach((article, index) => {
-                const imgBlock = article.image ? `
-                    <div class="sm:w-1/3 flex-shrink-0 overflow-hidden rounded-sm bg-gray-50 flex items-center justify-center p-2 border border-gray-100">
-                        <img src="${article.image}" class="w-full h-48 sm:h-36 object-cover group-hover:scale-105 transition duration-500" onerror="this.parentElement.style.display='none'">
-                    </div>
-                ` : '';
-
-                feedContainer.innerHTML += `
-                    <article class="flex flex-col sm:flex-row gap-5 bg-white p-4 border border-gray-100 rounded-sm hover:shadow-md transition cursor-pointer group" onclick="openArticle(${index})">
-                        ${imgBlock}
-                        <div class="flex-grow flex flex-col justify-between py-1">
-                            <div>
-                                <div class="flex items-center text-[10px] font-bold mb-2 uppercase tracking-wide">
-                                    <span class="text-brand-red">${article.category}</span>
-                                </div>
-                                <h3 class="text-lg md:text-xl font-serif font-bold text-gray-900 leading-snug mb-2 group-hover:text-brand-red transition line-clamp-2">${article.title}</h3>
-                                <p class="text-sm text-gray-500 line-clamp-2 hidden sm:block">${article.desc}</p>
-                            </div>
-                            <div class="mt-4 flex justify-between items-center text-xs text-gray-400 font-medium">
-                                <span><i class="far fa-clock mr-1"></i> ${article.date}</span>
-                                <span class="text-brand-red font-bold">Röportajı Oku <i class="fas fa-arrow-right ml-1"></i></span>
-                            </div>
-                        </div>
-                    </article>
+                console.error("Hata:", err);
+                // Hata durumunda doğrudan harici bağlantı butonu göster
+                document.getElementById('article-title').innerText = "Tolga Özdoğan Röportajı";
+                document.getElementById('article-content').innerHTML = `
+                    <p>Röportaj içeriği güvenli bir şekilde doğrudan çekilemedi. Aşağıdaki bağlantıdan röportajın orijinal sayfasına ulaşabilirsiniz:</p>
+                    <p><a href="https://varyasyonkalemler.com/roportajtolga-ozdogan/" target="_blank" rel="noopener noreferrer" style="color: #721c24; font-weight: bold; text-decoration: underline;">Röportajı Oku: varyasyonkalemler.com/roportajtolga-ozdogan/</a></p>
                 `;
-            });
-        }
-
-        function openArticle(index) {
-            const article = globalInterviews[index];
-            if(!article) return;
-            document.getElementById('list-view').classList.add('hidden');
-            const articleView = document.getElementById('article-view');
-            articleView.classList.remove('hidden');
-            setTimeout(() => { articleView.classList.remove('opacity-0'); articleView.classList.add('opacity-100'); }, 50);
-
-            document.getElementById('article-title').innerText = article.title;
-            document.getElementById('article-category').innerText = article.category;
-            document.getElementById('article-date').innerHTML = `<i class="far fa-clock mr-1"></i> ${article.date}`;
-            
-            const imgEl = document.getElementById('article-image');
-            if (article.image) {
-                imgEl.src = article.image;
-                imgEl.style.display = 'block';
-            } else {
-                imgEl.style.display = 'none';
             }
 
-            document.getElementById('article-content').innerHTML = article.content;
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        }
-
-        function closeArticle() {
-            const articleView = document.getElementById('article-view');
-            articleView.classList.add('opacity-0');
-            articleView.classList.remove('opacity-100');
-            setTimeout(() => {
-                articleView.classList.add('hidden');
-                document.getElementById('list-view').classList.remove('hidden');
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-            }, 300);
+            document.getElementById('loading-spinner').classList.add('hidden');
+            const view = document.getElementById('article-view');
+            view.classList.remove('hidden');
+            setTimeout(() => { view.classList.remove('opacity-0'); view.classList.add('opacity-100'); }, 50);
         }
 
         document.addEventListener('DOMContentLoaded', () => {
-            fetchExternalRoportajlar();
+            fetchTargetRoportaj();
         });
     </script>
 </body>
