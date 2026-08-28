@@ -95,7 +95,7 @@
         <div id="loading-spinner" class="py-20 text-center text-brand-red">
             <i class="fas fa-comments text-5xl mb-4 animate-pulse"></i>
             <h3 class="text-xl font-serif font-bold mb-2 text-gray-800">Söyleşiler Yükleniyor</h3>
-            <p class="text-sm font-medium text-gray-500">edebiyatsoylesileri.com adresinden röportajlar alınıyor...</p>
+            <p class="text-sm font-medium text-gray-500">Arşivden röportajlar aktarılıyor...</p>
         </div>
 
         <!-- LİSTE GÖRÜNÜMÜ -->
@@ -178,48 +178,27 @@
         mobileMenuOverlay.addEventListener('click', toggleMenu);
 
         let globalArticles = []; 
-        const RSS_URL = 'https://edebiyatsoylesileri.com/feed/';
-        const API_URL = 'https://api.rss2json.com/v1/api.json?rss_url=' + encodeURIComponent(RSS_URL);
+        const SOYLESI_JSON_URL = 'haberler/soylesiler.json';
+
+        const mockSoylesiData = [
+            { title: "Edebiyat Dünyasından Ünlü İsimlerle Özel Söyleşiler", category: "SÖYLEŞİ", image: "https://images.unsplash.com/photo-1457369804613-52c61a468e7d?auto=format&fit=crop&w=600&q=80", content: "<p>edebiyatsoylesileri.com üzerinden alınan röportajlar güncellenmektedir.</p>", date: new Date().toISOString() }
+        ];
 
         async function fetchSoylesiNews() {
             let allArticles = [];
             try {
-                const response = await fetch(API_URL + '&t=' + new Date().getTime());
+                const response = await fetch(SOYLESI_JSON_URL + '?t=' + new Date().getTime());
                 const data = await response.json();
                 
-                if(data && data.status === 'ok' && data.items) {
-                    allArticles = data.items.map(item => {
-                        let img = item.thumbnail || item.enclosure?.link;
-                        if (!img && item.content) {
-                            let div = document.createElement('div');
-                            div.innerHTML = item.content;
-                            let imgTag = div.querySelector('img');
-                            if (imgTag) img = imgTag.src;
-                        }
-
-                        let rawContent = item.content || item.description || "İçerik yüklenemedi.";
-                        let parser = new DOMParser();
-                        let doc = parser.parseFromString(rawContent, 'text/html');
-                        let cleanDesc = doc.body.textContent || "";
-
-                        return {
-                            title: item.title,
-                            date: item.pubDate,
-                            category: "SÖYLEŞİ",
-                            desc: cleanDesc.substring(0, 180) + "...",
-                            content: rawContent,
-                            image: img || "https://images.unsplash.com/photo-1457369804613-52c61a468e7d?auto=format&fit=crop&w=600&q=80"
-                        };
-                    });
+                if(data && Array.isArray(data) && data.length > 0) {
+                    allArticles = data; 
                 }
             } catch (error) { 
-                console.error("Doğrudan çekme hatası:", error); 
+                console.error("Söyleşi arşivi yüklenemedi:", error); 
             }
 
             if(allArticles.length === 0) {
-                allArticles = [
-                    { title: "Edebiyat Dünyasından Özel Söyleşiler", category: "SÖYLEŞİ", image: "https://images.unsplash.com/photo-1457369804613-52c61a468e7d?auto=format&fit=crop&w=600&q=80", content: "<p>edebiyatsoylesileri.com üzerinden söyleşi içerikleri yüklenmektedir.</p>", date: new Date().toISOString() }
-                ];
+                allArticles = mockSoylesiData;
             }
 
             globalArticles = allArticles; 
