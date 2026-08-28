@@ -95,7 +95,7 @@
         <div id="loading-spinner" class="py-20 text-center text-brand-red">
             <i class="fas fa-comments text-5xl mb-4 animate-pulse"></i>
             <h3 class="text-xl font-serif font-bold mb-2 text-gray-800">Söyleşiler Yükleniyor</h3>
-            <p class="text-sm font-medium text-gray-500">Edebiyat dünyasından röportajlar filtreleniyor...</p>
+            <p class="text-sm font-medium text-gray-500">Röportaj ve söyleşi içerikleri taranıyor...</p>
         </div>
 
         <!-- LİSTE GÖRÜNÜMÜ -->
@@ -105,7 +105,7 @@
                     <a href="index.html" class="hover:text-brand-red transition">Anasayfa</a> <span class="mx-2">/</span> <span class="text-brand-red">Söyleşi ve Röportajlar</span>
                 </nav>
                 <h1 class="text-4xl md:text-5xl font-serif font-bold text-brand-text">Söyleşiler</h1>
-                <p class="text-gray-500 text-sm mt-3 max-w-2xl">Edebiyat dünyasının tanınmış simaları, yazarlar ve şairlerle gerçekleştirilen derinlemesine röportajlar.</p>
+                <p class="text-gray-500 text-sm mt-3 max-w-2xl">Edebiyat dünyasının tanınmış simaları, yazarlar ve şairlerle gerçekleştirilen özel röportajlar.</p>
             </div>
 
             <div class="flex flex-col lg:flex-row gap-10">
@@ -191,7 +191,7 @@
                 const data = await response.json();
                 
                 if(data && Array.isArray(data) && data.length > 0) {
-                    // Sadece Söyleşi / Röportaj içerenleri filtrele
+                    // BAŞLIK, KATEGORİ VEYA İÇERİKTE SÖYLEŞİ / RÖPORTAJ GEÇENLERİ KAPSAMLI FİLTRELE
                     allArticles = data.filter(item => {
                         const titleText = (item.title || "").toUpperCase();
                         const catText = (item.category || "").toUpperCase();
@@ -199,9 +199,7 @@
                         const fullText = titleText + " " + catText + " " + contentText;
                         
                         return fullText.includes('SÖYLEŞİ') || 
-                               fullText.includes('RÖPORTAJ') || 
-                               fullText.includes('KONUŞTUK') || 
-                               fullText.includes('ANLATTI');
+                               fullText.includes('RÖPORTAJ');
                     });
                 }
             } catch (error) { 
@@ -287,7 +285,6 @@
 
         document.addEventListener('DOMContentLoaded', () => { 
             fetchSoylesiNews(); 
-            // 5 dakikada bir (300000 milisaniye) sayfayı otomatik güncelle
             setInterval(fetchSoylesiNews, 300000);
         });
     </script>
