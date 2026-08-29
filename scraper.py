@@ -60,7 +60,7 @@ def extract_image(entry, content):
     return "https://images.unsplash.com/photo-1506880018603-83d5b814b5a6?auto=format&fit=crop&w=1200&q=80"
 
 def translate_text(text):
-    """Zorlayıcı ve garantili çeviri motoru"""
+    """Kararlı ve temiz çeviri motoru"""
     if not text or len(text.strip()) < 3: return text
     clean_text = BeautifulSoup(text, 'html.parser').get_text()
     try:
@@ -71,13 +71,11 @@ def translate_text(text):
             result = res.json()
             if 'responseData' in result and result['responseData']['translatedText']:
                 translated = result['responseData']['translatedText']
-                if "MYMEMORY WARNING" not in translated and len(translated.strip()) > 2 and translated.lower() != chunk.lower():
+                if "MYMEMORY WARNING" not in translated and len(translated.strip()) > 2:
                     return translated
     except Exception:
         pass
-    
-    # API başarısız olursa veya İngilizce kalırsa, okuyucuya şık bir Türkçe editoryal başlık/açıklama üret
-    return "Dünya Edebiyatından Seçmeler: " + clean_text[:80] + "..."
+    return clean_text  # API sınırda takılırsa orijinal temiz metni bozulmadan döndürür
 
 def save_to_google_drive(json_str, file_name):
     try:
@@ -99,31 +97,15 @@ def save_to_google_drive(json_str, file_name):
 
 def translate_html_content(html_content, source_name):
     if not html_content: 
-        return f"<p><i>Bu uluslararası editoryal söyleşi {source_name} arşivinden derlenerek Türkçeye kazandırılmıştır.</i></p>"
+        return f"<p><i>Bu içerik {source_name} arşivinden derlenmiştir.</i></p>"
     
     soup = BeautifulSoup(html_content, 'html.parser')
-    paragraphs = soup.find_all('p')
+    for a in soup.find_all('a'): a.unwrap()
     
-    translated_html = ""
-    if len(paragraphs) == 0:
-        raw_text = soup.get_text()
-        trans = translate_text(raw_text[:1000])
-        translated_html = f"<p>{trans}</p>"
-    else:
-        for i, p in enumerate(paragraphs):
-            if i < 6: 
-                orig = p.get_text()
-                if len(orig.strip()) > 5:
-                    trans = translate_text(orig)
-                    translated_html += f"<p>{trans}</p>"
-                    time.sleep(0.4)
-                else:
-                    translated_html += str(p)
-            else:
-                break
-            
-    translated_html += f"<br><hr><br><p><b>Editoryal Not:</b> Bu söyleşi {source_name} seçkisinden derlenmiş olup Edebiyat Gündemi okurları için Türkçeye uyarlanmıştır.</p>"
-    return translated_html
+    # HTML etiketlerini ve içeriği koruyarak temiz bir aktarım sağlıyoruz
+    cleaned_html = str(soup)
+    cleaned_html += f"<br><hr><br><p><b>Kaynak Bilgisi:</b> Bu içerik {source_name} üzerinden derlenmiştir.</p>"
+    return cleaned_html
 
 def assign_category_news(title, content):
     combined = (str(title) + " " + str(content)).upper()
@@ -147,7 +129,7 @@ def fetch_news():
                 
                 if is_foreign:
                     title = translate_text(title)
-                    time.sleep(0.4)
+                    time.sleep(0.3)
                     content = translate_html_content(content, source["name"])
                 else:
                     soup = BeautifulSoup(content, 'html.parser')
@@ -184,8 +166,9 @@ def fetch_interviews():
                 content = entry.get('content', [{'value': ''}])[0].get('value', '') or entry.get('summary', '') or entry.get('description', '')
                 image = extract_image(entry, content)
                 
+                # Başlık ve içerik akışını ana sayfa ile birebir aynı güvenli formata getiriyoruz
                 translated_title = translate_text(title)
-                time.sleep(0.4)
+                time.sleep(0.3)
                 
                 translated_content = translate_html_content(content, source['name'])
                 
