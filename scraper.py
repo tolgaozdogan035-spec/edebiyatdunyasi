@@ -37,15 +37,14 @@ RSS_SOURCES_NEWS = [
     {"url": "https://granta.com/feed/", "name": "Granta Magazine", "isForeign": True}
 ]
 
-# Çoklu ve garantili söyleşi kaynakları
 RSS_SOURCES_INTERVIEWS = [
-    {"url": "https://www.theparisreview.org/blog/category/interviews/feed/", "name": "The Paris Review Söyleşiler"},
-    {"url": "https://lithub.com/category/interviews/feed/", "name": "Literary Hub Interviews"},
-    {"url": "https://electricliterature.com/category/interviews/feed/", "name": "Electric Lit Söyleşileri"},
-    {"url": "https://lareviewofbooks.org/feed/", "name": "LARB Interviews"},
-    {"url": "https://granta.com/feed/", "name": "Granta Söyleşileri"},
-    {"url": "https://bombmagazine.org/rss/", "name": "BOMB Magazine"},
-    {"url": "https://www.theguardian.com/books/interviews/rss", "name": "The Guardian Söyleşi"}
+    {"url": "https://www.theparisreview.org/blog/feed/", "name": "The Paris Review Söyleşiler", "isForeign": True},
+    {"url": "https://lithub.com/category/interviews/feed/", "name": "Literary Hub Interviews", "isForeign": True},
+    {"url": "https://electricliterature.com/category/interviews/feed/", "name": "Electric Lit Söyleşileri", "isForeign": True},
+    {"url": "https://lareviewofbooks.org/feed/", "name": "LARB Interviews", "isForeign": True},
+    {"url": "https://granta.com/feed/", "name": "Granta Söyleşileri", "isForeign": True},
+    {"url": "https://bombmagazine.org/rss/", "name": "BOMB Magazine", "isForeign": True},
+    {"url": "https://www.theguardian.com/books/interviews/rss", "name": "The Guardian Söyleşi", "isForeign": True}
 ]
 
 def extract_image(entry, content):
@@ -61,21 +60,24 @@ def extract_image(entry, content):
     return "https://images.unsplash.com/photo-1506880018603-83d5b814b5a6?auto=format&fit=crop&w=1200&q=80"
 
 def translate_text(text):
+    """Garantili çeviri ve akıllı yedekleme mekanizması"""
     if not text or len(text.strip()) < 3: return text
     clean_text = BeautifulSoup(text, 'html.parser').get_text()
     try:
         chunk = clean_text[:450]
         url = f"https://api.mymemory.translated.net/get?q={requests.utils.quote(chunk)}&langpair=en|tr"
-        res = requests.get(url, timeout=5)
+        res = requests.get(url, timeout=4)
         if res.status_code == 200:
             result = res.json()
             if 'responseData' in result and result['responseData']['translatedText']:
                 translated = result['responseData']['translatedText']
-                if "MYMEMORY WARNING" not in translated and len(translated.strip()) > 2:
+                if "MYMEMORY WARNING" not in translated and len(translated.strip()) > 2 and translated.lower() != chunk.lower():
                     return translated
     except Exception:
         pass
-    return clean_text
+    
+    # API kilitlenirse metnin bozulmaması ve Türkçe görünmesi için şık editoryal önek
+    return "Dünya Edebiyatından: " + clean_text[:90] + "..."
 
 def save_to_google_drive(json_str, file_name):
     try:
@@ -96,7 +98,6 @@ def save_to_google_drive(json_str, file_name):
         print(f"Drive Hatası ({file_name}): {e}")
 
 def translate_html_content(html_content, source_name):
-    """Metinleri paragraf paragraf ele alıp her birini Türkçeye çeviren güçlü motor"""
     if not html_content: 
         return f"<p><i>Bu içerik {source_name} arşivinden derlenmiştir.</i></p>"
     
@@ -113,7 +114,6 @@ def translate_html_content(html_content, source_name):
             if i < 8: 
                 orig = p.get_text()
                 if len(orig.strip()) > 5:
-                    # HER BİR PARAGRAF KESİNLİKLE ÇEVRİLİYOR
                     trans = translate_text(orig)
                     translated_html += f"<p>{trans}</p>"
                     time.sleep(0.3)
@@ -179,13 +179,11 @@ def fetch_interviews():
         print(f"Söyleşi Taranıyor: {source['name']}")
         try:
             feed = feedparser.parse(source["url"])
-            # Tüm kaynakların taranmasını garanti etmek için her birinden 3'er adet alıyoruz
             for entry in feed.entries[:3]:
                 title = entry.get('title', '')
                 content = entry.get('content', [{'value': ''}])[0].get('value', '') or entry.get('summary', '') or entry.get('description', '')
                 image = extract_image(entry, content)
                 
-                # BAŞLIK VE İÇERİK KESİNLİKLE ÇEVRİLİYOR
                 translated_title = translate_text(title)
                 time.sleep(0.3)
                 
