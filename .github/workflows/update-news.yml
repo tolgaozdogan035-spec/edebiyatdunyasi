@@ -2,9 +2,11 @@ name: Edebiyat Gündemi Otomatik Bot
 
 on:
   schedule:
-    # Her 5 dakikada bir çalıştır (Cron formatı)
     - cron: '*/5 * * * *'
-  workflow_dispatch: # Manuel olarak GitHub panelinden de tetiklenebilir
+  workflow_dispatch:
+
+permissions:
+  contents: write # BURASI ÇOK ÖNEMLİ: Botun repoya yazma iznini aktif eder
 
 jobs:
   run-scraper:
