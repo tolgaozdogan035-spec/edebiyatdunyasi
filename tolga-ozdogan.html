@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tolga Özdoğan - Köşe Yazıları</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root { --bg-color: #0b111e; --card-bg: #131a28; --gold-accent: #cda962; --text-light: #e0e6ed; --text-muted: #8b95a5; }
+        body { background-color: var(--bg-color); color: var(--text-light); font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 40px 20px; }
+        
+        .container { max-width: 1200px; margin: 0 auto; display: flex; gap: 40px; align-items: flex-start; }
+        
+        /* SAĞ SÜTUN: YAZAR KUTUSU */
+        .sidebar-column { flex: 1; position: sticky; top: 40px; }
+        .author-box { background-color: var(--card-bg); border-radius: 12px; padding: 40px 30px; text-align: center; border: 1px solid rgba(255, 255, 255, 0.05); }
+        .author-image { width: 180px; height: 180px; border-radius: 50%; object-fit: cover; border: 3px solid var(--gold-accent); margin-bottom: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.5); }
+        .author-name { font-family: 'Playfair Display', serif; font-size: 1.8rem; color: #ffffff; margin: 0 0 5px 0; }
+        .author-title { color: var(--gold-accent); font-size: 0.9rem; letter-spacing: 3px; text-transform: uppercase; margin: 0 0 20px 0; }
+        .author-quote { font-style: italic; color: var(--text-muted); line-height: 1.6; margin-bottom: 20px; font-size: 0.95rem; }
+        .social-icons { display: flex; justify-content: center; gap: 15px; }
+        .social-icons a { width: 40px; height: 40px; border-radius: 50%; background-color: rgba(255, 255, 255, 0.05); color: var(--text-light); display: flex; align-items: center; justify-content: center; text-decoration: none; transition: 0.3s; }
+        .social-icons a:hover { background-color: var(--gold-accent); color: var(--bg-color); }
+
+        /* SOL SÜTUN: MAKALELER */
+        .articles-column { flex: 2; display: flex; flex-direction: column; gap: 30px; }
+        .article-card { background-color: var(--card-bg); border-radius: 12px; padding: 30px; border: 1px solid rgba(255, 255, 255, 0.05); }
+        .article-meta { color: var(--gold-accent); font-size: 0.85rem; margin-bottom: 15px; font-weight: bold; }
+        .article-title { font-family: 'Playfair Display', serif; font-size: 1.6rem; color: #ffffff; margin: 0 0 15px 0; }
+        .article-excerpt { color: var(--text-muted); line-height: 1.6; margin-bottom: 20px; }
+        .read-more-btn { display: inline-block; padding: 8px 16px; color: var(--gold-accent); border: 1px solid var(--gold-accent); border-radius: 6px; text-decoration: none; transition: 0.3s; font-size: 0.85rem; }
+        .read-more-btn:hover { background-color: var(--gold-accent); color: var(--bg-color); }
+
+        @media (max-width: 900px) {
+            .container { flex-direction: column; }
+            .sidebar-column, .articles-column { width: 100%; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <!-- SOL SÜTUN: MAKALELER -->
+        <div class="articles-column" id="yazilar-alani">
+            <p style="text-align: center; color: var(--gold-accent);">Köşe yazıları yükleniyor...</p>
+        </div>
+
+        <!-- SAĞ SÜTUN: YAZAR BİLGİSİ -->
+        <div class="sidebar-column">
+            <div class="author-box">
+                <img src="images/Tolga 2.png" alt="Tolga Özdoğan" class="author-image">
+                <h2 class="author-name">TOLGA ÖZDOĞAN</h2>
+                <p class="author-title">YAZAR</p>
+                <p class="author-quote">"Kelimelerle dünyayı yeniden kurmak, insanı en çok da kendi labirentlerinde özgürleştiren tek yoldur."</p>
+                <div class="social-icons">
+                    <a href="https://tolgaozdogan.com" title="Web Sitesi"><i class="fas fa-globe"></i></a>
+                    <a href="#" title="Instagram"><i class="fab fa-instagram"></i></a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- BOTUN YAZILARINI SAYFAYA BASAN KOD -->
+    <script>
+        fetch('haberler/tolga_yazilari.json')
+            .then(response => response.json())
+            .then(data => {
+                const container = document.getElementById('yazilar-alani');
+                container.innerHTML = ''; // Yükleniyor yazısını temizle
+                
+                if(data.length === 0) {
+                    container.innerHTML = '<p style="color:white;">Henüz yazı bulunmamaktadır.</p>';
+                    return;
+                }
+
+                data.forEach(yazi => {
+                    const html = `
+                        <div class="article-card">
+                            <div class="article-meta"><i class="far fa-calendar-alt"></i> ${yazi.date}</div>
+                            <h2 class="article-title">${yazi.title}</h2>
+                            <div class="article-excerpt">${yazi.desc}</div>
+                            <a href="${yazi.link}" target="_blank" class="read-more-btn">YAZININ DEVAMINI OKU</a>
+                        </div>
+                    `;
+                    container.innerHTML += html;
+                });
+            })
+            .catch(err => {
+                document.getElementById('yazilar-alani').innerHTML = '<p style="color:red;">Yazılar yüklenirken bir hata oluştu.</p>';
+            });
+    </script>
+</body>
+</html>
