@@ -111,82 +111,90 @@ RSS_SOURCES_INTERVIEWS = [
     {"url": "https://www.edebiyathaber.net/tag/roportaj/feed/", "name": "Edebiyat Haber Röportaj"}
 ]
 
-# --- 1. MASKELENMİŞ YÜKSEK GÜVENLİKLİ ÇEVİRİ MOTORU ---
+# --- KUSURSUZ ÇEVİRİ MOTORU (YAMALI METİNLERİ BİTİRİR) ---
 def custom_translate(text):
-    """Google'ın bot engellemesini aşmak için güçlü tarayıcı başlıklarıyla çeviri yapar."""
+    """Google GTX ve MyMemory kullanarak çeviriyi garanti altına alır."""
     if not text or len(text.strip()) < 3: return text
     
-    headers = {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36',
-        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8',
-    }
-    
-    # 1. Yöntem: Google gtx
+    # 1. Google GTX
     try:
         url = "https://translate.googleapis.com/translate_a/single"
-        params = {"client": "gtx", "sl": "en", "tl": "tr", "dt": "t", "q": text[:4000]}
-        res = requests.get(url, params=params, headers=headers, timeout=10)
-        if res.status_code == 200:
-            data = res.json()
-            translated = "".join([i[0] for i in data[0] if i[0]])
-            if translated: return translated
+        params = {"client": "gtx", "sl": "en", "tl": "tr", "dt": "t", "q": text}
+        headers = {'User-Agent': 'Mozilla/5.0'}
+        for _ in range(2):
+            res = requests.get(url, params=params, headers=headers, timeout=7)
+            if res.status_code == 200:
+                data = res.json()
+                translated = "".join([i[0] for i in data[0] if i[0]])
+                if translated: return translated
+            time.sleep(1)
     except: pass
 
-    # 2. Yöntem (Yedek): Google dict-chrome-ex
+    # 2. Yedek: MyMemory API
     try:
-        url = "https://clients5.google.com/translate_a/t"
-        params = {"client": "dict-chrome-ex", "sl": "en", "tl": "tr", "q": text[:4000]}
-        res = requests.get(url, params=params, headers=headers, timeout=10)
+        url = f"https://api.mymemory.translated.net/get?q={requests.utils.quote(text[:400])}&langpair=en|tr"
+        res = requests.get(url, timeout=5)
         if res.status_code == 200:
             data = res.json()
-            if isinstance(data, list) and len(data) > 0:
-                return data[0]
-            elif isinstance(data, str):
-                return data
+            if data.get('responseData', {}).get('translatedText'):
+                tr = data['responseData']['translatedText']
+                if "MYMEMORY" not in tr: return tr
     except: pass
-    
+
     return text
 
 def translate_html_content_safe(html_content, source_name):
-    """Çeviriyi paragraf paragraf dinlenerek yapar, HTML'i bozmaz ve spama takılmaz."""
+    """HTML'i bozmadan her paragrafı özenle çevirir."""
     if not html_content: return ""
     soup = BeautifulSoup(html_content, 'html.parser')
-    paragraphs = soup.find_all('p')
-    
-    # Eğer metinde paragraf etiketi yoksa bile düz metni kurtarır
-    if not paragraphs:
-        raw = soup.get_text(strip=True)
-        if len(raw) < 20: return html_content
-        tr_text = custom_translate(raw)
-        return f"<p>{tr_text}</p><br><hr><br><p><b>Kaynak Bilgisi:</b> Bu uluslararası içerik {source_name} üzerinden derlenmiş ve eksiksiz olarak Türkçeye çevrilmiştir.</p>"
-
     translated_html = ""
-    for p in paragraphs:
+    
+    for p in soup.find_all('p'):
         text = p.get_text(strip=True)
         if len(text) > 15:
             tr_text = custom_translate(text)
             translated_html += f"<p>{tr_text}</p>"
-            time.sleep(0.3) # API'yi kitlememek için nefes payı
+            time.sleep(0.5) # Google'ı engellememek için nefes payı
             
+    if not translated_html:
+        raw = soup.get_text(strip=True)
+        if len(raw) > 15:
+            translated_html = f"<p>{custom_translate(raw)}</p>"
+        else:
+            return html_content
+
     translated_html += f"<br><hr><br><p><b>Kaynak Bilgisi:</b> Bu uluslararası içerik {source_name} üzerinden derlenmiş ve eksiksiz olarak Türkçeye çevrilmiştir.</p>"
     return translated_html
 
-# --- 2. YERLİ HABER TEMİZLEYİCİSİ ---
+# --- AKILLI ÇÖP METİN FİLTRESİ ---
 def clean_turkish_content(html_content, source_name):
+    """Kayıp Rıhtım vb. sitelerden gelen tarih, yazar ve yorum metinlerini siler."""
     if not html_content: return ""
     soup = BeautifulSoup(html_content, 'html.parser')
     for a in soup.find_all('a'): a.unwrap()
     for img in soup.find_all('img'): img.decompose()
 
     valid_html = ""
+    months = ["ocak", "şubat", "mart", "nisan", "mayıs", "haziran", "temmuz", "ağustos", "eylül", "ekim", "kasım", "aralık"]
+    
     for p in soup.find_all('p'):
         text = p.get_text(strip=True)
         text_lower = text.lower()
-        if len(text) < 100 and ("yorum" in text_lower or "ağustos" in text_lower or "eylül" in text_lower):
+        
+        # Çöp Metin Yakalayıcısı
+        if len(text) < 150:
+            if "yorum" in text_lower and any(c.isdigit() for c in text): continue
+            if "okuma süresi" in text_lower: continue
+            if "yazar:" in text_lower: continue
+            if "tarafından yazıldı" in text_lower: continue
+            # Tarih Satırları (Örn: 29 Ağustos 2026) noktalama ile bitmez.
+            if any(m in text_lower for m in months) and any(c.isdigit() for c in text) and not text.endswith('.'):
+                continue
+                
+        if any(w in text_lower for w in ['devamını oku', 'read more', 'tıklayın', 'bu yazı ilk önce', 'tamamını oku', 'haberin devamı']):
             continue
-        if any(w in text_lower for w in ['devamını oku', 'read more', 'tıklayın', 'bu yazı ilk önce']):
-            continue
-        if len(text) > 30:
+            
+        if len(text) > 40:
             valid_html += f"<p>{text}</p>"
             
     if not valid_html:
@@ -194,7 +202,7 @@ def clean_turkish_content(html_content, source_name):
         
     return valid_html + f"<br><hr><br><p><b>Kaynak Bilgisi:</b> Bu içerik {source_name} üzerinden derlenmiştir.</p>"
 
-# --- 3. DUVAR AŞICI RSS ÇEKİCİ ---
+# --- DUVAR AŞICI RSS ÇEKİCİ ---
 def get_safe_feed(url):
     try:
         r2j_url = f"https://api.rss2json.com/v1/api.json?rss_url={requests.utils.quote(url)}"
