@@ -3,6 +3,7 @@ import json
 import os
 import requests
 from bs4 import BeautifulSoup
+from deep_translator import GoogleTranslator
 from google.oauth2 import service_account
 from googleapiclient.discovery import build
 from googleapiclient.http import MediaIoBaseUpload
@@ -80,7 +81,7 @@ PINNED_INTERVIEW = {
     
     <br><hr><br><p><b>Kaynak Bilgisi:</b> Bu özel röportaj Edebiyat Gündemi için derlenmiştir.</p>
     """,
-    "image": "tolga_ozdogan.png", 
+    "image": "images/tolga_ozdogan.png", 
     "isForeign": False
 }
 
@@ -111,37 +112,80 @@ RSS_SOURCES_INTERVIEWS = [
     {"url": "https://www.edebiyathaber.net/tag/roportaj/feed/", "name": "Edebiyat Haber Röportaj"}
 ]
 
-# --- KUSURSUZ GİZLİ ÇEVİRİ MOTORU (DIŞ KÜTÜPHANELERDEN BAĞIMSIZ) ---
-def custom_google_translate(text):
-    """Google Translate'in dahili, engellenmeyen (gtx) endpoint'ini kullanarak çeviri yapar."""
+# --- %100 ÇEVİRİ VE DUVAR AŞICI ALTYAPI ---
+def robust_translate(text):
+    """Google Translator çökerse limitsiz yedek MyMemory API'sine geçer."""
     if not text or len(text.strip()) < 3: 
         return text
+    safe_text = text[:4000]
+    
+    # 1. Tercih: Deep Translator
     try:
-        url = "https://translate.googleapis.com/translate_a/single"
-        params = {
-            "client": "gtx",
-            "sl": "en",
-            "tl": "tr",
-            "dt": "t",
-            "q": text
-        }
-        res = requests.get(url, params=params, timeout=10)
+        time.sleep(0.5)
+        tr = GoogleTranslator(source='en', target='tr').translate(safe_text)
+        if tr and "Error 500" not in tr:
+            return tr
+    except:
+        pass
+        
+    # 2. Tercih (Yedek Kalkan): MyMemory API (Hata almaz)
+    try:
+        url = f"https://api.mymemory.translated.net/get?q={requests.utils.quote(safe_text[:400])}&langpair=en|tr&de=tolgaozdogan@gmail.com"
+        res = requests.get(url, timeout=5)
         if res.status_code == 200:
             data = res.json()
-            # Çevrilen cümle parçalarını birleştirir
-            translated_text = "".join([i[0] for i in data[0] if i[0]])
-            return translated_text
-    except Exception:
+            if data.get('responseData', {}).get('translatedText'):
+                fallback_tr = data['responseData']['translatedText']
+                if "MYMEMORY WARNING" not in fallback_tr:
+                    return fallback_tr
+    except:
         pass
-    return text
+        
+    return safe_text
 
-# --- YENİ NESİL AĞ AŞICI (PROXY) VE RSS OKUYUCU ---
+def translate_html_content_safe(html_content, source_name):
+    """HTML'de <p> etiketi olmasa bile düz metni yakalayıp ÇEVİRİR."""
+    if not html_content: return ""
+    
+    try:
+        soup = BeautifulSoup(html_content, 'html.parser')
+        paragraphs = soup.find_all('p')
+        translated_html = ""
+        
+        # EĞER METİNDE PARAGRAF (<p>) ETİKETİ YOKSA (Bug tam buradaydı!)
+        if not paragraphs:
+            raw_text = soup.get_text(strip=True)
+            if len(raw_text) > 10:
+                tr_text = robust_translate(raw_text)
+                return f"<p>{tr_text}</p><br><hr><br><p><b>Kaynak Bilgisi:</b> Bu uluslararası içerik {source_name} üzerinden derlenmiş ve eksiksiz olarak Türkçeye çevrilmiştir.</p>"
+            return html_content
+
+        # NORMAL HTML <p> DÖNGÜSÜ
+        for p in paragraphs:
+            text = p.get_text(strip=True)
+            if len(text) > 15:
+                tr_text = robust_translate(text)
+                translated_html += f"<p>{tr_text}</p>"
+                
+        translated_html += f"<br><hr><br><p><b>Kaynak Bilgisi:</b> Bu uluslararası içerik {source_name} üzerinden derlenmiş ve eksiksiz olarak Türkçeye çevrilmiştir.</p>"
+        return translated_html
+    except:
+        return html_content
+
 def get_safe_feed(url):
-    """Bulunabilen tüm açık proxy ağlarını ve RSS2JSON'u deneyerek RSS'i çeker."""
-    # 1. RSS2JSON API
+    """Cloudflare duvarlarını aşmak için farklı tüneller kullanır."""
+    headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36'}
+    
+    # 1. Normal İstek
+    try:
+        feed = feedparser.parse(url, agent='Mozilla/5.0')
+        if feed and feed.entries: return feed
+    except: pass
+    
+    # 2. RSS2JSON API Tüneli
     try:
         r2j_url = f"https://api.rss2json.com/v1/api.json?rss_url={requests.utils.quote(url)}"
-        res = requests.get(r2j_url, timeout=15)
+        res = requests.get(r2j_url, timeout=10)
         if res.status_code == 200:
             data = res.json()
             if data.get('status') == 'ok':
@@ -159,21 +203,26 @@ def get_safe_feed(url):
                     if item.get('thumbnail'): entry['media_thumbnail'] = [{'url': item['thumbnail']}]
                     if item.get('enclosure'): entry['enclosures'] = [{'href': item['enclosure'].get('link'), 'type': 'image'}]
                     dummy.entries.append(entry)
-                if dummy.entries: 
-                    return dummy
+                if dummy.entries: return dummy
     except: pass
     
-    # 2. Direkt Bağlantı
+    # 3. AllOrigins Tüneli
     try:
-        feed = feedparser.parse(url)
+        ao_url = f"https://api.allorigins.win/raw?url={requests.utils.quote(url)}"
+        res = requests.get(ao_url, timeout=10)
+        feed = feedparser.parse(res.content)
         if feed and feed.entries: return feed
     except: pass
+    
     return None
 
 def extract_image_from_rss(entry, content):
-    if entry.get('media_content') and entry['media_content']: return entry['media_content'][0].get('url')
-    if entry.get('media_thumbnail') and entry['media_thumbnail']: return entry['media_thumbnail'][0].get('url')
-    if entry.get('enclosures') and entry['enclosures']:
+    if isinstance(entry, dict) and entry.get('media_content'): return entry['media_content'][0].get('url')
+    if isinstance(entry, dict) and entry.get('media_thumbnail'): return entry['media_thumbnail'][0].get('url')
+    if hasattr(entry, 'enclosures') and entry.enclosures:
+        for enc in entry.enclosures:
+            if 'image' in enc.get('type', ''): return enc['href']
+    if isinstance(entry, dict) and entry.get('enclosures'):
         for enc in entry['enclosures']:
             if 'image' in enc.get('type', ''): return enc['href']
     if content:
@@ -186,18 +235,18 @@ def get_full_article_and_image(url, fallback_html):
     full_html = fallback_html
     og_image = None
     html_text = ""
+    headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'}
     
-    # Cloudflare'ı atlatmak için güçlü proxy rotaları
+    # 3 Farklı Proxy ile Bağlanmayı Dene
     proxies = [
         url,
         f"https://corsproxy.io/?{requests.utils.quote(url)}",
         f"https://api.allorigins.win/raw?url={requests.utils.quote(url)}"
     ]
     
-    headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36'}
     for p in proxies:
         try:
-            res = requests.get(p, headers=headers, timeout=12)
+            res = requests.get(p, headers=headers, timeout=10)
             if res.status_code == 200 and "<html" in res.text.lower():
                 html_text = res.text
                 break
@@ -213,34 +262,9 @@ def get_full_article_and_image(url, fallback_html):
             paragraphs = soup.find_all('p')
             article_ps = [p.get_text(strip=True) for p in paragraphs if len(p.get_text(strip=True)) > 50]
             if len(article_ps) > 2:
-                full_html = "".join([f"<p>{text}</p>" for text in article_ps[:12]])
+                full_html = "".join([f"<p>{text}</p>" for text in article_ps[:10]])
         except: pass
     return full_html, og_image
-
-def translate_html_content_safe(html_content, source_name):
-    """HTML yapısını koruyarak, engelsiz dahili API ile paragraf paragraf çeviri yapar."""
-    if not html_content: return ""
-    try:
-        soup = BeautifulSoup(html_content, 'html.parser')
-        translated_html = ""
-        has_translation = False
-        
-        for p in soup.find_all('p'):
-            text = p.get_text(strip=True)
-            if len(text) > 15:
-                # İngilizce metni doğrudan Google Translate dahili API'sine yolluyoruz
-                tr_text = custom_google_translate(text)
-                translated_html += f"<p>{tr_text}</p>"
-                has_translation = True
-                time.sleep(0.3)
-                
-        if not has_translation:
-            return html_content
-            
-        translated_html += f"<br><hr><br><p><b>Kaynak Bilgisi:</b> Bu uluslararası içerik {source_name} üzerinden derlenmiş ve eksiksiz olarak Türkçeye çevrilmiştir.</p>"
-        return translated_html
-    except:
-        return html_content
 
 def clean_turkish_content(html_content, source_name):
     try:
@@ -277,28 +301,31 @@ def fetch_news():
         feed = get_safe_feed(source["url"])
         if not feed: continue
         is_foreign = source.get("isForeign", False)
-        for entry in feed.entries[:3]:
+        for entry in getattr(feed, 'entries', [])[:3]:
             try:
-                title = entry.get('title', '')
+                title = entry.get('title', '') if isinstance(entry, dict) else getattr(entry, 'title', '')
                 if any(w in title.lower() for w in ['röportaj', 'söyleşi', 'interview']): continue
                 
-                link = entry.get('link', '')
-                base_content = entry.get('summary', '') or entry.get('description', '')
-                if entry.get('content'): base_content = entry['content'][0].get('value', base_content)
+                link = entry.get('link', '') if isinstance(entry, dict) else getattr(entry, 'link', '')
+                base_content = entry.get('summary', '') if isinstance(entry, dict) else getattr(entry, 'summary', '')
+                if isinstance(entry, dict) and entry.get('content'): base_content = entry['content'][0].get('value', base_content)
+                elif hasattr(entry, 'content'): base_content = entry.content[0].value
                 
                 rss_image = extract_image_from_rss(entry, base_content)
                 full_html, og_image = get_full_article_and_image(link, base_content)
                 final_image = og_image or rss_image or "https://images.unsplash.com/photo-1506880018603-83d5b814b5a6?auto=format&fit=crop&w=1200&q=80"
                 
                 if is_foreign:
-                    title = custom_google_translate(title)
+                    title = robust_translate(title)
                     final_content = translate_html_content_safe(full_html, source["name"])
                 else:
                     final_content = clean_turkish_content(full_html, source["name"])
 
                 plain_desc = BeautifulSoup(final_content, 'html.parser').get_text()[:200] + "..."
+                pub_date = entry.get('published', 'Güncel') if isinstance(entry, dict) else getattr(entry, 'published', 'Güncel')
+                
                 all_articles.append({
-                    "title": title, "link": "#", "source": source["name"], "date": entry.get('published', 'Güncel'),
+                    "title": title, "link": "#", "source": source["name"], "date": pub_date,
                     "category": "KİTAP / EDEBİYAT", "desc": plain_desc, "content": final_content,
                     "image": final_image, "isForeign": is_foreign
                 })
@@ -312,26 +339,29 @@ def fetch_interviews():
         feed = get_safe_feed(source["url"])
         if not feed: continue
         is_foreign = source.get("isForeign", False)
-        for entry in feed.entries[:4]:
+        for entry in getattr(feed, 'entries', [])[:4]:
             try:
-                title = entry.get('title', '')
-                link = entry.get('link', '')
-                base_content = entry.get('summary', '') or entry.get('description', '')
-                if entry.get('content'): base_content = entry['content'][0].get('value', base_content)
+                title = entry.get('title', '') if isinstance(entry, dict) else getattr(entry, 'title', '')
+                link = entry.get('link', '') if isinstance(entry, dict) else getattr(entry, 'link', '')
+                base_content = entry.get('summary', '') if isinstance(entry, dict) else getattr(entry, 'summary', '')
+                if isinstance(entry, dict) and entry.get('content'): base_content = entry['content'][0].get('value', base_content)
+                elif hasattr(entry, 'content'): base_content = entry.content[0].value
                 
                 rss_image = extract_image_from_rss(entry, base_content)
                 full_html, og_image = get_full_article_and_image(link, base_content)
                 final_image = og_image or rss_image or "https://images.unsplash.com/photo-1506880018603-83d5b814b5a6?auto=format&fit=crop&w=1200&q=80"
                 
                 if is_foreign:
-                    title = custom_google_translate(title)
+                    title = robust_translate(title)
                     final_content = translate_html_content_safe(full_html, source["name"])
                 else:
                     final_content = clean_turkish_content(full_html, source["name"])
 
                 plain_desc = BeautifulSoup(final_content, 'html.parser').get_text()[:200] + "..."
+                pub_date = entry.get('published', 'Güncel') if isinstance(entry, dict) else getattr(entry, 'published', 'Güncel')
+
                 all_interviews.append({
-                    "title": title, "link": "#", "source": source['name'], "date": entry.get('published', 'Güncel'),
+                    "title": title, "link": "#", "source": source['name'], "date": pub_date,
                     "category": "ULUSLARARASI SÖYLEŞİ" if is_foreign else "ÖZEL SÖYLEŞİ",
                     "desc": plain_desc, "content": final_content,
                     "image": final_image, "isForeign": is_foreign
@@ -339,7 +369,6 @@ def fetch_interviews():
             except: continue
             
     all_interviews.sort(key=lambda x: x.get('date', ''), reverse=True)
-    # SABİT RÖPORTAJINIZ KESİN OLARAK BAŞA EKLENİR
     all_interviews.insert(0, PINNED_INTERVIEW)
     
     return all_interviews[:100]
