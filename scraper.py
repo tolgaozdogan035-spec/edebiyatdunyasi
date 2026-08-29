@@ -11,42 +11,45 @@ import io
 import time
 
 # -------------------------------------------------------------------------
-# 1. ANA SAYFA (index.html) İÇİ HABER KAYNAKLARI LİSTESİ
+# 1. ANA SAYFA (index.html) İÇİ EDEBİYAT, KİTAP VE ELEŞTİRİ AĞIRLIKLI KAYNAKLAR
 # -------------------------------------------------------------------------
 RSS_SOURCES_NEWS = [
+    # Türkiye'nin Seçkin Edebiyat ve Kitap Platformları
     {"url": "https://www.edebiyathaber.net/feed/", "name": "Edebiyat Haber"},
     {"url": "https://kayiprihtim.com/feed/", "name": "Kayıp Rıhtım"},
     {"url": "https://kitapeki.com/feed/", "name": "Kitap Eki"},
-    {"url": "https://k24kitap.org/rss", "name": "K24"}, 
-    {"url": "https://oggito.com/rss", "name": "Oggito"},
+    {"url": "https://k24kitap.org/rss", "name": "K24 (Kriter & Edebiyat)"}, 
+    {"url": "https://oggito.com/rss", "name": "Oggito Edebiyat"},
     {"url": "https://sanatkritik.com/feed/", "name": "Sanat Kritik"},
     {"url": "https://www.sabitfikir.com/rss", "name": "Sabitfikir"},
-    {"url": "https://kalemkahveklavye.com/feed/", "name": "KalemKahveKlavye"},
+    {"url": "https://kalemkahveklavye.com/feed/", "name": "Kalem Kahve Klavye"},
     {"url": "https://literaedebiyat.com/feed/", "name": "Litera Edebiyat"},
     {"url": "https://parsomenfanzin.com/feed/", "name": "Parşömen Fanzin"},
     {"url": "https://fikiredebiyat.com.tr/rss/kitap", "name": "Fikir Edebiyat"},
-    {"url": "https://www.haberturk.com/rss/kategori/kultur-sanat.xml", "name": "Habertürk Kültür"},
-    {"url": "https://www.ntv.com.tr/sanat.rss", "name": "NTV Sanat"},
-    {"url": "https://www.cumhuriyet.com.tr/rss/kultur-sanat.xml", "name": "Cumhuriyet Kültür"},
-    {"url": "https://www.trthaber.com/kultur-sanat_articles.rss", "name": "TRT Sanat"},
-    {"url": "https://www.sozcu.com.tr/rss/kultur-sanat.xml", "name": "Sözcü Sanat"},
-    {"url": "https://www.sabah.com.tr/rss/kultur-sanat.xml", "name": "Sabah Kültür"},
-    {"url": "https://www.gazeteduvar.com.tr/rss/kultur-sanat", "name": "Gazete Duvar Kültür"},
+    {"url": "https://www.agos.com.tr/tr/rss/kultur", "name": "Agos Kitap & Kültür"},
+    {"url": "https://www.dunyakitap.com.tr/rss", "name": "Dünya Kitap"},
+    
+    # Uluslararası Prestijli Edebiyat ve Kitap İnceleme Mecraları (Çevrilecek)
     {"url": "https://www.theguardian.com/books/rss", "name": "The Guardian Books"},
     {"url": "https://lithub.com/feed/", "name": "Literary Hub"},
     {"url": "https://electricliterature.com/feed/", "name": "Electric Literature"},
     {"url": "https://www.theparisreview.org/blog/feed/", "name": "The Paris Review"},
-    {"url": "https://www.publishersweekly.com/pw/rss/category/international.xml", "name": "Publishers Weekly"}
+    {"url": "https://www.bookforum.com/feed", "name": "Bookforum"},
+    {"url": "https://lareviewofbooks.org/feed/", "name": "Los Angeles Review of Books"},
+    {"url": "https://granta.com/feed/", "name": "Granta Magazine"}
 ]
 
 # -------------------------------------------------------------------------
-# 2. RÖPORTAJ SAYFASI (soylesi.html) İÇİN ÇOKLU KAYNAKLAR
+# 2. RÖPORTAJ SAYFASI (soylesi.html) İÇİN DÜNYANIN EN ÜNLÜ SÖYLEŞİ KAYNAKLARI
 # -------------------------------------------------------------------------
 RSS_SOURCES_INTERVIEWS = [
-    {"url": "https://electricliterature.com/feed/", "name": "Electric Lit"},
-    {"url": "https://lithub.com/feed/", "name": "Literary Hub"},
-    {"url": "https://www.theguardian.com/books/rss", "name": "The Guardian"},
-    {"url": "https://www.theparisreview.org/blog/feed/", "name": "The Paris Review"}
+    {"url": "https://www.theparisreview.org/blog/feed/", "name": "The Paris Review (Söyleşiler)"},
+    {"url": "https://lithub.com/category/interviews/feed/", "name": "Literary Hub Interviews"},
+    {"url": "https://electricliterature.com/category/interviews/feed/", "name": "Electric Lit Söyleşileri"},
+    {"url": "https://lareviewofbooks.org/feed/", "name": "LARB Interviews"},
+    {"url": "https://granta.com/feed/", "name": "Granta Söyleşileri"},
+    {"url": "https://bombmagazine.org/rss/", "name": "BOMB Magazine Interviews"},
+    {"url": "https://www.theguardian.com/books/interviews/rss", "name": "The Guardian Books Interviews"}
 ]
 
 # ================= ORTAK YARDIMCI FONKSİYONLAR =================
@@ -61,7 +64,7 @@ def extract_image(entry, content):
         soup = BeautifulSoup(content, 'html.parser')
         img = soup.find('img')
         if img and img.get('src'): return img['src']
-    return "https://images.unsplash.com/photo-1481627834876-b7833e8f5570?auto=format&fit=crop&w=1200&q=80"
+    return "https://images.unsplash.com/photo-1506880018603-83d5b814b5a6?auto=format&fit=crop&w=1200&q=80"
 
 def translate_text(text):
     """Güvenli ve gecikmeli çeviri motoru"""
@@ -102,11 +105,11 @@ def save_to_google_drive(json_str, file_name):
     except Exception as e:
         print(f"Drive Hatası ({file_name}): {e}")
 
-# ================= YABANCI HABERLER İÇİN İÇERİK ÇEVİRİSİ =================
+# ================= İÇERİK ÇEVİRİSİ =================
 
 def translate_html_content(html_content, source_name, article_link):
     if not html_content: 
-        return f"<p><i>Bu haber {source_name} editoryal arşivinden derlenmiştir. Detaylar için orijinal bağlantıyı ziyaret edebilirsiniz.</i></p>"
+        return f"<p><i>Bu içerik {source_name} editoryal arşivinden derlenmiştir. Detaylar için orijinal bağlantıyı ziyaret edebilirsiniz.</i></p>"
     
     soup = BeautifulSoup(html_content, 'html.parser')
     paragraphs = soup.find_all('p')
@@ -114,11 +117,11 @@ def translate_html_content(html_content, source_name, article_link):
     translated_html = ""
     if len(paragraphs) == 0:
         raw_text = soup.get_text()
-        trans = translate_text(raw_text[:600])
+        trans = translate_text(raw_text[:700])
         translated_html = f"<p>{trans}</p>"
     else:
         for i, p in enumerate(paragraphs):
-            if i < 4: # İlk 4 paragrafı çevir
+            if i < 6: # Edebiyat içeriklerinin zenginliği için paragraf sayısı artırıldı
                 orig = p.get_text()
                 if len(orig.strip()) > 5:
                     trans = translate_text(orig)
@@ -129,34 +132,31 @@ def translate_html_content(html_content, source_name, article_link):
             else:
                 break
             
-    translated_html += f"<br><hr><br><p><b>Kaynak Notu:</b> Bu içerik {source_name} kaynağından Türkçeye çevrilmiştir. Haberin tamamına <a href='{article_link}' target='_blank' style='color:#721c24; font-weight:bold;'>orijinal kaynaktan</a> ulaşabilirsiniz.</p>"
+    translated_html += f"<br><hr><br><p><b>Kaynak Notu:</b> Bu editoryal içerik {source_name} kaynağından Türkçeye çevrilmiştir. Metnin tamamına <a href='{article_link}' target='_blank' style='color:#1d4ed8; font-weight:bold;'>orijinal kaynaktan</a> ulaşabilirsiniz.</p>"
     return translated_html
 
 # ================= HABERLERİ İŞLEME (INDEX.HTML) =================
 
 def assign_category_news(title, content):
     combined = (str(title) + " " + str(content)).upper()
-    if any(k in combined for k in ['KİTAP', 'ROMAN', 'ÖYKÜ', 'ŞİİR', 'YENİ ÇIKAN', 'YAYINEVİ', 'ÇEVİRİ']):
+    if any(k in combined for k in ['KİTAP', 'ROMAN', 'ÖYKÜ', 'ŞİİR', 'YENİ ÇIKAN', 'YAYINEVİ', 'ÇEVİRİ', 'EDEBİYAT']):
         return 'KİTAP / EDEBİYAT'
-    if any(k in combined for k in ['SERGİ', 'TİYATRO', 'SİNEMA', 'MÜZE', 'FESTİVAL', 'KONSER']):
-        return 'KÜLTÜR - SANAT'
-    return 'GÜNCEL GELİŞME'
+    if any(k in combined for k in ['ELEŞTİRİ', 'İNCELEME', 'ANALİZ', 'DENEME']):
+        return 'ELEŞTİRİ & İNCELEME'
+    return 'EDEBİYAT GÜNDEMİ'
 
 def fetch_news():
     all_articles = []
     for source in RSS_SOURCES_NEWS:
         try:
             feed = feedparser.parse(source["url"])
-            is_foreign = any(domain in source["url"] for domain in ['guardian', 'lithub', 'publishers', 'parisreview', 'electricliterature'])
+            is_foreign = any(domain in source["url"] for domain in ['guardian', 'lithub', 'publishers', 'parisreview', 'electricliterature', 'bookforum', 'lareviewofbooks', 'granta'])
             
-            for entry in feed.entries[:5]:
+            for entry in feed.entries[:4]:
                 title = entry.get('title', '')
-                if any(w in title.lower() for w in ['röportaj', 'söyleşi', 'interview']): continue
-
                 content = entry.get('content', [{'value': ''}])[0].get('value', '') or entry.get('summary', '') or entry.get('description', '')
                 image = extract_image(entry, content)
                 
-                # Eğer yabancı kaynaksa hem başlığı hem içeriği Türkçeye çevir
                 if is_foreign:
                     title = translate_text(title)
                     time.sleep(0.3)
@@ -229,20 +229,20 @@ if __name__ == "__main__":
     os.makedirs("haberler", exist_ok=True)
 
     print("------------------------------------------")
-    print("Haberler taranıyor ve yabancı kaynaklar Türkçeye çevriliyor...")
+    print("Edebiyat odaklı haberler ve köşe yazıları taranıyor...")
     news_articles = fetch_news()
     news_json = json.dumps(news_articles, ensure_ascii=False, indent=4)
     with open("haberler/haberler.json", "w", encoding="utf-8") as f:
         f.write(news_json)
     save_to_google_drive(news_json, "edebiyat_gundemi_arsiv.json")
-    print(f"Toplam {len(news_articles)} haber kaydedildi.")
+    print(f"Toplam {len(news_articles)} edebiyat içeriği kaydedildi.")
 
     print("------------------------------------------")
-    print("Çoklu kaynaklardan röportajlar taranıyor ve Türkçeye çevriliyor...")
+    print("Dünyanın en ünlü edebi dergilerinden söyleşiler taranıyor ve çevriliyor...")
     interviews = fetch_interviews()
     interviews_json = json.dumps(interviews, ensure_ascii=False, indent=4)
     with open("haberler/soylesiler.json", "w", encoding="utf-8") as f:
         f.write(interviews_json)
     save_to_google_drive(interviews_json, "edebiyat_gundemi_soylesiler.json")
-    print(f"Toplam {len(interviews)} söyleşi çoklu kaynaklardan derlenerek Türkçeye çevrildi.")
+    print(f"Toplam {len(interviews)} prestijli uluslararası söyleşi başarıyla işlendi.")
     print("------------------------------------------")
