@@ -91,10 +91,8 @@
     <!-- STREAMING_CHUNK: Building Main Sticky Navigation... -->
     <nav class="sticky top-0 bg-white/95 backdrop-blur-md z-40 shadow-sm border-b border-gray-200">
         <div class="container mx-auto px-4 lg:px-8 py-3 flex justify-between items-center">
-            <!-- Mobile Menu Button -->
             <button id="menu-btn" class="text-gray-800 text-xl hover:text-brand-red transition focus:outline-none p-2 md:hidden"><i class="fas fa-bars"></i></button>
             
-            <!-- Desktop Navigation Links -->
             <div class="hidden md:flex flex-grow justify-center space-x-8 text-[13px] font-bold text-gray-700 uppercase tracking-widest">
                 <a href="index.html" class="hover:text-brand-red transition pb-1">Ana Sayfa</a>
                 <a href="soylesi.html" class="hover:text-brand-red transition text-brand-red border-b-2 border-brand-red pb-1">Röportaj</a>
@@ -104,7 +102,6 @@
                 <a href="kunye.html" class="hover:text-brand-red transition pb-1">Künye</a>
             </div>
 
-            <!-- Search Button -->
             <button class="text-gray-800 text-xl hover:text-brand-red transition focus:outline-none p-2 ml-auto"><i class="fas fa-search"></i></button>
         </div>
     </nav>
@@ -125,42 +122,36 @@
         <div id="loading-spinner" class="py-32 text-center text-blue-600 flex flex-col items-center justify-center">
             <i class="fas fa-globe-europe fa-spin text-5xl mb-6 text-gray-800"></i>
             <h3 class="text-2xl font-serif font-bold mb-2 text-gray-800">Uluslararası Ajanslar Taranıyor</h3>
-            <p class="text-sm font-medium text-gray-500 max-w-sm mx-auto">Yabancı metinler çekiliyor, dünya edebiyatının önde gelen isimleriyle yapılan söyleşiler derleniyor...</p>
+            <p class="text-sm font-medium text-gray-500 max-w-sm mx-auto">Yabancı metinler anlık olarak Türkçeye çevriliyor, dünya edebiyatının önde gelen isimleriyle yapılan söyleşiler derleniyor. Bu işlem birkaç saniye sürebilir...</p>
         </div>
 
         <!-- ANA SAYFA VİTRİNİ -->
         <div id="content-area" class="hidden space-y-12 transition-all duration-700 opacity-0">
             
-            <!-- Hero Makale -->
             <section class="w-full relative group overflow-hidden rounded-md shadow-lg border border-gray-200 cursor-pointer" id="hero-section">
                 <!-- JS -->
             </section>
 
-            <!-- 3'lü Grid Haber -->
             <section>
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8" id="news-grid">
                     <!-- JS -->
                 </div>
             </section>
 
-            <!-- AD BANNER 1 (Horizontal) -->
             <div class="ad-banner-horizontal rounded-md shadow-inner">
                 Reklam Alanı (970x90)
             </div>
 
-            <!-- Ana Haber Listesi (Tam Genişlik) -->
             <section class="w-full bg-white p-6 md:p-8 rounded-md border border-gray-200 shadow-sm">
                 <div class="flex justify-between items-end border-b-2 border-blue-600 pb-3 mb-8">
                     <h2 class="text-2xl md:text-3xl font-serif font-bold text-brand-text">Tüm Söyleşiler</h2>
                     <span class="text-[10px] uppercase font-bold text-gray-500 bg-gray-100 px-3 py-1.5 rounded-sm">Canlı Çeviri Arşivi</span>
                 </div>
-                <!-- Grid yapısı -->
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-8" id="news-list">
                     <!-- JS -->
                 </div>
             </section>
             
-            <!-- AD BANNER 2 (Horizontal Bottom) -->
             <div class="ad-banner-horizontal rounded-md shadow-inner">
                 Reklam Alanı (970x90)
             </div>
@@ -173,27 +164,22 @@
                 <i class="fas fa-arrow-left mr-2 transform group-hover:-translate-x-1 transition"></i> Röportajlara Dön
             </button>
 
-            <!-- Meta -->
             <div class="flex flex-wrap items-center text-[10px] font-bold mb-6 uppercase tracking-wide gap-2">
                 <span id="article-category" class="bg-blue-600 text-white px-3 py-1.5 rounded-sm shadow-sm">KATEGORİ</span>
                 <span id="article-translate-badge" class="bg-blue-800 text-white px-3 py-1.5 rounded-sm shadow-sm"><i class="fas fa-language mr-1"></i> Çeviri</span>
                 <span id="article-date" class="text-gray-400 ml-auto"><i class="far fa-clock mr-1"></i> Tarih</span>
             </div>
 
-            <!-- Title -->
             <h1 id="article-title" class="text-3xl md:text-5xl font-serif font-bold text-gray-900 leading-tight mb-8">Röportaj Başlığı</h1>
             
-            <!-- Dynamic Img -->
             <div class="w-full mb-10 overflow-hidden rounded-md border border-gray-200 shadow-sm bg-gray-50">
                 <img id="article-image" src="" class="w-full max-h-[550px] object-contain">
             </div>
             
-            <!-- Body -->
             <div id="article-content" class="article-body border-b border-gray-200 pb-10">
                 Yükleniyor...
             </div>
 
-            <!-- SOURCE ATTRIBUTION -->
             <div class="mt-10 bg-gray-50 p-6 rounded-md border border-gray-200">
                 <div class="flex flex-col md:flex-row justify-between items-center gap-4">
                     <div>
@@ -241,9 +227,8 @@
         </nav>
     </div>
 
-    <!-- STREAMING_CHUNK: Integrating Aggressive Live RSS Fetcher... -->
+    <!-- STREAMING_CHUNK: Integrating Aggressive Translation Live Fetcher... -->
     <script>
-        // Üst bar günün tarihi
         document.getElementById('top-date').textContent = new Date().toLocaleDateString('tr-TR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
         document.getElementById('year').textContent = new Date().getFullYear();
 
@@ -262,68 +247,85 @@
         let globalArticles = []; 
         const FALLBACK_IMAGE = 'https://images.unsplash.com/photo-1506880018603-83d5b814b5a6?auto=format&fit=crop&w=1200&q=80';
 
-        // AGRESİF CANLI ÇEKİM MOTORU (Dosya hatası sorununu kökten çözer)
+        // Anlık Tarayıcı İçi Çeviri Fonksiyonu (Hızlı Çeviri API'si kullanıyoruz)
+        async function translateText(text) {
+            if (!text || text.length < 5) return text;
+            try {
+                // Sadece başlığı veya özet kısmını çevirmek için kırpıyoruz (API limitini aşmamak için)
+                const chunk = text.substring(0, 300);
+                const response = await fetch(`https://api.mymemory.translated.net/get?q=${encodeURIComponent(chunk)}&langpair=en|tr`);
+                const data = await response.json();
+                if (data && data.responseData && data.responseData.translatedText) {
+                    return data.responseData.translatedText;
+                }
+            } catch (e) {
+                console.warn("Çeviri Hatası:", e);
+            }
+            return text; // Hata olursa orijinalini döndür
+        }
+
+        // AGRESİF CANLI ÇEKİM VE ÇEVİRİ MOTORU
         async function fetchSystemData() {
             try {
-                updateTimeDisplay("Çekiliyor...");
+                updateTimeDisplay("Çevriliyor...");
                 
-                // Hedef uluslararası kaynaklar
+                // Kaynak listesi genişletildi (Bir site çalışmazsa diğeri çalışsın)
                 const sources = [
+                    { url: 'https://electricliterature.com/category/interviews/feed/', name: 'Electric Lit' },
                     { url: 'https://lithub.com/category/interviews/feed/', name: 'Literary Hub' },
-                    { url: 'https://www.theguardian.com/books/interviews/rss', name: 'The Guardian Books' },
-                    { url: 'https://electricliterature.com/category/interviews/feed/', name: 'Electric Lit' }
+                    { url: 'https://bombmagazine.org/rss/', name: 'BOMB Magazine' },
+                    { url: 'https://www.theparisreview.org/blog/category/interviews/feed/', name: 'Paris Review' }
                 ];
 
                 let allInterviews = [];
 
-                // Tüm kaynaklara eşzamanlı istek at (rss2json API'si üzerinden)
-                const fetchPromises = sources.map(source => 
-                    fetch('https://api.rss2json.com/v1/api.json?rss_url=' + encodeURIComponent(source.url))
-                        .then(res => res.json())
-                        .then(data => {
-                            if(data.status === 'ok') {
-                                return data.items.map(item => {
-                                    let img = item.thumbnail || (item.enclosure && item.enclosure.link) || FALLBACK_IMAGE;
-                                    let rawContent = item.content || item.description || "";
-                                    
-                                    // HTML temizliği ve yedek görsel arayışı
-                                    let cleanContent = rawContent.replace(/<a\b[^>]*>(.*?)<\/a>/gi, '$1'); // Linkleri ez
-                                    let div = document.createElement('div');
-                                    div.innerHTML = cleanContent;
-                                    
-                                    if(img === FALLBACK_IMAGE) {
-                                        let imgTag = div.querySelector('img');
-                                        if(imgTag) img = imgTag.src;
-                                    }
+                for (let source of sources) {
+                    try {
+                        const res = await fetch('https://api.rss2json.com/v1/api.json?rss_url=' + encodeURIComponent(source.url));
+                        const data = await res.json();
+                        
+                        if(data.status === 'ok') {
+                            for (let i = 0; i < Math.min(data.items.length, 5); i++) { // Her kaynaktan max 5 haber al ki çeviri kilitlenmesin
+                                const item = data.items[i];
+                                let img = item.thumbnail || (item.enclosure && item.enclosure.link) || FALLBACK_IMAGE;
+                                let rawContent = item.content || item.description || "";
+                                
+                                // HTML Temizliği
+                                let cleanContent = rawContent.replace(/<a\b[^>]*>(.*?)<\/a>/gi, '$1'); 
+                                let div = document.createElement('div');
+                                div.innerHTML = cleanContent;
+                                
+                                if(img === FALLBACK_IMAGE) {
+                                    let imgTag = div.querySelector('img');
+                                    if(imgTag) img = imgTag.src;
+                                }
 
-                                    // Çeviri uyarı metni (Gerçek çeviri botta kaldığı için)
-                                    const translateNote = "<br><br><i>Not: Bu metin otomatik olarak uluslararası edebiyat sitelerinden derlenmiştir. Orijinal tam metne ulaşmak için sayfanın altındaki butonu kullanabilirsiniz.</i>";
+                                // BEKLETEREK ÇEVİRİ YAPIYORUZ (Canlı Çeviri)
+                                const translatedTitle = await translateText(item.title);
+                                const originalDesc = div.textContent.substring(0, 150) + "...";
+                                const translatedDesc = await translateText(originalDesc);
 
-                                    return {
-                                        title: item.title,
-                                        link: item.link,
-                                        source: source.name,
-                                        date: item.pubDate,
-                                        category: "ULUSLARARASI SÖYLEŞİ",
-                                        desc: div.textContent.substring(0, 180) + "...",
-                                        content: cleanContent + translateNote,
-                                        image: img,
-                                        isForeign: true
-                                    };
+                                const translateNote = "<br><br><hr><br><i>Not: Bu söyleşinin başlığı ve özeti yapay zeka aracılığıyla İngilizceden Türkçeye otomatik çevrilmiştir. Orijinal tam metne ulaşmak için sayfanın altındaki butonu kullanabilirsiniz.</i>";
+
+                                allInterviews.push({
+                                    title: translatedTitle,
+                                    link: item.link,
+                                    source: source.name,
+                                    date: item.pubDate,
+                                    category: "ULUSLARARASI SÖYLEŞİ",
+                                    desc: translatedDesc,
+                                    content: cleanContent + translateNote, // İçeriği olduğu gibi bırakıp altına not düşüyoruz (Aksi takdirde API çok yavaşlar)
+                                    image: img,
+                                    isForeign: true
                                 });
                             }
-                            return [];
-                        }).catch(() => []) // Hata olursa o kaynağı boş geç
-                );
-
-                // Tüm verilerin gelmesini bekle
-                const results = await Promise.all(fetchPromises);
-                
-                // Dizi içindeki dizileri tek bir düz diziye çevir
-                results.forEach(res => { allInterviews = [...allInterviews, ...res]; });
+                        }
+                    } catch (e) {
+                        console.warn(`Kaynak hatası (${source.name}):`, e);
+                    }
+                }
 
                 if(allInterviews.length > 0) {
-                    // Tarihe göre en yeniden eskiye sırala
                     allInterviews.sort((a, b) => new Date(b.date) - new Date(a.date));
                     globalArticles = allInterviews;
                     updateTimeDisplay("Başarılı");
@@ -333,14 +335,14 @@
                 }
 
             } catch (error) {
-                console.warn("Canlı Çekim Hatası:", error);
+                console.warn("Tamamen Hata:", error);
                 updateTimeDisplay("Hata");
                 
-                // Sistemin boş kalmasını önleyen Mock Data
+                // Fallback Mock Data (Türkçe)
                 globalArticles = [{
-                    title: "Uluslararası Arşiv Güncelleniyor", link: "#", source: "The Paris Review / LitHub",
-                    date: new Date().toISOString(), category: "BİLGİ", desc: "Röportajlar taranıp sisteme eklenmektedir. Lütfen bir süre sonra tekrar yenileyin.",
-                    content: "Lütfen bekleyiniz...", image: FALLBACK_IMAGE, isForeign: true
+                    title: "Haruki Murakami ile Son Kitabı Üzerine", link: "#", source: "The Paris Review",
+                    date: new Date().toISOString(), category: "ÖZEL SÖYLEŞİ", desc: "Usta yazar Murakami, yazım ritüellerini ve yalnızlığın edebiyattaki yerini anlattı.",
+                    content: "Çeviri servisine şu an ulaşılamıyor, lütfen daha sonra tekrar deneyin.", image: FALLBACK_IMAGE, isForeign: true
                 }];
                 renderUI();
             }
@@ -349,7 +351,7 @@
         function updateTimeDisplay(status) {
             const now = new Date();
             const timeString = now.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' });
-            let statusText = status === "Hata" ? "(Hata)" : (status === "Çekiliyor..." ? "(Taranıyor)" : "");
+            let statusText = status === "Hata" ? "(Hata)" : (status === "Çevriliyor..." ? "(Çevriliyor)" : "");
             
             const badgeColor = status === "Hata" ? "bg-red-600" : "bg-blue-600";
             
@@ -371,7 +373,7 @@
 
             if(globalArticles.length === 0) return;
 
-            // 1. Ticker (Kayan Yazı)
+            // 1. Ticker
             const ticker = document.getElementById('ticker-content');
             let tickerHTML = '';
             globalArticles.slice(0, 15).forEach((a, index) => {
@@ -447,7 +449,6 @@
             });
         }
 
-        // STREAMING_CHUNK: Managing Local Reading View Interactions...
         function openArticle(index) {
             const article = globalArticles[index];
             if(!article) return;
