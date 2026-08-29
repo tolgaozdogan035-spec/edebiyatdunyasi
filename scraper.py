@@ -7,6 +7,7 @@ from google.oauth2 import service_account
 from googleapiclient.discovery import build
 from googleapiclient.http import MediaIoBaseUpload
 import io
+import time
 
 # --- SABİTLENMİŞ ÖZEL RÖPORTAJ ---
 PINNED_INTERVIEW = {
@@ -147,9 +148,8 @@ def extract_image_safely(entry, html_content):
 
     return "https://images.unsplash.com/photo-1506880018603-83d5b814b5a6?auto=format&fit=crop&w=1200&q=80"
 
-# --- YARIM HABER VE EKSİK FOTOĞRAF KURTARICI KANCA (YENİ!) ---
+# --- YARIM HABER VE EKSİK FOTOĞRAF KURTARICI KANCA ---
 def scrape_full_article(url, fallback_html, fallback_image):
-    """Haber yarım geldiyse (...) veya fotoğraf yoksa sitenin orijinaline inip söküp alır."""
     headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/121.0.0.0 Safari/537.36'}
     proxies = [url, f"https://api.allorigins.win/raw?url={requests.utils.quote(url)}"]
     
@@ -167,7 +167,6 @@ def scrape_full_article(url, fallback_html, fallback_image):
         
     soup = BeautifulSoup(html_text, 'html.parser')
     
-    # 1. Orijinal Fotoğrafı Sök (Eğer resmimiz standart kitapsa)
     final_img = fallback_image
     if "unsplash.com" in final_img:
         meta_img = soup.find('meta', property='og:image')
@@ -181,10 +180,8 @@ def scrape_full_article(url, fallback_html, fallback_image):
                     final_img = src
                     break
                     
-    # 2. Orijinal Tam Metni Sök (Eğer RSS'ten gelen yarım özetse)
     final_html = fallback_html
     raw_text = BeautifulSoup(fallback_html, 'html.parser').get_text(strip=True)
-    # Eğer metin çok kısaysa veya "..." gibi işaretlerle bitiyorsa kurtar!
     if len(raw_text) < 450 or raw_text.endswith("...") or raw_text.endswith("…") or "[&" in fallback_html:
         article_box = soup.find('article') or soup.find('main') or soup.find('div', class_='content') or soup
         paragraphs = article_box.find_all('p')
@@ -294,11 +291,9 @@ def build_archives():
                 if source.get("is_interview"):
                     is_interview = True
 
-                # Temel verileri al
                 raw_content = get_article_body(entry)
                 final_image = extract_image_safely(entry, raw_content)
                 
-                # YARIM HABER VEYA EKSİK FOTOĞRAF KONTROLÜ (Eğer özet geldiyse orijinaline dal)
                 raw_text_check = BeautifulSoup(raw_content, 'html.parser').get_text(strip=True)
                 if len(raw_text_check) < 450 or raw_text_check.endswith("...") or raw_text_check.endswith("…") or "[&" in raw_content or "unsplash.com" in final_image:
                     if link:
@@ -334,27 +329,10 @@ def build_archives():
     
     return news_list[:150], interviews_list[:150]
 
-if __name__ == "__main__":
-    os.makedirs("haberler", exist_ok=True)
-    print("Yarım haber kurtarıcı aktif. Tüm ulusal kaynaklar taranıyor...")
-    
-    news, interviews = build_archives()
-    
-    try:
-        with open("haberler/haberler.json", "w", encoding="utf-8") as f: json.dump(news, f, ensure_ascii=False, indent=4)
-        save_to_google_drive(json.dumps(news, ensure_ascii=False, indent=4), "edebiyat_gundemi_arsiv.json")
-    except: pass
-    
-    try:
-        with open("haberler/soylesiler.json", "w", encoding="utf-8") as f: json.dump(interviews, f, ensure_ascii=False, indent=4)
-        save_to_google_drive(json.dumps(interviews, ensure_ascii=False, indent=4), "edebiyat_gundemi_soylesiler.json")
-    except: pass
-    
-    print("İşlem eksiksiz tamamlandı.")
 # --- TOLGA ÖZDOĞAN KÖŞE YAZILARI TARAYICISI ---
 def fetch_tolga_articles():
     url = "https://tolgaozdogan.com/kose-yazilari.html"
-    headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'}
+    headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/121.0.0.0'}
     yazilar = []
     
     try:
@@ -362,13 +340,8 @@ def fetch_tolga_articles():
         if res.status_code == 200:
             soup = BeautifulSoup(res.text, 'html.parser')
             
-            # Sitenizdeki yazıların başlıklarını bul (h1, h2, h3 etiketleri veya linkler)
-            # Sitenizin tasarımına göre esnek bir arama yapar:
             cards = soup.find_all('div', class_=lambda x: x and ('card' in x.lower() or 'post' in x.lower() or 'item' in x.lower()))
-            
-            # Eğer div sınıfı bulunamazsa, içindeki <article> veya direkt linkleri ara
-            if not cards:
-                cards = soup.find_all('article')
+            if not cards: cards = soup.find_all('article')
                 
             for card in cards:
                 title_tag = card.find(['h2', 'h3', 'h4'])
@@ -380,11 +353,9 @@ def fetch_tolga_articles():
                 if not link.startswith('http'): 
                     link = "https://tolgaozdogan.com/" + link.lstrip('/')
                 
-                # Tarihi veya okuma süresini bul
                 date_tag = card.find('span', class_=lambda x: x and ('date' in x.lower() or 'time' in x.lower() or 'meta' in x.lower()))
                 date = date_tag.get_text(strip=True) if date_tag else "Güncel"
                 
-                # Özeti bul
                 p_tag = card.find('p')
                 desc = p_tag.get_text(strip=True) if p_tag else title
                 
@@ -404,21 +375,18 @@ if __name__ == "__main__":
     print("Tüm ulusal kaynaklar akıllı motor ile taranıyor...")
     
     news, interviews = build_archives()
-    tolga_yazilari = fetch_tolga_articles() # Sizin yazılarınız çekiliyor
+    tolga_yazilari = fetch_tolga_articles()
     
-    # 1. Haberleri Kaydet
     try:
         with open("haberler/haberler.json", "w", encoding="utf-8") as f: json.dump(news, f, ensure_ascii=False, indent=4)
         save_to_google_drive(json.dumps(news, ensure_ascii=False, indent=4), "edebiyat_gundemi_arsiv.json")
     except: pass
     
-    # 2. Söyleşileri Kaydet
     try:
         with open("haberler/soylesiler.json", "w", encoding="utf-8") as f: json.dump(interviews, f, ensure_ascii=False, indent=4)
         save_to_google_drive(json.dumps(interviews, ensure_ascii=False, indent=4), "edebiyat_gundemi_soylesiler.json")
     except: pass
 
-    # 3. SİZİN YAZILARINIZI KAYDET
     try:
         with open("haberler/tolga_yazilari.json", "w", encoding="utf-8") as f: json.dump(tolga_yazilari, f, ensure_ascii=False, indent=4)
         save_to_google_drive(json.dumps(tolga_yazilari, ensure_ascii=False, indent=4), "tolga_ozdogan_yazilari.json")
