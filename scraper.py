@@ -83,11 +83,12 @@ PINNED_INTERVIEW = {
 }
 
 # --- AKILLI VE ETİKETLİ KAYNAK LİSTESİ ---
-# Artık "is_interview" etiketi True olanlar KESİN olarak Söyleşi sayfasına gidecek!
 ALL_SOURCES = [
-    # --- HABER KAYNAKLARI ---
     {"url": "https://www.edebiyathaber.net/feed/", "name": "Edebiyat Haber", "is_interview": False},
     {"url": "https://kayiprihtim.com/category/haberler/edebiyat/feed/", "name": "Kayıp Rıhtım", "is_interview": False},
+    {"url": "https://kayiprihtim.com/category/haberler/roportajlar/feed/", "name": "Kayıp Rıhtım Röportaj", "is_interview": True},
+    {"url": "https://kitapeki.com/feed/", "name": "Kitap Eki", "is_interview": False},
+    {"url": "https://kitapeki.com/category/soylesi/feed/", "name": "Kitap Eki Söyleşi", "is_interview": True},
     {"url": "https://k24kitap.org/rss", "name": "K24 Edebiyat", "is_interview": False}, 
     {"url": "https://oggito.com/rss", "name": "Oggito", "is_interview": False},
     {"url": "https://sanatkritik.com/feed/", "name": "Sanat Kritik", "is_interview": False},
@@ -100,19 +101,14 @@ ALL_SOURCES = [
     {"url": "https://www.kitaphaber.com.tr/rss.php", "name": "Kitap Haber", "is_interview": False},
     {"url": "https://edebiyatburada.com/feed/", "name": "Edebiyat Burada", "is_interview": False},
     {"url": "https://edebiyatkulisi.com.tr/feed/", "name": "Edebiyat Kulisi", "is_interview": False},
+    {"url": "https://sanatokur.com/kategori/edebiyat-haberleri/feed/", "name": "Sanat Okur", "is_interview": False},
+    {"url": "https://sanatokur.com/kategori/soylesiler/feed/", "name": "Sanat Okur Söyleşi", "is_interview": True},
     {"url": "https://www.haberturk.com/rss/kategori/kultur-sanat.xml", "name": "Habertürk", "is_interview": False},
     {"url": "https://www.ntv.com.tr/sanat.rss", "name": "NTV Kültür Sanat", "is_interview": False},
     {"url": "https://www.haberler.com/rss/kultur-sanat.xml", "name": "Haberler.com", "is_interview": False},
     {"url": "https://www.sondakika.com/rss/kultur-sanat.xml", "name": "Sondakika Kültür Sanat", "is_interview": False},
     {"url": "https://tr.euronews.com/rss?level=theme&name=kultur", "name": "Euronews", "is_interview": False},
-
-    # --- SÖYLEŞİ / RÖPORTAJ KAYNAKLARI (BUNLAR DOĞRUDAN RÖPORTAJ SAYFASINA GİDER) ---
-    {"url": "https://kayiprihtim.com/category/haberler/roportajlar/feed/", "name": "Kayıp Rıhtım Röportaj", "is_interview": True},
-    {"url": "https://kitapeki.com/category/soylesi/feed/", "name": "Kitap Eki Söyleşi", "is_interview": True},
-    {"url": "https://sanatokur.com/kategori/soylesiler/feed/", "name": "Sanat Okur", "is_interview": True},
     {"url": "https://www.edebiyathaber.net/tag/roportaj/feed/", "name": "Edebiyat Haber Röportaj", "is_interview": True},
-    
-    # DİKKAT: Tumblr altyapısı olduğu için RSS uzantısı özel olarak düzeltildi!
     {"url": "https://edebiyatsoylesileri.com/rss", "name": "Edebiyat Söyleşileri", "is_interview": True}
 ]
 
@@ -151,18 +147,68 @@ def extract_image_safely(entry, html_content):
 
     return "https://images.unsplash.com/photo-1506880018603-83d5b814b5a6?auto=format&fit=crop&w=1200&q=80"
 
+# --- YARIM HABER VE EKSİK FOTOĞRAF KURTARICI KANCA (YENİ!) ---
+def scrape_full_article(url, fallback_html, fallback_image):
+    """Haber yarım geldiyse (...) veya fotoğraf yoksa sitenin orijinaline inip söküp alır."""
+    headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/121.0.0.0 Safari/537.36'}
+    proxies = [url, f"https://api.allorigins.win/raw?url={requests.utils.quote(url)}"]
+    
+    html_text = ""
+    for p in proxies:
+        try:
+            res = requests.get(p, headers=headers, timeout=8)
+            if res.status_code == 200 and "<html" in res.text.lower():
+                html_text = res.text
+                break
+        except: continue
+        
+    if not html_text:
+        return fallback_html, fallback_image
+        
+    soup = BeautifulSoup(html_text, 'html.parser')
+    
+    # 1. Orijinal Fotoğrafı Sök (Eğer resmimiz standart kitapsa)
+    final_img = fallback_image
+    if "unsplash.com" in final_img:
+        meta_img = soup.find('meta', property='og:image')
+        if meta_img and meta_img.get('content'):
+            final_img = meta_img.get('content')
+        else:
+            article = soup.find('article') or soup.find('main') or soup
+            for img in article.find_all('img'):
+                src = img.get('data-src') or img.get('data-lazy-src') or img.get('src')
+                if is_valid_image(src):
+                    final_img = src
+                    break
+                    
+    # 2. Orijinal Tam Metni Sök (Eğer RSS'ten gelen yarım özetse)
+    final_html = fallback_html
+    raw_text = BeautifulSoup(fallback_html, 'html.parser').get_text(strip=True)
+    # Eğer metin çok kısaysa veya "..." gibi işaretlerle bitiyorsa kurtar!
+    if len(raw_text) < 450 or raw_text.endswith("...") or raw_text.endswith("…") or "[&" in fallback_html:
+        article_box = soup.find('article') or soup.find('main') or soup.find('div', class_='content') or soup
+        paragraphs = article_box.find_all('p')
+        scraped_html = ""
+        for p in paragraphs:
+            pt = p.get_text(strip=True)
+            if len(pt) > 40:
+                scraped_html += f"<p>{pt}</p>"
+        if len(BeautifulSoup(scraped_html, 'html.parser').get_text(strip=True)) > 200:
+            final_html = scraped_html
+            
+    return final_html, final_img or "https://images.unsplash.com/photo-1506880018603-83d5b814b5a6?auto=format&fit=crop&w=1200&q=80"
+
 
 # --- AKILLI HTML TEMİZLEYİCİ ---
 def clean_turkish_content(html_content, source_name):
     if not html_content: return ""
     soup = BeautifulSoup(html_content, 'html.parser')
     
-    # 1. Tumblr "Okumaya devam et" linklerini güvenli bir şekilde sil.
     for a in soup.find_all('a'):
         if "devam" in a.get_text().lower() or "read more" in a.get_text().lower():
-            a.decompose() # Linki komple uçurur
+            a.decompose()
         else:
-            a.unwrap()    # Sadece link özelliğini siler, metni korur.
+            a.unwrap()
             
     for tag in soup.find_all(['img', 'script', 'style']):
         tag.decompose()
@@ -172,36 +218,27 @@ def clean_turkish_content(html_content, source_name):
         text = p.get_text(strip=True)
         if not text: continue
         text_lower = text.lower()
-        
-        # Sadece kısa çöp yazıları atla
         if len(text) < 150 and any(w in text_lower for w in ["yorum", "okuma süresi", "yazar:", "tarafından", "the post", "first appeared"]): 
             continue
-            
         valid_html += f"<p>{text}</p>"
             
     if not valid_html:
         text = soup.get_text(strip=True)
         for bad_phrase in ["The post", "the post", "first appeared on", "yazısı ilk önce", "Okumaya devam et"]:
-            if bad_phrase in text:
-                text = text.split(bad_phrase)[0]
+            if bad_phrase in text: text = text.split(bad_phrase)[0]
         if len(text) > 30:
             valid_html = f"<p>{text}</p>"
             
     return valid_html + f"<br><hr><br><p><b>Kaynak Bilgisi:</b> Bu içerik {source_name} üzerinden derlenmiştir.</p>"
 
 def get_safe_feed(url):
-    """Zorlu IP engellerini AllOrigins JSON API ile aşar."""
     headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/121.0.0.0'}
-    
-    # 1. Klasik İstek
     try:
         res = requests.get(url, headers=headers, timeout=10)
         if res.status_code == 200:
             feed = feedparser.parse(res.content)
             if feed and feed.entries: return feed
     except: pass
-    
-    # 2. IP Engelleyici Aşma Tüneli (Tumblr vb. için çok etkilidir)
     try:
         ao_url = f"https://api.allorigins.win/get?url={requests.utils.quote(url)}"
         res = requests.get(ao_url, timeout=10)
@@ -211,8 +248,6 @@ def get_safe_feed(url):
                 feed = feedparser.parse(data['contents'])
                 if feed and feed.entries: return feed
     except: pass
-    
-    # 3. Son Çare
     try: return feedparser.parse(url)
     except: return None
 
@@ -233,10 +268,8 @@ def save_to_google_drive(json_str, file_name):
         results = service.files().list(q=f"name='{file_name}' and trashed=false", spaces='drive', fields='files(id, name)').execute()
         items = results.get('files', [])
         media = MediaIoBaseUpload(io.BytesIO(json_str.encode('utf-8')), mimetype='application/json', resumable=True)
-        if items:
-            service.files().update(fileId=items[0]['id'], media_body=media).execute()
-        else:
-            service.files().create(body={'name': file_name, 'mimeType': 'application/json'}, media_body=media).execute()
+        if items: service.files().update(fileId=items[0]['id'], media_body=media).execute()
+        else: service.files().create(body={'name': file_name, 'mimeType': 'application/json'}, media_body=media).execute()
     except: pass
 
 # --- ANA YÖNLENDİRİCİ MOTOR ---
@@ -248,7 +281,6 @@ def build_archives():
         feed = get_safe_feed(source["url"])
         if not feed: continue
         
-        # Söyleşi sitelerinden 15 adet çeker.
         entry_limit = 15 if source.get("is_interview") else 5
         
         for entry in getattr(feed, 'entries', [])[:entry_limit]:
@@ -256,9 +288,22 @@ def build_archives():
                 title = entry.get('title', '') if isinstance(entry, dict) else getattr(entry, 'title', '')
                 link = entry.get('link', '') if isinstance(entry, dict) else getattr(entry, 'link', '')
                 
+                is_interview = False
+                if any(w in title.lower() or w in link.lower() for w in ['röportaj', 'söyleşi', 'mülakat']):
+                    is_interview = True
+                if source.get("is_interview"):
+                    is_interview = True
+
+                # Temel verileri al
                 raw_content = get_article_body(entry)
-                
                 final_image = extract_image_safely(entry, raw_content)
+                
+                # YARIM HABER VEYA EKSİK FOTOĞRAF KONTROLÜ (Eğer özet geldiyse orijinaline dal)
+                raw_text_check = BeautifulSoup(raw_content, 'html.parser').get_text(strip=True)
+                if len(raw_text_check) < 450 or raw_text_check.endswith("...") or raw_text_check.endswith("…") or "[&" in raw_content or "unsplash.com" in final_image:
+                    if link:
+                        raw_content, final_image = scrape_full_article(link, raw_content, final_image)
+                
                 final_content = clean_turkish_content(raw_content, source["name"])
                 
                 plain_desc = BeautifulSoup(final_content, 'html.parser').get_text()[:200] + "..."
@@ -273,8 +318,7 @@ def build_archives():
                     "image": final_image, "isForeign": False
                 }
 
-                # Eğer kaynak listemizde söyleşi olarak işaretliyse (veya başlığında yazıyorsa) Söyleşilere at.
-                if source.get("is_interview") or any(w in title.lower() or w in link.lower() for w in ['röportaj', 'söyleşi', 'mülakat']):
+                if is_interview:
                     article_data["category"] = "ÖZEL SÖYLEŞİ"
                     interviews_list.append(article_data)
                 else:
@@ -292,7 +336,7 @@ def build_archives():
 
 if __name__ == "__main__":
     os.makedirs("haberler", exist_ok=True)
-    print("Tumblr uzantıları düzeltilmiş, akıllı motor ile taranıyor...")
+    print("Yarım haber kurtarıcı aktif. Tüm ulusal kaynaklar taranıyor...")
     
     news, interviews = build_archives()
     
