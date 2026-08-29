@@ -82,32 +82,38 @@ PINNED_INTERVIEW = {
     "image": "https://edebiyatgundemi.com/images/tolga_ozdogan.png", 
 }
 
-# --- TEK BİR MERKEZİ KAYNAK LİSTESİ ---
+# --- AKILLI VE ETİKETLİ KAYNAK LİSTESİ ---
+# Artık "is_interview" etiketi True olanlar KESİN olarak Söyleşi sayfasına gidecek!
 ALL_SOURCES = [
-    {"url": "https://www.edebiyathaber.net/feed/", "name": "Edebiyat Haber"},
-    {"url": "https://kayiprihtim.com/category/haberler/edebiyat/feed/", "name": "Kayıp Rıhtım"},
-    {"url": "https://kayiprihtim.com/category/haberler/roportajlar/feed/", "name": "Kayıp Rıhtım Röportaj"},
-    {"url": "https://kitapeki.com/feed/", "name": "Kitap Eki"},
-    {"url": "https://kitapeki.com/category/soylesi/feed/", "name": "Kitap Eki Söyleşi"},
-    {"url": "https://k24kitap.org/rss", "name": "K24 Edebiyat"}, 
-    {"url": "https://oggito.com/rss", "name": "Oggito"},
-    {"url": "https://sanatkritik.com/feed/", "name": "Sanat Kritik"},
-    {"url": "https://www.sabitfikir.com/rss", "name": "Sabitfikir"},
-    {"url": "https://kalemkahveklavye.com/feed/", "name": "Kalem Kahve Klavye"},
-    {"url": "https://literaedebiyat.com/feed/", "name": "Litera Edebiyat"},
-    {"url": "https://parsomenfanzin.com/feed/", "name": "Parşömen Fanzin"},
-    {"url": "https://fikiredebiyat.com.tr/rss/kitap", "name": "Fikir Edebiyat"},
-    {"url": "https://haberedebiyat.com/feed/", "name": "Haber Edebiyat"},
-    {"url": "https://www.kitaphaber.com.tr/rss.php", "name": "Kitap Haber"},
-    {"url": "https://edebiyatburada.com/feed/", "name": "Edebiyat Burada"},
-    {"url": "https://edebiyatkulisi.com.tr/feed/", "name": "Edebiyat Kulisi"},
-    {"url": "https://sanatokur.com/kategori/edebiyat-haberleri/feed/", "name": "Sanat Okur"},
-    {"url": "https://www.haberturk.com/rss/kategori/kultur-sanat.xml", "name": "Habertürk"},
-    {"url": "https://www.ntv.com.tr/sanat.rss", "name": "NTV Kültür Sanat"},
-    {"url": "https://www.haberler.com/rss/kultur-sanat.xml", "name": "Haberler.com"},
-    {"url": "https://www.sondakika.com/rss/kultur-sanat.xml", "name": "Sondakika Kültür Sanat"},
-    {"url": "https://tr.euronews.com/rss?level=theme&name=kultur", "name": "Euronews"},
-    {"url": "https://edebiyatsoylesileri.com/feed/", "name": "Edebiyat Söyleşileri"}
+    # --- HABER KAYNAKLARI ---
+    {"url": "https://www.edebiyathaber.net/feed/", "name": "Edebiyat Haber", "is_interview": False},
+    {"url": "https://kayiprihtim.com/category/haberler/edebiyat/feed/", "name": "Kayıp Rıhtım", "is_interview": False},
+    {"url": "https://k24kitap.org/rss", "name": "K24 Edebiyat", "is_interview": False}, 
+    {"url": "https://oggito.com/rss", "name": "Oggito", "is_interview": False},
+    {"url": "https://sanatkritik.com/feed/", "name": "Sanat Kritik", "is_interview": False},
+    {"url": "https://www.sabitfikir.com/rss", "name": "Sabitfikir", "is_interview": False},
+    {"url": "https://kalemkahveklavye.com/feed/", "name": "Kalem Kahve Klavye", "is_interview": False},
+    {"url": "https://literaedebiyat.com/feed/", "name": "Litera Edebiyat", "is_interview": False},
+    {"url": "https://parsomenfanzin.com/feed/", "name": "Parşömen Fanzin", "is_interview": False},
+    {"url": "https://fikiredebiyat.com.tr/rss/kitap", "name": "Fikir Edebiyat", "is_interview": False},
+    {"url": "https://haberedebiyat.com/feed/", "name": "Haber Edebiyat", "is_interview": False},
+    {"url": "https://www.kitaphaber.com.tr/rss.php", "name": "Kitap Haber", "is_interview": False},
+    {"url": "https://edebiyatburada.com/feed/", "name": "Edebiyat Burada", "is_interview": False},
+    {"url": "https://edebiyatkulisi.com.tr/feed/", "name": "Edebiyat Kulisi", "is_interview": False},
+    {"url": "https://www.haberturk.com/rss/kategori/kultur-sanat.xml", "name": "Habertürk", "is_interview": False},
+    {"url": "https://www.ntv.com.tr/sanat.rss", "name": "NTV Kültür Sanat", "is_interview": False},
+    {"url": "https://www.haberler.com/rss/kultur-sanat.xml", "name": "Haberler.com", "is_interview": False},
+    {"url": "https://www.sondakika.com/rss/kultur-sanat.xml", "name": "Sondakika Kültür Sanat", "is_interview": False},
+    {"url": "https://tr.euronews.com/rss?level=theme&name=kultur", "name": "Euronews", "is_interview": False},
+
+    # --- SÖYLEŞİ / RÖPORTAJ KAYNAKLARI (BUNLAR DOĞRUDAN RÖPORTAJ SAYFASINA GİDER) ---
+    {"url": "https://kayiprihtim.com/category/haberler/roportajlar/feed/", "name": "Kayıp Rıhtım Röportaj", "is_interview": True},
+    {"url": "https://kitapeki.com/category/soylesi/feed/", "name": "Kitap Eki Söyleşi", "is_interview": True},
+    {"url": "https://sanatokur.com/kategori/soylesiler/feed/", "name": "Sanat Okur", "is_interview": True},
+    {"url": "https://www.edebiyathaber.net/tag/roportaj/feed/", "name": "Edebiyat Haber Röportaj", "is_interview": True},
+    
+    # DİKKAT: Tumblr altyapısı olduğu için RSS uzantısı özel olarak düzeltildi!
+    {"url": "https://edebiyatsoylesileri.com/rss", "name": "Edebiyat Söyleşileri", "is_interview": True}
 ]
 
 # --- SIFIR HATA FOTOĞRAF DEDEKTÖRÜ ---
@@ -146,28 +152,36 @@ def extract_image_safely(entry, html_content):
     return "https://images.unsplash.com/photo-1506880018603-83d5b814b5a6?auto=format&fit=crop&w=1200&q=80"
 
 
-# --- SIFIR HATA METİN FİLTRESİ ---
+# --- AKILLI HTML TEMİZLEYİCİ ---
 def clean_turkish_content(html_content, source_name):
     if not html_content: return ""
     soup = BeautifulSoup(html_content, 'html.parser')
-    for tag in soup.find_all(['a', 'img', 'script', 'style']):
+    
+    # 1. Tumblr "Okumaya devam et" linklerini güvenli bir şekilde sil.
+    for a in soup.find_all('a'):
+        if "devam" in a.get_text().lower() or "read more" in a.get_text().lower():
+            a.decompose() # Linki komple uçurur
+        else:
+            a.unwrap()    # Sadece link özelliğini siler, metni korur.
+            
+    for tag in soup.find_all(['img', 'script', 'style']):
         tag.decompose()
 
     valid_html = ""
     for p in soup.find_all('p'):
         text = p.get_text(strip=True)
+        if not text: continue
         text_lower = text.lower()
         
-        if len(text) < 150:
-            if any(w in text_lower for w in ["yorum", "okuma süresi", "yazar:", "tarafından yazıldı", "the post", "first appeared"]): continue
-        if any(w in text_lower for w in ['devamını oku', 'read more', 'tıklayın', 'bu yazı ilk önce', 'tamamını oku', 'haberin devamı', 'the post', 'first appeared']): continue
+        # Sadece kısa çöp yazıları atla
+        if len(text) < 150 and any(w in text_lower for w in ["yorum", "okuma süresi", "yazar:", "tarafından", "the post", "first appeared"]): 
+            continue
             
-        if len(text) > 30:
-            valid_html += f"<p>{text}</p>"
+        valid_html += f"<p>{text}</p>"
             
     if not valid_html:
         text = soup.get_text(strip=True)
-        for bad_phrase in ["The post", "the post", "first appeared on", "yazısı ilk önce"]:
+        for bad_phrase in ["The post", "the post", "first appeared on", "yazısı ilk önce", "Okumaya devam et"]:
             if bad_phrase in text:
                 text = text.split(bad_phrase)[0]
         if len(text) > 30:
@@ -176,36 +190,29 @@ def clean_turkish_content(html_content, source_name):
     return valid_html + f"<br><hr><br><p><b>Kaynak Bilgisi:</b> Bu içerik {source_name} üzerinden derlenmiştir.</p>"
 
 def get_safe_feed(url):
+    """Zorlu IP engellerini AllOrigins JSON API ile aşar."""
     headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/121.0.0.0'}
     
-    try:
-        r2j_url = f"https://api.rss2json.com/v1/api.json?rss_url={requests.utils.quote(url)}"
-        res = requests.get(r2j_url, timeout=10)
-        if res.status_code == 200:
-            data = res.json()
-            if data.get('status') == 'ok':
-                class DummyFeed: pass
-                dummy = DummyFeed()
-                dummy.entries = []
-                for item in data['items']:
-                    entry = {
-                        'title': item.get('title', ''),
-                        'link': item.get('link', ''),
-                        'published': item.get('pubDate', ''),
-                        'summary': item.get('description', ''),
-                        'content': [{'value': item.get('content', '')}]
-                    }
-                    if item.get('thumbnail'): entry['media_thumbnail'] = [{'url': item['thumbnail']}]
-                    if item.get('enclosure'): entry['enclosures'] = [{'href': item['enclosure'].get('link'), 'type': 'image'}]
-                    dummy.entries.append(entry)
-                if dummy.entries: return dummy
-    except: pass
-    
+    # 1. Klasik İstek
     try:
         res = requests.get(url, headers=headers, timeout=10)
-        if res.status_code == 200: return feedparser.parse(res.content)
+        if res.status_code == 200:
+            feed = feedparser.parse(res.content)
+            if feed and feed.entries: return feed
     except: pass
     
+    # 2. IP Engelleyici Aşma Tüneli (Tumblr vb. için çok etkilidir)
+    try:
+        ao_url = f"https://api.allorigins.win/get?url={requests.utils.quote(url)}"
+        res = requests.get(ao_url, timeout=10)
+        if res.status_code == 200:
+            data = res.json()
+            if data.get('contents'):
+                feed = feedparser.parse(data['contents'])
+                if feed and feed.entries: return feed
+    except: pass
+    
+    # 3. Son Çare
     try: return feedparser.parse(url)
     except: return None
 
@@ -241,19 +248,14 @@ def build_archives():
         feed = get_safe_feed(source["url"])
         if not feed: continue
         
-        entry_limit = 15 if "soylesi" in source["url"].lower() else 5
+        # Söyleşi sitelerinden 15 adet çeker.
+        entry_limit = 15 if source.get("is_interview") else 5
         
         for entry in getattr(feed, 'entries', [])[:entry_limit]:
             try:
                 title = entry.get('title', '') if isinstance(entry, dict) else getattr(entry, 'title', '')
                 link = entry.get('link', '') if isinstance(entry, dict) else getattr(entry, 'link', '')
                 
-                is_interview = False
-                if any(w in title.lower() or w in link.lower() for w in ['röportaj', 'söyleşi', 'mülakat', 'interview']):
-                    is_interview = True
-                if "soylesi" in source["url"].lower() or "röportaj" in source["name"].lower() or "söyleşi" in source["name"].lower():
-                    is_interview = True
-
                 raw_content = get_article_body(entry)
                 
                 final_image = extract_image_safely(entry, raw_content)
@@ -261,8 +263,8 @@ def build_archives():
                 
                 plain_desc = BeautifulSoup(final_content, 'html.parser').get_text()[:200] + "..."
                 
-                # --- TARİH (NONE) HATASINA KESİN ÇÖZÜM ---
                 raw_date = entry.get('published') if isinstance(entry, dict) else getattr(entry, 'published', None)
+                if not raw_date: raw_date = entry.get('updated') if isinstance(entry, dict) else getattr(entry, 'updated', None)
                 pub_date = str(raw_date) if raw_date else 'Güncel'
                 
                 article_data = {
@@ -271,7 +273,8 @@ def build_archives():
                     "image": final_image, "isForeign": False
                 }
 
-                if is_interview:
+                # Eğer kaynak listemizde söyleşi olarak işaretliyse (veya başlığında yazıyorsa) Söyleşilere at.
+                if source.get("is_interview") or any(w in title.lower() or w in link.lower() for w in ['röportaj', 'söyleşi', 'mülakat']):
                     article_data["category"] = "ÖZEL SÖYLEŞİ"
                     interviews_list.append(article_data)
                 else:
@@ -280,7 +283,6 @@ def build_archives():
                     
             except: continue
 
-    # --- SIRALAMA HATASINA KARŞI GÜVENLİ SORT ---
     news_list.sort(key=lambda x: str(x.get('date') or 'Güncel'), reverse=True)
     interviews_list.sort(key=lambda x: str(x.get('date') or 'Güncel'), reverse=True)
     
@@ -290,7 +292,7 @@ def build_archives():
 
 if __name__ == "__main__":
     os.makedirs("haberler", exist_ok=True)
-    print("Tüm ulusal kaynaklar akıllı resim filtresi ile taranıyor...")
+    print("Tumblr uzantıları düzeltilmiş, akıllı motor ile taranıyor...")
     
     news, interviews = build_archives()
     
