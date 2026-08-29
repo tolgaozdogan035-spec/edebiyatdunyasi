@@ -3,7 +3,6 @@ import json
 import os
 import requests
 from bs4 import BeautifulSoup
-from deep_translator import GoogleTranslator
 from google.oauth2 import service_account
 from googleapiclient.discovery import build
 from googleapiclient.http import MediaIoBaseUpload
@@ -81,8 +80,7 @@ PINNED_INTERVIEW = {
     
     <br><hr><br><p><b>Kaynak Bilgisi:</b> Bu özel röportaj Edebiyat Gündemi için derlenmiştir.</p>
     """,
-    # Doğrudan tam URL, sıfır hata payı!
-    "image": "https://edebiyatgundemi.com/images/tolga_ozdogan.png", 
+    "image": "tolga_ozdogan.png", 
     "isForeign": False
 }
 
@@ -113,16 +111,34 @@ RSS_SOURCES_INTERVIEWS = [
     {"url": "https://www.edebiyathaber.net/tag/roportaj/feed/", "name": "Edebiyat Haber Röportaj"}
 ]
 
-def get_safe_feed(url):
-    """Hem güvenilir ajanı hem de rss2json API'sini kullanarak site bariyerlerini geçer."""
-    USER_AGENT = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36'
-    
+# --- KUSURSUZ GİZLİ ÇEVİRİ MOTORU (DIŞ KÜTÜPHANELERDEN BAĞIMSIZ) ---
+def custom_google_translate(text):
+    """Google Translate'in dahili, engellenmeyen (gtx) endpoint'ini kullanarak çeviri yapar."""
+    if not text or len(text.strip()) < 3: 
+        return text
     try:
-        feed = feedparser.parse(url, agent=USER_AGENT)
-        if feed and feed.entries: 
-            return feed
-    except: pass
-    
+        url = "https://translate.googleapis.com/translate_a/single"
+        params = {
+            "client": "gtx",
+            "sl": "en",
+            "tl": "tr",
+            "dt": "t",
+            "q": text
+        }
+        res = requests.get(url, params=params, timeout=10)
+        if res.status_code == 200:
+            data = res.json()
+            # Çevrilen cümle parçalarını birleştirir
+            translated_text = "".join([i[0] for i in data[0] if i[0]])
+            return translated_text
+    except Exception:
+        pass
+    return text
+
+# --- YENİ NESİL AĞ AŞICI (PROXY) VE RSS OKUYUCU ---
+def get_safe_feed(url):
+    """Bulunabilen tüm açık proxy ağlarını ve RSS2JSON'u deneyerek RSS'i çeker."""
+    # 1. RSS2JSON API
     try:
         r2j_url = f"https://api.rss2json.com/v1/api.json?rss_url={requests.utils.quote(url)}"
         res = requests.get(r2j_url, timeout=15)
@@ -146,20 +162,13 @@ def get_safe_feed(url):
                 if dummy.entries: 
                     return dummy
     except: pass
-    return None
-
-def safe_translate(text):
-    """Metinleri çevirirken Error hatasını engeller, güvenle çevirir."""
-    if not text or len(text.strip()) < 3: 
-        return text
+    
+    # 2. Direkt Bağlantı
     try:
-        time.sleep(0.5) # Google'ı yormamak için çok kısa bir nefes payı
-        tr = GoogleTranslator(source='en', target='tr').translate(text[:4900])
-        if tr and "Error 500" not in tr:
-            return tr
-        return text
-    except:
-        return text
+        feed = feedparser.parse(url)
+        if feed and feed.entries: return feed
+    except: pass
+    return None
 
 def extract_image_from_rss(entry, content):
     if entry.get('media_content') and entry['media_content']: return entry['media_content'][0].get('url')
@@ -176,32 +185,58 @@ def extract_image_from_rss(entry, content):
 def get_full_article_and_image(url, fallback_html):
     full_html = fallback_html
     og_image = None
+    html_text = ""
+    
+    # Cloudflare'ı atlatmak için güçlü proxy rotaları
+    proxies = [
+        url,
+        f"https://corsproxy.io/?{requests.utils.quote(url)}",
+        f"https://api.allorigins.win/raw?url={requests.utils.quote(url)}"
+    ]
+    
     headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36'}
-    try:
-        res = requests.get(url, headers=headers, timeout=10)
-        if res.status_code == 200:
-            soup = BeautifulSoup(res.text, 'html.parser')
+    for p in proxies:
+        try:
+            res = requests.get(p, headers=headers, timeout=12)
+            if res.status_code == 200 and "<html" in res.text.lower():
+                html_text = res.text
+                break
+        except: continue
+        
+    if html_text:
+        try:
+            soup = BeautifulSoup(html_text, 'html.parser')
             meta_img = soup.find('meta', property='og:image')
             if meta_img and meta_img.get('content'):
                 og_image = meta_img.get('content')
+            
             paragraphs = soup.find_all('p')
-            article_ps = [p.get_text(strip=True) for p in paragraphs if len(p.get_text(strip=True)) > 40]
+            article_ps = [p.get_text(strip=True) for p in paragraphs if len(p.get_text(strip=True)) > 50]
             if len(article_ps) > 2:
-                full_html = "".join([f"<p>{text}</p>" for text in article_ps[:10]])
-    except: pass
+                full_html = "".join([f"<p>{text}</p>" for text in article_ps[:12]])
+        except: pass
     return full_html, og_image
 
 def translate_html_content_safe(html_content, source_name):
-    """HTML yapısını bozmadan paragraf paragraf güvenli çeviri yapar."""
+    """HTML yapısını koruyarak, engelsiz dahili API ile paragraf paragraf çeviri yapar."""
     if not html_content: return ""
     try:
         soup = BeautifulSoup(html_content, 'html.parser')
         translated_html = ""
+        has_translation = False
+        
         for p in soup.find_all('p'):
             text = p.get_text(strip=True)
             if len(text) > 15:
-                tr_text = safe_translate(text)
+                # İngilizce metni doğrudan Google Translate dahili API'sine yolluyoruz
+                tr_text = custom_google_translate(text)
                 translated_html += f"<p>{tr_text}</p>"
+                has_translation = True
+                time.sleep(0.3)
+                
+        if not has_translation:
+            return html_content
+            
         translated_html += f"<br><hr><br><p><b>Kaynak Bilgisi:</b> Bu uluslararası içerik {source_name} üzerinden derlenmiş ve eksiksiz olarak Türkçeye çevrilmiştir.</p>"
         return translated_html
     except:
@@ -256,7 +291,7 @@ def fetch_news():
                 final_image = og_image or rss_image or "https://images.unsplash.com/photo-1506880018603-83d5b814b5a6?auto=format&fit=crop&w=1200&q=80"
                 
                 if is_foreign:
-                    title = safe_translate(title)
+                    title = custom_google_translate(title)
                     final_content = translate_html_content_safe(full_html, source["name"])
                 else:
                     final_content = clean_turkish_content(full_html, source["name"])
@@ -289,7 +324,7 @@ def fetch_interviews():
                 final_image = og_image or rss_image or "https://images.unsplash.com/photo-1506880018603-83d5b814b5a6?auto=format&fit=crop&w=1200&q=80"
                 
                 if is_foreign:
-                    title = safe_translate(title)
+                    title = custom_google_translate(title)
                     final_content = translate_html_content_safe(full_html, source["name"])
                 else:
                     final_content = clean_turkish_content(full_html, source["name"])
@@ -304,7 +339,7 @@ def fetch_interviews():
             except: continue
             
     all_interviews.sort(key=lambda x: x.get('date', ''), reverse=True)
-    # SABİT RÖPORTAJINIZ EKLENİR
+    # SABİT RÖPORTAJINIZ KESİN OLARAK BAŞA EKLENİR
     all_interviews.insert(0, PINNED_INTERVIEW)
     
     return all_interviews[:100]
