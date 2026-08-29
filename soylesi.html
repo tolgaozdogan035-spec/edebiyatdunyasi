@@ -71,7 +71,7 @@
                 </span>
             </div>
             <div class="flex items-center space-x-6">
-                <span class="text-blue-600"><i class="fas fa-globe-americas mr-1"></i> Çoklu Kaynak Çeviri Arşivi Aktif</span>
+                <span class="text-blue-600"><i class="fas fa-globe-americas mr-1"></i> Uluslararası Söyleşi Arşivi Aktif</span>
             </div>
         </div>
     </div>
@@ -91,8 +91,10 @@
     <!-- STREAMING_CHUNK: Building Main Sticky Navigation... -->
     <nav class="sticky top-0 bg-white/95 backdrop-blur-md z-40 shadow-sm border-b border-gray-200">
         <div class="container mx-auto px-4 lg:px-8 py-3 flex justify-between items-center">
+            <!-- Mobile Menu Button -->
             <button id="menu-btn" class="text-gray-800 text-xl hover:text-brand-red transition focus:outline-none p-2 md:hidden"><i class="fas fa-bars"></i></button>
             
+            <!-- Desktop Navigation Links -->
             <div class="hidden md:flex flex-grow justify-center space-x-8 text-[13px] font-bold text-gray-700 uppercase tracking-widest">
                 <a href="index.html" class="hover:text-brand-red transition pb-1">Ana Sayfa</a>
                 <a href="soylesi.html" class="hover:text-brand-red transition text-brand-red border-b-2 border-brand-red pb-1">Röportaj</a>
@@ -102,6 +104,7 @@
                 <a href="kunye.html" class="hover:text-brand-red transition pb-1">Künye</a>
             </div>
 
+            <!-- Search Button -->
             <button class="text-gray-800 text-xl hover:text-brand-red transition focus:outline-none p-2 ml-auto"><i class="fas fa-search"></i></button>
         </div>
     </nav>
@@ -112,7 +115,7 @@
             <i class="fas fa-language mr-2 text-white"></i> ÇEVİRİ AKIŞI
         </div>
         <div class="ticker-wrap flex items-center cursor-default z-0">
-            <div class="ticker" id="ticker-content"><span class="ticker__item">Uluslararası söyleşiler taranıyor...</span></div>
+            <div class="ticker" id="ticker-content"><span class="ticker__item">Uluslararası röportajlar yükleniyor...</span></div>
         </div>
     </div>
 
@@ -121,36 +124,46 @@
         
         <div id="loading-spinner" class="py-32 text-center text-blue-600 flex flex-col items-center justify-center">
             <i class="fas fa-globe-europe fa-spin text-5xl mb-6 text-gray-800"></i>
-            <h3 class="text-2xl font-serif font-bold mb-2 text-gray-800">Uluslararası Söyleşiler Taranıyor</h3>
-            <p class="text-sm font-medium text-gray-500 max-w-sm mx-auto">The Paris Review, LitHub, Electric Lit ve BOMB kaynaklarından çeviri röportajlar derleniyor...</p>
+            <h3 class="text-2xl font-serif font-bold mb-2 text-gray-800">Söyleşi Arşivi Yükleniyor</h3>
+            <p class="text-sm font-medium text-gray-500 max-w-sm mx-auto">Dünya edebiyatından çeviri röportajlar derleniyor...</p>
         </div>
 
         <!-- ANA SAYFA VİTRİNİ -->
         <div id="content-area" class="hidden space-y-12 transition-all duration-700 opacity-0">
             
+            <!-- Hero Makale -->
             <section class="w-full relative group overflow-hidden rounded-md shadow-lg border border-gray-200 cursor-pointer" id="hero-section">
                 <!-- JS -->
             </section>
 
+            <!-- 3'lü Grid Haber -->
             <section>
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8" id="news-grid">
                     <!-- JS -->
                 </div>
             </section>
 
+            <!-- AD BANNER 1 (Horizontal) -->
             <div class="ad-banner-horizontal rounded-md shadow-inner">
                 Reklam Alanı (970x90)
             </div>
 
+            <!-- Ana Haber Listesi (Tam Genişlik) -->
             <section class="w-full bg-white p-6 md:p-8 rounded-md border border-gray-200 shadow-sm">
                 <div class="flex justify-between items-end border-b-2 border-blue-600 pb-3 mb-8">
                     <h2 class="text-2xl md:text-3xl font-serif font-bold text-brand-text">Tüm Söyleşiler</h2>
-                    <span class="text-[10px] uppercase font-bold text-gray-500 bg-gray-100 px-3 py-1.5 rounded-sm">Çoklu Kaynak Çevirisi</span>
+                    <span class="text-[10px] uppercase font-bold text-gray-500 bg-gray-100 px-3 py-1.5 rounded-sm">Çeviri Akışı</span>
                 </div>
+                <!-- Grid yapısı -->
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-8" id="news-list">
                     <!-- JS -->
                 </div>
             </section>
+            
+            <!-- AD BANNER 2 (Horizontal Bottom) -->
+            <div class="ad-banner-horizontal rounded-md shadow-inner">
+                Reklam Alanı (970x90)
+            </div>
         </div>
 
         <!-- ================= YEREL TAM METİN OKUYUCU (MODAL) ================= -->
@@ -160,32 +173,30 @@
                 <i class="fas fa-arrow-left mr-2 transform group-hover:-translate-x-1 transition"></i> Röportajlara Dön
             </button>
 
+            <!-- Meta -->
             <div class="flex flex-wrap items-center text-[10px] font-bold mb-6 uppercase tracking-wide gap-2">
                 <span id="article-category" class="bg-blue-600 text-white px-3 py-1.5 rounded-sm shadow-sm">KATEGORİ</span>
-                <span id="article-translate-badge" class="bg-blue-800 text-white px-3 py-1.5 rounded-sm shadow-sm"><i class="fas fa-language mr-1"></i> Türkçe Çeviri</span>
+                <span class="bg-blue-800 text-white px-3 py-1.5 rounded-sm shadow-sm"><i class="fas fa-language mr-1"></i> Türkçe Çeviri</span>
                 <span id="article-date" class="text-gray-400 ml-auto"><i class="far fa-clock mr-1"></i> Tarih</span>
             </div>
 
+            <!-- Title -->
             <h1 id="article-title" class="text-3xl md:text-5xl font-serif font-bold text-gray-900 leading-tight mb-8">Röportaj Başlığı</h1>
             
+            <!-- Dynamic Img -->
             <div class="w-full mb-10 overflow-hidden rounded-md border border-gray-200 shadow-sm bg-gray-50">
                 <img id="article-image" src="" class="w-full max-h-[550px] object-contain">
             </div>
             
+            <!-- Body (Röportajın Tamamı Burada Gösterilir) -->
             <div id="article-content" class="article-body border-b border-gray-200 pb-10">
                 Yükleniyor...
             </div>
 
-            <div class="mt-10 bg-gray-50 p-6 rounded-md border border-gray-200">
-                <div class="flex flex-col md:flex-row justify-between items-center gap-4">
-                    <div>
-                        <h4 class="text-[10px] font-bold uppercase tracking-widest text-gray-500 mb-1">Çeviri Notu</h4>
-                        <p class="text-sm text-gray-800 font-medium">Bu söyleşi <strong id="article-source-name" class="text-blue-600">Kaynak</strong> üzerinden Türkçeye aktarılmıştır.</p>
-                    </div>
-                    <a id="article-original-link" href="#" target="_blank" rel="noopener noreferrer" class="bg-white border border-gray-300 text-gray-700 hover:text-white hover:bg-blue-600 hover:border-blue-600 px-5 py-2.5 rounded text-xs font-bold uppercase tracking-wider transition shadow-sm whitespace-nowrap">
-                        Orijinal Metni İncele <i class="fas fa-external-link-alt ml-2"></i>
-                    </a>
-                </div>
+            <!-- SOURCE ATTRIBUTION (Dışarıya Link Verilmez, Sadece Kaynak Adı Görünür) -->
+            <div class="mt-10 bg-gray-50 p-6 rounded-md border border-gray-200 text-center">
+                <h4 class="text-[10px] font-bold uppercase tracking-widest text-gray-500 mb-1">Kaynak Bilgisi</h4>
+                <p class="text-sm text-gray-800 font-medium">Bu söyleşi <strong id="article-source-name" class="text-blue-600">Kaynak</strong> üzerinden derlenerek sunulmuştur.</p>
             </div>
         </div>
 
@@ -223,7 +234,7 @@
         </nav>
     </div>
 
-    <!-- STREAMING_CHUNK: Multi-Source Engine and Translator Integrations... -->
+    <!-- STREAMING_CHUNK: Integrating Core Javascript Application State and Handlers... -->
     <script>
         document.getElementById('top-date').textContent = new Date().toLocaleDateString('tr-TR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
         document.getElementById('year').textContent = new Date().getFullYear();
@@ -246,89 +257,28 @@
 
         async function fetchSystemData() {
             try {
-                // Önce Python botunun oluşturduğu JSON dosyasını dener
                 const response = await fetch(JSON_URL + '?v=' + new Date().getTime());
-                if (response.ok) {
-                    const data = await response.json();
-                    if(data && Array.isArray(data) && data.length > 0) {
-                        globalArticles = data;
-                        updateTimeDisplay("Python Çeviri Arşivi");
-                        renderUI();
-                        return;
-                    }
+                if (!response.ok) throw new Error("soylesiler.json bulunamadı.");
+                
+                const data = await response.json();
+                
+                if(data && Array.isArray(data) && data.length > 0) {
+                    globalArticles = data;
+                    updateTimeDisplay("Güncel");
+                    renderUI();
+                } else { 
+                    throw new Error("Veri boş."); 
                 }
-                throw new Error("JSON dosyası bulunamadı, canlı çekime geçiliyor.");
             } catch (error) {
-                console.warn("JSON okunamadı, çoklu canlı kaynak motoru devreye giriyor...", error);
-                // Eğer JSON yoksa tarayıcı üzerinden birden fazla uluslararası kaynağı eşzamanlı çeker
-                await fetchMultiSourceLive();
-            }
-        }
-
-        async function fetchMultiSourceLive() {
-            const sources = [
-                { url: 'https://lithub.com/category/interviews/feed/', name: 'Literary Hub' },
-                { url: 'https://electricliterature.com/category/interviews/feed/', name: 'Electric Lit' },
-                { url: 'https://bombmagazine.org/rss/', name: 'BOMB Magazine' },
-                { url: 'https://www.theparisreview.org/blog/category/interviews/feed/', name: 'Paris Review' }
-            ];
-
-            let allInterviews = [];
-
-            for(let source of sources) {
-                try {
-                    const res = await fetch('https://api.rss2json.com/v1/api.json?rss_url=' + encodeURIComponent(source.url));
-                    const data = await res.json();
-                    if(data.status === 'ok' && data.items) {
-                        data.items.forEach(item => {
-                            let img = item.thumbnail || item.enclosure?.link || FALLBACK_IMAGE;
-                            let rawContent = item.content || item.description || "";
-                            let cleanContent = rawContent.replace(/<a\b[^>]*>(.*?)<\/a>/gi, '$1');
-                            
-                            let div = document.createElement('div');
-                            div.innerHTML = cleanContent;
-                            if(img === FALLBACK_IMAGE) {
-                                let imgTag = div.querySelector('img');
-                                if(imgTag) img = imgTag.src;
-                            }
-
-                            allInterviews.push({
-                                title: item.title,
-                                link: item.link,
-                                source: source.name,
-                                date: item.pubDate,
-                                category: "ULUSLARARASI SÖYLEŞİ",
-                                desc: div.textContent.substring(0, 160) + "...",
-                                content: cleanContent + `<br><hr><br><p><i>Bu röportaj ${source.name} platformundan derlenmiştir. Tam metin için orijinal bağlantıyı ziyaret edebilirsiniz.</i></p>`,
-                                image: img,
-                                isForeign: true
-                            });
-                        });
-                    }
-                } catch(e) { console.warn(`Kaynak hatası (${source.name}):`, e); }
-            }
-
-            if(allInterviews.length > 0) {
-                allInterviews.sort((a, b) => new Date(b.date) - new Date(a.date));
-                globalArticles = allInterviews;
-                updateTimeDisplay("Çoklu Canlı Akış");
-                renderUI();
-            } else {
-                // Son Çare Kaliteli Türkçe Yedek Veri
-                globalArticles = [
-                    {
-                        title: "Haruki Murakami ile Yalnızlık, Kurgu ve Zaman Üzerine Derinlemesine Bir Söyleşi",
-                        link: "https://www.theparisreview.org",
-                        source: "The Paris Review",
-                        date: new Date().toISOString(),
-                        category: "ÖZEL SÖYLEŞİ",
-                        desc: "Usta yazar Murakami, karanlık kuyuların derinliklerindeki yazma ritüellerini ve hafızanın edebiyattaki sarsıcı yerini anlatıyor.",
-                        content: "<p><b>The Paris Review:</b> Yazmaya ilk başladığınız yılları düşündüğünüzde, bugünkü zihninizle o günkü yazarlık pratiğiniz arasında nasıl bir köprü kuruyorsunuz?</p><p><b>Haruki Murakami:</b> Yazmak benim için bir keşif yolculuğudur. Zihnimin alt katmanlarına inmek, orada yıllardır sessizce bekleyen karakterlerle yüzleşmek zorundayım. Yalnızlık, bir yazar için hem en büyük tehdit hem de en sadık dosttur.</p>",
-                        image: FALLBACK_IMAGE,
-                        isForeign: true
-                    }
-                ];
-                updateTimeDisplay("Yedek Akış");
+                console.warn("Veri okuma hatası:", error);
+                updateTimeDisplay("Bekleniyor");
+                
+                globalArticles = [{
+                    title: "Uluslararası Söyleşi Arşivi Hazırlanıyor",
+                    link: "#", source: "Edebiyat Gündemi", date: new Date().toISOString(),
+                    category: "BİLGİLENDİRME", desc: "Python botumuz (scraper.py) seçkin dünya edebiyatı kaynaklarını tarayıp arşive eklemektedir. Lütfen botun çalışmasını bekleyiniz.", 
+                    content: "<p>Arka plandaki Python botu çalıştığında en güncel edebi söyleşiler bu sayfada yer alacaktır.</p>", image: FALLBACK_IMAGE
+                }];
                 renderUI();
             }
         }
@@ -353,17 +303,19 @@
 
             if(globalArticles.length === 0) return;
 
+            // 1. Ticker
             const ticker = document.getElementById('ticker-content');
             let tickerHTML = '';
-            globalArticles.forEach((a, index) => {
-                const sourceText = a.source ? a.source : 'Uluslararası Ajans';
+            globalArticles.slice(0, 15).forEach((a, index) => {
+                const sourceText = a.source ? a.source : 'Ajans';
                 tickerHTML += `<span class="ticker__item" onclick="openArticle(${index})"><i class="fas fa-quote-left text-blue-400 mr-2"></i> ${a.title} <span class="text-gray-400 text-[10px] ml-1">(${sourceText})</span></span>`;
             });
             ticker.innerHTML = tickerHTML + tickerHTML;
 
+            // 2. Hero
             const hero = globalArticles[0];
             const hIdx = globalArticles.indexOf(hero);
-            const heroSourceText = hero.source ? hero.source : 'Uluslararası Ajans';
+            const heroSourceText = hero.source ? hero.source : 'Ajans';
             document.getElementById('hero-section').innerHTML = `
                 <div class="w-full h-[400px] md:h-[550px] relative cursor-pointer" onclick="openArticle(${hIdx})">
                     <img src="${hero.image}" class="w-full h-full object-cover transition duration-1000 group-hover:scale-105" onerror="this.src='${FALLBACK_IMAGE}'">
@@ -371,7 +323,7 @@
                     <div class="absolute bottom-0 left-0 p-6 md:p-12 w-full md:w-3/4">
                         <div class="flex flex-wrap items-center gap-2 mb-4">
                             <span class="bg-blue-600 text-white px-3 py-1 rounded text-[10px] font-bold uppercase tracking-wider">${hero.category || 'ÖZEL SÖYLEŞİ'}</span>
-                            <span class="bg-blue-800 text-white px-3 py-1 rounded text-[10px] font-bold uppercase tracking-wider"><i class="fas fa-language mr-1"></i> Çeviri Akışı</span>
+                            <span class="bg-blue-800 text-white px-3 py-1 rounded text-[10px] font-bold uppercase tracking-wider"><i class="fas fa-language mr-1"></i> Çeviri</span>
                             <span class="bg-white/20 text-white border border-white/40 px-3 py-1 rounded text-[10px] font-bold tracking-wider">${heroSourceText}</span>
                         </div>
                         <h2 class="text-3xl md:text-5xl font-serif font-bold text-white leading-tight mb-4 drop-shadow-lg">${hero.title}</h2>
@@ -380,11 +332,12 @@
                 </div>
             `;
 
+            // 3. Grid
             const gridContainer = document.getElementById('news-grid');
             gridContainer.innerHTML = '';
             globalArticles.slice(1, 4).forEach(article => {
                 const idx = globalArticles.indexOf(article);
-                const gridSourceText = article.source ? article.source : 'Uluslararası Ajans';
+                const gridSourceText = article.source ? article.source : 'Ajans';
                 gridContainer.innerHTML += `
                     <article class="flex flex-col bg-white border border-gray-200 p-5 rounded-md shadow-sm hover:shadow-xl transition-all duration-300 cursor-pointer group" onclick="openArticle(${idx})">
                         <div class="relative w-full h-48 mb-4 overflow-hidden rounded bg-gray-50">
@@ -400,11 +353,12 @@
                 `;
             });
 
+            // 4. List
             const listContainer = document.getElementById('news-list');
             listContainer.innerHTML = '';
             globalArticles.slice(4).forEach(article => {
                 const idx = globalArticles.indexOf(article);
-                const listSourceText = article.source ? article.source : 'Uluslararası Ajans';
+                const listSourceText = article.source ? article.source : 'Ajans';
                 listContainer.innerHTML += `
                     <article class="flex flex-col sm:flex-row gap-6 bg-white border border-gray-100 p-4 rounded-md shadow-sm hover:shadow-md transition-shadow cursor-pointer group" onclick="openArticle(${idx})">
                         <div class="sm:w-1/3 flex-shrink-0 relative overflow-hidden rounded bg-gray-50 border border-gray-100">
@@ -436,9 +390,8 @@
 
             document.getElementById('article-title').innerText = article.title;
             document.getElementById('article-category').innerText = article.category || 'ÖZEL SÖYLEŞİ';
-            document.getElementById('article-source-name').innerText = article.source ? article.source : 'Uluslararası Ajans';
+            document.getElementById('article-source-name').innerText = article.source ? article.source : 'Ajans';
             document.getElementById('article-date').innerHTML = `<i class="far fa-clock mr-1"></i> ${formatDateTr(article.date)}`;
-            document.getElementById('article-original-link').href = article.link || '#';
             
             const imgEl = document.getElementById('article-image');
             imgEl.src = article.image;
@@ -467,4 +420,3 @@
     </script>
 </body>
 </html>
-```eof
