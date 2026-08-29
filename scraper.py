@@ -81,7 +81,7 @@ PINNED_INTERVIEW = {
     
     <br><hr><br><p><b>Kaynak Bilgisi:</b> Bu özel röportaj Edebiyat Gündemi için derlenmiştir.</p>
     """,
-    "image": "images/tolga_ozdogan.png",
+    "image": "tolga_ozdogan.png", 
     "isForeign": False
 }
 # -----------------------------------------------
@@ -113,26 +113,63 @@ RSS_SOURCES_INTERVIEWS = [
     {"url": "https://www.edebiyathaber.net/tag/roportaj/feed/", "name": "Edebiyat Haber Röportaj"}
 ]
 
-# --- YARDIMCI FONKSİYONLAR ---
+# --- GÜVENLİK DUVARI AŞICI FONKSİYONLAR ---
 def get_safe_feed(url):
-    """Güvenlik duvarlarını (Cloudflare vb.) aşmak için Chrome tarayıcısı kimliği kullanır."""
+    """Cloudflare ve WAF engellerini aşmak için gizli Proxy Kalkanı kullanır."""
     headers = {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
         'Accept': 'application/rss+xml, application/xml, text/xml, */*'
     }
     try:
+        # 1. Önce normal bağlanmayı dene
         res = requests.get(url, headers=headers, timeout=15)
         if res.status_code == 200:
             return feedparser.parse(res.content)
+            
+        # 2. Eğer engellendiysek (403 vb.), aracı Proxy sunucusu ile gizlice içeri sız
+        proxy_url = f"https://api.allorigins.win/raw?url={requests.utils.quote(url)}"
+        proxy_res = requests.get(proxy_url, timeout=15)
+        if proxy_res.status_code == 200:
+            return feedparser.parse(proxy_res.content)
+            
     except Exception:
         pass
-    return feedparser.parse(url) # Son çare olarak normal istek atar
+    return feedparser.parse(url)
 
+def get_full_article_and_image(url, fallback_html):
+    """Hem tam metni hem og:image'ı çeker, engellenirse Proxy kullanır."""
+    full_html = fallback_html
+    og_image = None
+    try:
+        headers = {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+        }
+        res = requests.get(url, headers=headers, timeout=10)
+        
+        # Site sayfaya girmemizi engellediyse aracı sunucuyu kullan
+        if res.status_code != 200:
+            proxy_url = f"https://api.allorigins.win/raw?url={requests.utils.quote(url)}"
+            res = requests.get(proxy_url, timeout=15)
+
+        if res.status_code == 200:
+            soup = BeautifulSoup(res.text, 'html.parser')
+            meta_img = soup.find('meta', property='og:image')
+            if meta_img and meta_img.get('content'):
+                og_image = meta_img.get('content')
+            
+            paragraphs = soup.find_all('p')
+            article_ps = [p.get_text(strip=True) for p in paragraphs if len(p.get_text(strip=True)) > 60]
+            if len(article_ps) > 2:
+                full_html = "".join([f"<p>{text}</p>" for text in article_ps[:10]])
+    except Exception:
+        pass
+    return full_html, og_image
+
+# --- ÇEVİRİ MOTORU VE DİĞER YARDIMCILAR ---
 def robust_translate(text):
     if not text or len(text.strip()) < 3: 
         return text
     safe_text = text[:4800] 
-    
     for attempt in range(4): 
         try:
             time.sleep(2) 
@@ -155,28 +192,6 @@ def extract_image_from_rss(entry, content):
         img = soup.find('img')
         if img and img.get('src'): return img['src']
     return None
-
-def get_full_article_and_image(url, fallback_html):
-    full_html = fallback_html
-    og_image = None
-    try:
-        headers = {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
-        }
-        res = requests.get(url, headers=headers, timeout=10)
-        if res.status_code == 200:
-            soup = BeautifulSoup(res.text, 'html.parser')
-            meta_img = soup.find('meta', property='og:image')
-            if meta_img and meta_img.get('content'):
-                og_image = meta_img.get('content')
-            
-            paragraphs = soup.find_all('p')
-            article_ps = [p.get_text(strip=True) for p in paragraphs if len(p.get_text(strip=True)) > 60]
-            if len(article_ps) > 2:
-                full_html = "".join([f"<p>{text}</p>" for text in article_ps[:10]])
-    except Exception:
-        pass
-    return full_html, og_image
 
 def translate_html_content_batched(html_content, source_name):
     if not html_content: return ""
@@ -294,6 +309,8 @@ def fetch_interviews():
              print(f"Söyleşi Hatası ({source['name']}): {e}")
              
     all_interviews.sort(key=lambda x: x.get('date', ''), reverse=True)
+    
+    # Sizin özel röportajınızı HER ZAMAN listenin en başına (0. indekse) ekliyoruz
     all_interviews.insert(0, PINNED_INTERVIEW)
     
     return all_interviews[:100]
