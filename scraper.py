@@ -15,12 +15,14 @@ import time
 # (Röportajlar hariç, genel edebiyat ve kültür-sanat duyuruları)
 # -------------------------------------------------------------------------
 RSS_SOURCES_NEWS = [
-    # Türk Edebiyat, Eleştiri ve Kitap Dünyası
+    # Edebiyat, Eleştiri ve Kitap Dünyası
     {"url": "https://www.edebiyathaber.net/feed/", "name": "Edebiyat Haber"},
     {"url": "https://kayiprihtim.com/feed/", "name": "Kayıp Rıhtım"},
     {"url": "https://kitapeki.com/feed/", "name": "Kitap Eki"},
     {"url": "https://k24kitap.org/rss", "name": "K24"}, 
-    {"url": "https://oggito.com/rss", "name": "Oggito"}, 
+    {"url": "https://oggito.com/rss", "name": "Oggito"},
+    {"url": "https://sanatkritik.com/feed/", "name": "Sanat Kritik"},
+    {"url": "https://www.sabitfikir.com/rss", "name": "Sabitfikir"},
     {"url": "https://kalemkahveklavye.com/feed/", "name": "KalemKahveKlavye"},
     {"url": "https://literaedebiyat.com/feed/", "name": "Litera Edebiyat"},
     {"url": "https://parsomenfanzin.com/feed/", "name": "Parşömen Fanzin"},
@@ -51,8 +53,8 @@ RSS_SOURCES_INTERVIEWS = [
     {"url": "https://www.theparisreview.org/blog/category/interviews/feed/", "name": "The Paris Review"},
     {"url": "https://lithub.com/category/interviews/feed/", "name": "Literary Hub"},
     {"url": "https://electricliterature.com/category/interviews/feed/", "name": "Electric Literature"},
-    {"url": "https://www.theguardian.com/books/interviews/rss", "name": "The Guardian Books"},
-    {"url": "https://bombmagazine.org/rss/", "name": "BOMB Magazine"} 
+    {"url": "https://bombmagazine.org/rss/", "name": "BOMB Magazine"},
+    {"url": "https://www.theguardian.com/books/interviews/rss", "name": "The Guardian"}
 ]
 
 # ================= ORTAK FONKSİYONLAR =================
@@ -69,11 +71,12 @@ def extract_image(entry, content):
         if img and img.get('src'): return img['src']
     return "https://images.unsplash.com/photo-1481627834876-b7833e8f5570?auto=format&fit=crop&w=1200&q=80"
 
-def translate_to_turkish(text):
+def translate_text(text):
+    """Metni MyMemory API ile çevirir. Uzun metinler için basit bir kontrol yapar."""
     if not text or len(text.strip()) < 5: return text
     try:
-        # MyMemory çeviri API (Ücretsiz sınırlı, chunk bazlı çeviri)
-        chunk = text[:450]
+        # API limitini aşmamak için kırpıyoruz
+        chunk = text[:490]
         url = f"https://api.mymemory.translated.net/get?q={requests.utils.quote(chunk)}&langpair=en|tr"
         res = requests.get(url, timeout=5)
         if res.status_code == 200:
@@ -144,7 +147,7 @@ def fetch_news():
 
         try:
             feed = feedparser.parse(url)
-            for entry in feed.entries:
+            for entry in feed.entries[:10]: # Her kaynaktan max 10
                 title = entry.get('title', '')
                 
                 # Başlık Filtresi: Söyleşi, röportaj ve köşe yazılarını atla
@@ -162,8 +165,8 @@ def fetch_news():
                 image = extract_image(entry, content)
                 
                 if is_foreign:
-                    title = translate_to_turkish(title)
-                    content = translate_to_turkish(content)
+                    title = translate_text(title)
+                    content = translate_text(content)
                     time.sleep(0.5)
 
                 cleaned_content = clean_html_news(content)
@@ -189,65 +192,81 @@ def fetch_news():
     all_articles.sort(key=lambda x: x.get('date', ''), reverse=True)
     return all_articles[:150]
 
-# ================= RÖPORTAJLARI ÇEKME (SOYLESI.HTML İÇİN) =================
+# ================= RÖPORTAJLARI ÇEKME VE ÇEVİRME (SOYLESI.HTML İÇİN) =================
 
-def clean_html_interview(raw_html):
-    if not raw_html: return ""
-    soup = BeautifulSoup(raw_html, 'html.parser')
-    for element in soup.find_all(['p', 'div', 'span', 'strong', 'em', 'a']):
-        text = element.get_text().lower()
-        if any(keyword in text for keyword in [
-            'ilk olarak şu sitede', 'bizi takip', 'whatsapp', 'read more'
-        ]):
-            element.decompose()
-    return str(soup)
+def translate_html_content(html_content):
+    """HTML içeriğindeki paragrafları bularak parça parça çevirmeye çalışır."""
+    if not html_content: return ""
+    
+    soup = BeautifulSoup(html_content, 'html.parser')
+    paragraphs = soup.find_all('p')
+    
+    translated_html = ""
+    for i, p in enumerate(paragraphs):
+        if i < 4:
+            original_text = p.get_text()
+            if len(original_text.strip()) > 10:
+                translated_p = translate_text(original_text)
+                translated_html += f"<p>{translated_p}</p>"
+                time.sleep(0.5) # API'ye yüklenmemek için bekle
+            else:
+                translated_html += str(p)
+        else:
+            if i == 4:
+                translated_html += "<br><hr><br><p><i>(Aşağıdaki metin orijinal dilindedir. Röportajın tamamına kaynak siteden ulaşabilirsiniz.)</i></p>"
+            translated_html += str(p)
+            
+    if not translated_html:
+         raw_text = soup.get_text()
+         trans = translate_text(raw_text[:400])
+         translated_html = f"<p>{trans}...</p><p><i>(Röportajın devamı için orijinal kaynağa gidiniz.)</i></p>"
+
+    # HTML temizliği (Gereksiz linkleri ez)
+    clean_soup = BeautifulSoup(translated_html, 'html.parser')
+    for a in clean_soup.find_all('a'):
+        a.unwrap() 
+        
+    return str(clean_soup)
 
 def fetch_interviews():
     all_interviews = []
     for source in RSS_SOURCES_INTERVIEWS:
-        url = source["url"]
-        source_name = source["name"]
-
+        print(f"Röportaj Taranıyor: {source['name']}")
         try:
-            feed = feedparser.parse(url)
-            for entry in feed.entries:
+            feed = feedparser.parse(source["url"])
+            # API limitlerini aşmamak için her kaynaktan sadece en yeni 3 röportajı çekiyoruz
+            for entry in feed.entries[:3]:
                 title = entry.get('title', '')
                 content = entry.get('content', [{'value': ''}])[0].get('value', '') or entry.get('summary', '') or entry.get('description', '')
                 image = extract_image(entry, content)
                 
-                # Çeviri İşlemleri (Hepsi yabancı kaynak)
-                translated_title = translate_to_turkish(title)
-                
-                # Açıklamayı çevir (İlk paragraf veya ilk 300 karakter)
-                soup = BeautifulSoup(content, 'html.parser')
-                first_p = soup.find('p')
-                desc_text = first_p.get_text() if first_p else content[:300]
-                translated_desc = translate_to_turkish(desc_text)
-                
+                # Başlığı Çevir
+                translated_title = translate_text(title)
                 time.sleep(0.5)
-
-                cleaned_content = clean_html_interview(content)
-                if not cleaned_content or len(cleaned_content.strip()) < 15:
-                    cleaned_content = f"<p>Bu röportaj <em>{source_name}</em> platformundan derlenmiştir. Orijinal metni okumak için kaynağa gidebilirsiniz.</p>"
-
-                plain_desc = translated_desc[:200] + "..." if translated_desc else BeautifulSoup(cleaned_content, 'html.parser').get_text()[:200] + "..."
+                
+                # İçeriği Çevir
+                translated_content = translate_html_content(content)
+                
+                # Özeti Çevrilmiş İçerikten Al
+                soup = BeautifulSoup(translated_content, 'html.parser')
+                translated_desc = soup.get_text()[:200] + "..."
 
                 all_interviews.append({
                     "title": translated_title,
                     "link": entry.get('link', '#'),
-                    "source": source_name,
+                    "source": source["name"],
                     "date": entry.get('published', entry.get('updated', 'Güncel')),
                     "category": "ULUSLARARASI SÖYLEŞİ",
-                    "desc": plain_desc,
-                    "content": cleaned_content, 
+                    "desc": translated_desc,
+                    "content": translated_content,
                     "image": image,
                     "isForeign": True 
                 })
         except Exception as e:
-             print(f"Röportaj Tarama Hatası ({source_name}): {e}")
+             print(f"Hata ({source['name']}): {e}")
 
     all_interviews.sort(key=lambda x: x.get('date', ''), reverse=True)
-    return all_interviews[:50]
+    return all_interviews
 
 # ================= ANA ÇALIŞTIRMA BLOĞU =================
 
