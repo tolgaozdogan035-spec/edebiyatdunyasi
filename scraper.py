@@ -329,7 +329,7 @@ def build_archives():
     return news_list[:150], interviews_list[:150]
 
 
-# --- TOLGA ÖZDOĞAN ÖZEL KANCA (KESİN ÇÖZÜM) ---
+# --- TOLGA ÖZDOĞAN KÖŞE YAZILARI TARAYICISI (YENİLENMİŞ KANCA) ---
 def fetch_tolga_articles():
     url = "https://tolgaozdogan.com/kose-yazilari.html"
     headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/121.0.0.0'}
@@ -341,46 +341,51 @@ def fetch_tolga_articles():
         if res.status_code == 200:
             soup = BeautifulSoup(res.text, 'html.parser')
             
-            # Sitenizdeki "YAZININ DEVAMINI OKU" butonlarına doğrudan kilitlenir
-            buttons = soup.find_all('a', string=lambda t: t and 'DEVAMINI OKU' in t.upper())
-            
-            for btn in buttons:
-                link = btn.get('href', url)
-                if not link.startswith('http'): 
-                    link = "https://tolgaozdogan.com/" + link.lstrip('/')
+            # Sitenizdeki tüm h2 ve h3 başlıklarını bul (Yazılarınızın ana kancası)
+            for h in soup.find_all(['h2', 'h3']):
+                title = h.get_text(strip=True)
+                if len(title) < 15 or "Tolga Özdoğan" in title: continue
+                
+                parent = h.find_parent(['div', 'article', 'li', 'section'])
+                if not parent: continue
+                
+                # Linki Bul
+                link = url
+                link_tag = parent.find('a', href=True)
+                if link_tag:
+                    l = link_tag['href']
+                    link = l if l.startswith('http') else "https://tolgaozdogan.com/" + l.lstrip('/')
                     
-                # Butonun etrafındaki kartı bul
-                card = btn.find_parent(['div', 'article', 'section'])
-                if card:
-                    title_tag = card.find(['h1', 'h2', 'h3'])
-                    if not title_tag: continue
-                    title = title_tag.get_text(strip=True)
+                # Tarihi Bul (Ayları otomatik tanır)
+                date = "Güncel"
+                date_tag = parent.find(lambda tag: tag.name in ['span', 'time', 'p'] and any(m in tag.get_text().lower() for m in ['ağustos', 'eylül', 'ekim', 'kasım', 'aralık', 'ocak', 'şubat', 'mart', 'nisan', 'mayıs', 'haziran', 'temmuz']))
+                if date_tag:
+                    match = re.search(r'\d{1,2}\s+(Ocak|Şubat|Mart|Nisan|Mayıs|Haziran|Temmuz|Ağustos|Eylül|Ekim|Kasım|Aralık)\s+\d{4}', date_tag.get_text(), re.IGNORECASE)
+                    if match: date = match.group(0)
                     
-                    p_tag = card.find('p')
-                    desc = p_tag.get_text(strip=True) if p_tag else title
-                    
-                    # Kartın içinden tarihi cımbızla çek
-                    date = "Güncel"
-                    text_content = card.get_text(separator=" ")
-                    match = re.search(r'\d{1,2}\s+(Ocak|Şubat|Mart|Nisan|Mayıs|Haziran|Temmuz|Ağustos|Eylül|Ekim|Kasım|Aralık)\s+\d{4}', text_content, re.IGNORECASE)
-                    if match:
-                        date = match.group(0)
+                # Özeti Bul
+                desc = title
+                for p in parent.find_all('p'):
+                    if len(p.get_text(strip=True)) > 40:
+                        desc = p.get_text(strip=True)
+                        break
                         
-                    yazilar.append({"title": title, "link": link, "date": date, "desc": desc})
+                # Çift kayıtları engelle
+                if not any(y['title'] == title for y in yazilar):
+                    yazilar.append({"title": title, "link": link, "date": date, "desc": desc[:250] + "..."})
     except Exception as e:
-        print("Tolga Özdoğan yazıları çekilirken hata:", e)
+        print("Tolga Özdoğan yazıları hata:", e)
         
-    # KESİN ÇÖZÜM: Bota ulaşılamazsa ekran görüntüsündeki BİREBİR metinleri yazar
+    # KESİN YEDEK: Canlı Siteniz Çökerse Bile Sayfanız Boş Kalmaz
     if not yazilar:
         yazilar = [
             {
                 "title": "GÖRÜNMEYENİN LABİRENTİNDE İNSAN: AĞUSTOS 2026 ÇOK SATANLARINDA HAKİKAT VE YANILSAMA",
                 "link": "https://tolgaozdogan.com/kose-yazilari.html",
                 "date": "28 Ağustos 2026",
-                "desc": "Ağustos ayının son günlerinde hem dünya genelinde hem de Türkiye raflarında çok satanlar listelerini incelediğimde, edebiyatın kolektif bilincimizde açtığı yeni bir damar dikkatimi çekiyor. Riley Sager'ın küresel ölçekte listeleri altüst eden The Unknown romanından Virginia Evans'ın sarsıcı çıkış eseri Muhabbet'e, Rachel Cusk'ın merakla beklenen Life of M'inden Alice Feeney'nin psikolojik gerilimlerine kadar okurun en çok yöneldiği metinler, aslında tek bir ortak arayışın etrafında kenetleniyor: Modern bireyin kendine, en yakınlarına ve kurduğu yapay hayatlara karşı duyduğu o derin güvensizlik."
+                "desc": "Ağustos ayının son günlerinde hem dünya genelinde hem de Türkiye raflarında çok satanlar listelerini incelediğimde, edebiyatın kolektif bilincimizde açtığı yeni bir damar dikkatimi çekiyor. Riley Sager'ın küresel ölçekte listeleri altüst eden The Unknown romanından Virginia Evans'ın sarsıcı çıkış eseri Muhabbet'e, Rachel Cusk'ın merakla beklenen Life of M'inden Alice Feeney'nin psikolojik gerilimlerine..."
             }
         ]
-        
     return yazilar
 
 
