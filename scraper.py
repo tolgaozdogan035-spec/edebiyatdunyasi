@@ -4,48 +4,64 @@ import os
 import re
 from bs4 import BeautifulSoup
 import requests
+from google.oauth2 import service_account
+from googleapiclient.discovery import build
+from googleapiclient.http import MediaIoBaseUpload
+import io
 
+# -- DEV RSS KAYNAKLARI LİSTESİ --
 RSS_SOURCES = [
-    "https://kayiprihtim.com/feed/",
-    "https://www.edebiyathaber.net/feed/",
-    "https://kitapeki.com/feed/",
-    "https://www.haberturk.com/rss/kategori/kultur-sanat.xml",
-    "https://www.ntv.com.tr/sanat.rss",
-    "https://www.cumhuriyet.com.tr/rss/kultur-sanat.xml"
+    # Türk Edebiyat & Kitap Dünyası
+    {"url": "https://www.edebiyathaber.net/feed/", "name": "Edebiyat Haber"},
+    {"url": "https://kayiprihtim.com/feed/", "name": "Kayıp Rıhtım"},
+    {"url": "https://kitapeki.com/feed/", "name": "Kitap Eki"},
+    {"url": "https://fikiredebiyat.com.tr/rss/kitap", "name": "Fikir Edebiyat"},
+    {"url": "https://fikiredebiyat.com.tr/rss/edebiyat", "name": "Fikir Edebiyat"},
+    {"url": "https://www.yeniasya.com.tr/rss/kultur-sanat", "name": "Yeni Asya Sanat"},
+    {"url": "https://mismishaber.com/rss/kultur-sanat?xml=1", "name": "Kültür Sanat"},
+    
+    # Ulusal Basın Kültür Sanat Köşeleri
+    {"url": "https://www.haberturk.com/rss/kategori/kultur-sanat.xml", "name": "Habertürk Kültür"},
+    {"url": "https://www.ntv.com.tr/sanat.rss", "name": "NTV Sanat"},
+    {"url": "https://www.cumhuriyet.com.tr/rss/kultur-sanat.xml", "name": "Cumhuriyet Kültür"},
+    {"url": "https://www.trthaber.com/kultur-sanat_articles.rss", "name": "TRT Sanat"},
+    {"url": "https://www.sozcu.com.tr/rss/kultur-sanat.xml", "name": "Sözcü Sanat"},
+    {"url": "https://www.sabah.com.tr/rss/kultur-sanat.xml", "name": "Sabah Kültür"},
+    {"url": "https://www.saglisolluhaber.com/kultur-sanat/rss.xml", "name": "Kültür Bülteni"},
+    
+    # Uluslararası Kitap ve Edebiyat Gündemi (İngilizce -> Türkçe)
+    {"url": "https://www.theguardian.com/books/rss", "name": "The Guardian Books"},
+    {"url": "https://lithub.com/feed/", "name": "Literary Hub"},
+    {"url": "https://www.publishersweekly.com/pw/rss/category/international.xml", "name": "Publishers Weekly"}
 ]
 
 def clean_html(raw_html):
-    if not raw_html:
-        return ""
+    if not raw_html: return ""
     soup = BeautifulSoup(raw_html, 'html.parser')
-    for element in soup.find_all(['p', 'div', 'span', 'strong', 'em']):
+    for element in soup.find_all(['p', 'div', 'span', 'strong', 'em', 'a']):
         text = element.get_text().lower()
+        # Katı Filtreleme: Özel haber, röportaj, köşe yazısı süzgeci
         if any(keyword in text for keyword in [
-            'ilk olarak şu sitede yayımlanmıştır', 'yazının kaynağı bu sitedir', 
-            'appeared first on', 'ilk ortaya çıktı', 'kayıp rıhtım forum', 
-            'whatsapp üzerinden takip', 'google news', 'read more', 'the post'
+            'köşe yazısı', 'söyleşi', 'röportaj', 'özel haber', 'exclusive',
+            'konuştuk', 'anlattı', 'ilk olarak şu sitede', 'bizi takip', 'whatsapp', 'read more'
         ]):
             element.decompose()
     return str(soup)
 
-def scrape_full_article(link):
+def translate_to_turkish(text):
+    if not text or len(text.strip()) < 5: return text
     try:
-        headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'}
-        response = requests.get(link, headers=headers, timeout=10)
-        if response.status_code == 200:
-            soup = BeautifulSoup(response.text, 'html.parser')
-            og_image = soup.find('meta', property='og:image')
-            img_url = og_image['content'] if og_image and og_image.get('content') else None
-            
-            article_body = soup.find('article') or soup.find('div', class_=re.compile('content|entry|post', re.I))
-            if article_body:
-                paragraphs = article_body.find_all(['p', 'h2', 'h3'])
-                full_text = "".join([str(p) for p in paragraphs])
-                if len(full_text.strip()) > 80:
-                    return clean_html(full_text), img_url
-        return None, None
+        # MyMemory çeviri API - Chunk ile
+        chunk = text[:450]
+        url = f"https://api.mymemory.translated.net/get?q={requests.utils.quote(chunk)}&langpair=en|tr"
+        res = requests.get(url, timeout=5)
+        if res.status_code == 200:
+            result = res.json()
+            if 'responseData' in result and result['responseData']['translatedText']:
+                return result['responseData']['translatedText']
     except Exception:
-        return None, None
+        pass
+    return text
 
 def extract_image(entry, content):
     if hasattr(entry, 'media_content') and entry.media_content:
@@ -61,74 +77,100 @@ def extract_image(entry, content):
 
 def assign_category(title, content):
     combined = (str(title) + " " + str(content)).upper()
-    if 'SÖYLEŞİ' in combined or 'RÖPORTAJ' in combined or 'KONUŞTUK' in combined:
-        return 'SÖYLEŞİ'
-    if 'ŞİİR' in combined:
-        return 'ŞİİR'
-    if any(k in combined for k in ['ROMAN', 'ÖYKÜ', 'KİTAP']):
-        return 'ROMAN/ÖYKÜ'
-    if any(k in combined for k in ['SİNEMA', 'TİYATRO', 'SERGİ', 'KÜLTÜR']):
-        return 'KÜLTÜR-SANAT'
-    return 'EDEBİYAT HABERLERİ'
+    if any(k in combined for k in ['KİTAP', 'ROMAN', 'ÖYKÜ', 'ŞİİR', 'YENİ ÇIKAN', 'YAYINEVİ']):
+        return 'KİTAP / EDEBİYAT'
+    if any(k in combined for k in ['SERGİ', 'TİYATRO', 'SİNEMA', 'MÜZE', 'FESTİVAL', 'KONSER']):
+        return 'KÜLTÜR - SANAT'
+    return 'GÜNCEL GELİŞME'
 
-def fetch_news():
+def save_to_google_drive(articles_json_str):
+    try:
+        creds_json = os.environ.get("GOOGLE_DRIVE_CREDENTIALS")
+        if not creds_json:
+            print("Uyarı: GOOGLE_DRIVE_CREDENTIALS ortam değişkeni yok.")
+            return
+
+        creds_dict = json.loads(creds_json)
+        SCOPES = ['https://www.googleapis.com/auth/drive.file']
+        creds = service_account.Credentials.from_service_account_info(creds_dict, scopes=SCOPES)
+        service = build('drive', 'v3', credentials=creds)
+
+        file_name = "edebiyat_gundemi_arsiv.json"
+        results = service.files().list(q=f"name='{file_name}' and trashed=false", spaces='drive', fields='files(id, name)').execute()
+        items = results.get('files', [])
+
+        media = MediaIoBaseUpload(io.BytesIO(articles_json_str.encode('utf-8')), mimetype='application/json', resumable=True)
+
+        if items:
+            service.files().update(fileId=items[0]['id'], media_body=media).execute()
+        else:
+            service.files().create(body={'name': file_name, 'mimeType': 'application/json'}, media_body=media).execute()
+        print("Google Drive başarıyla eşitlendi.")
+    except Exception as e:
+        print(f"Drive Hatası: {e}")
+
+def fetch_all():
     all_articles = []
-    for url in RSS_SOURCES:
+    for source in RSS_SOURCES:
+        url = source["url"]
+        source_name = source["name"]
+        is_foreign = "guardian" in url or "lithub" in url or "publishers" in url
+
         try:
             feed = feedparser.parse(url)
             for entry in feed.entries:
-                title = entry.get('title', 'Başlıksız Haber')
-                link = entry.get('link', '#')
-                published = entry.get('published', entry.get('updated', ''))
+                title = entry.get('title', '')
                 
-                content = ""
-                if hasattr(entry, 'content') and entry.content:
-                    content = entry.content[0].value
-                elif hasattr(entry, 'summary'):
-                    content = entry.summary
-                elif hasattr(entry, 'description'):
-                    content = entry.description
+                # Başlık Filtresi: Söyleşi, röportaj ve köşe yazılarını atla
+                t_lower = title.lower()
+                if any(w in t_lower for w in ['röportaj', 'söyleşi', 'köşe', 'özel', 'konuştuk']):
+                    continue
+
+                content = entry.get('content', [{'value': ''}])[0].get('value', '') or entry.get('summary', '') or entry.get('description', '')
                 
+                # İçerik Filtresi
+                c_lower = content.lower()
+                if 'röportaj' in c_lower or 'söyleşi' in c_lower:
+                    continue
+
                 image = extract_image(entry, content)
                 
-                scraped_content, scraped_img = None, None
-                if not content or len(content.strip()) < 150 or "Read more" in content:
-                    scraped_content, scraped_img = scrape_full_article(link)
-                
-                if scraped_content: content = scraped_content
-                if scraped_img: image = scraped_img
-                
+                if is_foreign:
+                    title = translate_to_turkish(title)
+                    content = translate_to_turkish(content)
+
                 if not content or len(content.strip()) < 15:
-                    content = f"<p><strong>{title}</strong> hakkında edebiyat dünyasından derlenen en güncel detaylar bu alanda yer almaktadır.</p>"
-                
+                    content = f"<p><strong>{title}</strong> konulu haber {source_name} üzerinden taranarak indekslenmiştir.</p>"
+
                 cleaned_content = clean_html(content)
-                soup_desc = BeautifulSoup(cleaned_content, 'html.parser')
-                plain_desc = soup_desc.get_text()[:180] + "..."
-                
-                category = assign_category(title, cleaned_content)
+                plain_desc = BeautifulSoup(cleaned_content, 'html.parser').get_text()[:200] + "..."
                 
                 article = {
                     "title": title,
-                    "link": link,
-                    "date": published if published else "Güncel",
-                    "category": category,
+                    "link": entry.get('link', '#'),
+                    "source": source_name,
+                    "date": entry.get('published', entry.get('updated', 'Güncel')),
+                    "category": assign_category(title, cleaned_content),
                     "desc": plain_desc,
                     "content": cleaned_content,
-                    "image": image
+                    "image": image,
+                    "isForeign": is_foreign
                 }
                 all_articles.append(article)
         except Exception as e:
-            print(f"Hata oluştu ({url}): {e}")
-            
-    return all_articles
+            print(f"Hata ({source_name}): {e}")
+
+    # Tarihe göre sırala
+    all_articles.sort(key=lambda x: x.get('date', ''), reverse=True)
+    return all_articles[:150] # Sadece en yeni 150 haber
 
 if __name__ == "__main__":
-    articles = fetch_news()
-    if os.path.exists("haberler") and not os.path.isdir("haberler"):
-        os.remove("haberler")
+    articles = fetch_all()
     os.makedirs("haberler", exist_ok=True)
+    json_data = json.dumps(articles, ensure_ascii=False, indent=4)
     
-    output_path = os.path.join("haberler", "haberler.json")
-    with open(output_path, "w", encoding="utf-8") as f:
-        json.dump(articles, f, ensure_ascii=False, indent=4)
-    print(f"Toplam {len(articles)} içerik başarıyla kaydedildi.")
+    with open("haberler/haberler.json", "w", encoding="utf-8") as f:
+        f.write(json_data)
+        
+    save_to_google_drive(json_data)
+    print("Sistem başarıyla çalıştı.")
