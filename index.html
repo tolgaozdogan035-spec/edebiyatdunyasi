@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Edebiyat Gündemi | Türkiye ve Dünya Kültür Sanat Arşivi</title>
+    <title>Edebiyat Gündemi | Güncel Edebiyat Haberleri ve Kültür Sanat</title>
     
     <!-- STREAMING_CHUNK: Loading External CSS and Web Fonts... -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -33,20 +33,19 @@
         .line-clamp-3 { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
         
         /* Ticker Animasyonları ve Etkileşimler */
-        .ticker-wrap { width: 100%; overflow: hidden; background-color: #721c24; }
-        /* Animasyon süresi 240s yapılarak hızı yavaşlatıldı */
+        .ticker-wrap { width: 100%; overflow: hidden; background-color: #0b1120; } 
         .ticker { display: inline-flex; white-space: nowrap; padding-right: 100%; animation: ticker 240s linear infinite; }
         .ticker-wrap:hover .ticker { animation-play-state: paused; }
         .ticker__item { display: inline-flex; align-items: center; padding: 0 1.5rem; color: white; font-size: 0.85rem; cursor: pointer; transition: color 0.2s ease; }
-        .ticker__item:hover { color: #fca5a5; }
+        .ticker__item:hover { color: #60a5fa; } 
         @keyframes ticker { 0% { transform: translate3d(0, 0, 0); } 100% { transform: translate3d(-100%, 0, 0); } }
 
         /* Article Native Reader Styles */
         .article-body p { margin-bottom: 1.5rem; line-height: 1.85; color: #374151; font-size: 1.15rem; font-family: 'Playfair Display', serif; }
         .article-body img { max-width: 100%; height: auto; border-radius: 6px; margin: 2rem auto; display: block; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
         .article-body h2, .article-body h3 { font-family: 'Playfair Display', serif; font-weight: 700; font-size: 1.75rem; margin-top: 2rem; color: #111827; }
-        .article-body blockquote { border-left: 4px solid #721c24; padding-left: 1rem; font-style: italic; color: #4b5563; background: #fdfbfb; padding: 1rem; }
-        .article-body a { color: #721c24; text-decoration: none; font-weight: bold; pointer-events: none; cursor: default; }
+        .article-body blockquote { border-left: 4px solid #1d4ed8; padding-left: 1rem; font-style: italic; color: #4b5563; background: #eff6ff; padding: 1rem; }
+        .article-body a { color: #1d4ed8; text-decoration: none; font-weight: bold; pointer-events: none; cursor: default; }
 
         /* Advertisement Banner Styles */
         .ad-banner-horizontal { width: 100%; max-width: 970px; height: 90px; margin: 2rem auto; background-color: #f3f4f6; border: 1px solid #e5e7eb; display: flex; align-items: center; justify-content: center; color: #9ca3af; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.1em; font-weight: bold; }
@@ -67,12 +66,12 @@
         <div class="container mx-auto px-4 lg:px-8 py-2 flex justify-between items-center text-[11px] text-gray-500 uppercase tracking-wide font-bold">
             <div class="flex items-center space-x-4">
                 <span id="top-date">Yükleniyor...</span>
-                <span class="border-l border-gray-300 pl-4 flex items-center text-brand-red" id="last-update-time">
+                <span class="border-l border-gray-300 pl-4 flex items-center text-blue-600" id="last-update-time">
                     <!-- JS ile Son Güncelleme Saati Buraya Gelecek -->
                 </span>
             </div>
             <div class="flex items-center space-x-6">
-                <!-- Sosyal Medya İkonları vs. için ayrılmış boş alan -->
+                <span class="text-blue-600"><i class="fas fa-book-open mr-1"></i> Edebiyat Arşivi Aktif</span>
             </div>
         </div>
     </div>
@@ -83,8 +82,8 @@
             <h1 class="text-4xl md:text-6xl font-serif font-black tracking-tight text-brand-text mb-3">
                 Edebiyat <span class="text-brand-red">Gündemi</span>
             </h1>
-            <p class="text-[10px] md:text-xs uppercase tracking-[0.3em] text-gray-400 font-bold">
-                TÜRKİYE VE DÜNYA KÜLTÜR SANAT HABERLERİ KÜRASİYONU
+            <p class="text-[10px] md:text-xs uppercase tracking-[0.3em] text-blue-600 font-bold">
+                GÜNCEL EDEBİYAT HABERLERİ VE KÜLTÜR SANAT
             </p>
         </a>
     </header>
@@ -111,22 +110,22 @@
     </nav>
 
     <!-- STREAMING_CHUNK: Building Clickable News Ticker Interface... -->
-    <div class="flex bg-brand-red text-white shadow-md relative z-30">
-        <div class="bg-brand-dark font-bold px-4 py-2 text-[10px] md:text-xs tracking-wider uppercase flex items-center whitespace-nowrap z-10 shadow-xl border-r border-red-900">
-            <i class="fas fa-satellite-dish mr-2 text-yellow-400"></i> CANLI AKIŞ
+    <div class="flex bg-brand-dark text-white shadow-md relative z-30">
+        <div class="bg-blue-600 font-bold px-4 py-2 text-[10px] md:text-xs tracking-wider uppercase flex items-center whitespace-nowrap z-10 shadow-xl border-r border-blue-800">
+            <i class="fas fa-bolt mr-2 text-white"></i> SON DAKİKA
         </div>
         <div class="ticker-wrap flex items-center cursor-default z-0">
-            <div class="ticker" id="ticker-content"><span class="ticker__item">Arşiv Taranıyor...</span></div>
+            <div class="ticker" id="ticker-content"><span class="ticker__item">Edebiyat haberleri yükleniyor...</span></div>
         </div>
     </div>
 
     <!-- STREAMING_CHUNK: Constructing the Main Content Grid, Ads and Reader View... -->
     <main class="container mx-auto px-4 lg:px-8 py-10 min-h-screen relative">
         
-        <div id="loading-spinner" class="py-32 text-center text-brand-red flex flex-col items-center justify-center">
-            <i class="fas fa-sync-alt fa-spin text-5xl mb-6 text-gray-800"></i>
-            <h3 class="text-2xl font-serif font-bold mb-2 text-gray-800">Uluslararası Ajanslar Taranıyor</h3>
-            <p class="text-sm font-medium text-gray-500 max-w-sm mx-auto">Nitelikli kültür sanat platformları indeksleniyor, çeviriler uygulanıyor...</p>
+        <div id="loading-spinner" class="py-32 text-center text-blue-600 flex flex-col items-center justify-center">
+            <i class="fas fa-feather-alt fa-spin text-5xl mb-6 text-gray-800"></i>
+            <h3 class="text-2xl font-serif font-bold mb-2 text-gray-800">Edebiyat Arşivi Yükleniyor</h3>
+            <p class="text-sm font-medium text-gray-500 max-w-sm mx-auto">Güncel edebiyat haberleri ve kültür-sanat akışı derleniyor...</p>
         </div>
 
         <!-- ANA SAYFA VİTRİNİ -->
@@ -151,10 +150,11 @@
 
             <!-- Ana Haber Listesi (Tam Genişlik) -->
             <section class="w-full bg-white p-6 md:p-8 rounded-md border border-gray-200 shadow-sm">
-                <div class="flex justify-between items-end border-b-2 border-brand-red pb-3 mb-8">
-                    <h2 class="text-2xl md:text-3xl font-serif font-bold text-brand-text">Tüm Gelişmeler</h2>
+                <div class="flex justify-between items-end border-b-2 border-blue-600 pb-3 mb-8">
+                    <h2 class="text-2xl md:text-3xl font-serif font-bold text-brand-text">Tüm Haberler</h2>
+                    <span class="text-[10px] uppercase font-bold text-gray-500 bg-gray-100 px-3 py-1.5 rounded-sm">Güncel Akış</span>
                 </div>
-                <!-- Grid yapısına çevirerek tüm alanı daha verimli kullanalım -->
+                <!-- Grid yapısı -->
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-8" id="news-list">
                     <!-- JS -->
                 </div>
@@ -169,14 +169,13 @@
         <!-- ================= YEREL TAM METİN OKUYUCU (MODAL) ================= -->
         <div id="article-view" class="hidden transition-all duration-500 opacity-0 bg-white p-6 md:p-14 border border-gray-200 rounded-md shadow-2xl max-w-4xl mx-auto my-8 relative">
             
-            <button onclick="closeArticle()" class="sticky top-20 bg-gray-900 text-white px-5 py-2.5 rounded-full shadow-lg border border-gray-700 z-50 mb-8 hover:bg-brand-red hover:border-brand-red transition font-bold text-xs uppercase tracking-wider flex items-center group">
-                <i class="fas fa-arrow-left mr-2 transform group-hover:-translate-x-1 transition"></i> Haberlere Dön
+            <button onclick="closeArticle()" class="sticky top-20 bg-gray-900 text-white px-5 py-2.5 rounded-full shadow-lg border border-gray-700 z-50 mb-8 hover:bg-blue-600 hover:border-blue-600 transition font-bold text-xs uppercase tracking-wider flex items-center group">
+                <i class="fas fa-arrow-left mr-2 transform group-hover:-translate-x-1 transition"></i> Habere Dön
             </button>
 
             <!-- Meta -->
             <div class="flex flex-wrap items-center text-[10px] font-bold mb-6 uppercase tracking-wide gap-2">
-                <span id="article-category" class="bg-brand-red text-white px-3 py-1.5 rounded-sm shadow-sm">KATEGORİ</span>
-                <span id="article-translate-badge" class="hidden bg-blue-600 text-white px-3 py-1.5 rounded-sm shadow-sm"><i class="fas fa-globe mr-1"></i> Çeviri</span>
+                <span id="article-category" class="bg-blue-600 text-white px-3 py-1.5 rounded-sm shadow-sm">KATEGORİ</span>
                 <span id="article-date" class="text-gray-400 ml-auto"><i class="far fa-clock mr-1"></i> Tarih</span>
             </div>
 
@@ -188,22 +187,15 @@
                 <img id="article-image" src="" class="w-full max-h-[550px] object-contain">
             </div>
             
-            <!-- Body -->
+            <!-- Body (Haberin Tamamı Burada Gösterilir) -->
             <div id="article-content" class="article-body border-b border-gray-200 pb-10">
                 Yükleniyor...
             </div>
 
-            <!-- SOURCE ATTRIBUTION -->
-            <div class="mt-10 bg-gray-50 p-6 rounded-md border border-gray-200">
-                <div class="flex flex-col md:flex-row justify-between items-center gap-4">
-                    <div>
-                        <h4 class="text-[10px] font-bold uppercase tracking-widest text-gray-500 mb-1">Kaynak Beyanı</h4>
-                        <p class="text-sm text-gray-800 font-medium">Bu haber <strong id="article-source-name" class="text-brand-red">Kaynak</strong> üzerinden derlenmiştir.</p>
-                    </div>
-                    <a id="article-original-link" href="#" target="_blank" rel="noopener noreferrer" class="bg-white border border-gray-300 text-gray-700 hover:text-white hover:bg-brand-red hover:border-brand-red px-5 py-2.5 rounded text-xs font-bold uppercase tracking-wider transition shadow-sm whitespace-nowrap">
-                        Orijinal Metni İncele <i class="fas fa-external-link-alt ml-2"></i>
-                    </a>
-                </div>
+            <!-- SOURCE ATTRIBUTION (Dışarıya Link Verilmez, Sadece Kaynak Adı Görünür) -->
+            <div class="mt-10 bg-gray-50 p-6 rounded-md border border-gray-200 text-center">
+                <h4 class="text-[10px] font-bold uppercase tracking-widest text-gray-500 mb-1">Kaynak Bilgisi</h4>
+                <p class="text-sm text-gray-800 font-medium">Bu içerik <strong id="article-source-name" class="text-blue-600">Kaynak</strong> üzerinden derlenerek sunulmuştur.</p>
             </div>
         </div>
 
@@ -214,7 +206,7 @@
         <div class="container mx-auto px-4 lg:px-8 flex flex-col md:flex-row justify-between items-center gap-6">
             <div class="text-center md:text-left">
                 <h2 class="text-2xl font-serif font-bold text-white mb-2">Edebiyat <span class="text-brand-red">Gündemi</span></h2>
-                <p class="text-[10px] uppercase tracking-widest text-gray-500">Tam Otomatik Haber Çeviri ve Okuma Sistemi</p>
+                <p class="text-[10px] uppercase tracking-widest text-gray-500">Güncel Edebiyat Haberleri ve Kültür Sanat</p>
             </div>
             <div class="text-center md:text-right text-xs font-bold space-y-2">
                 <p>&copy; <span id="year"></span> Edebiyat Gündemi</p>
@@ -243,7 +235,6 @@
 
     <!-- STREAMING_CHUNK: Integrating Core Javascript Application State and Handlers... -->
     <script>
-        // Üst bar günün tarihi
         document.getElementById('top-date').textContent = new Date().toLocaleDateString('tr-TR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
         document.getElementById('year').textContent = new Date().getFullYear();
 
@@ -260,38 +251,41 @@
         mobileMenuOverlay.addEventListener('click', toggleMenu);
 
         let globalArticles = []; 
-        const JSON_URL = 'haberler/haberler.json';
-        const FALLBACK_IMAGE = 'https://images.unsplash.com/photo-1481627834876-b7833e8f5570?auto=format&fit=crop&w=1200&q=80';
+        const JSON_URL = 'haberler/haberler.json'; 
+        const FALLBACK_IMAGE = 'https://images.unsplash.com/photo-1506880018603-83d5b814b5a6?auto=format&fit=crop&w=1200&q=80';
 
         async function fetchSystemData() {
             try {
                 const response = await fetch(JSON_URL + '?v=' + new Date().getTime());
+                if (!response.ok) throw new Error("haberler.json bulunamadı.");
+                
                 const data = await response.json();
                 
-                // Son Güncelleme Saatini üst bara yazdır
-                const now = new Date();
-                const timeString = now.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' });
-                document.getElementById('last-update-time').innerHTML = `<span class="w-2 h-2 rounded-full bg-brand-red mr-2 pulse-dot"></span> Son Güncelleme: ${timeString}`;
-
                 if(data && Array.isArray(data) && data.length > 0) {
                     globalArticles = data;
+                    updateTimeDisplay("Güncel");
                     renderUI();
-                } else { throw new Error("Veri boş"); }
+                } else { 
+                    throw new Error("Veri boş."); 
+                }
             } catch (error) {
-                console.warn("API Hatası", error);
+                console.warn("Veri okuma hatası:", error);
+                updateTimeDisplay("Bekleniyor");
                 
-                // Hata durumunda da saati yazdır
-                const now = new Date();
-                const timeString = now.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' });
-                document.getElementById('last-update-time').innerHTML = `<span class="w-2 h-2 rounded-full bg-brand-red mr-2 pulse-dot"></span> Son Deneme: ${timeString} (Hata)`;
-
                 globalArticles = [{
-                    title: "Sistem Taraması Devam Ediyor", link: "#", source: "Bot Servisi",
-                    date: new Date().toISOString(), category: "BİLGİ", desc: "Haber kaynakları güncellenmektedir.",
-                    content: "Lütfen bekleyiniz...", image: FALLBACK_IMAGE, isForeign: false
+                    title: "Edebiyat Gündemi Arşivi Hazırlanıyor",
+                    link: "#", source: "Edebiyat Gündemi", date: new Date().toISOString(),
+                    category: "BİLGİLENDİRME", desc: "Python botumuz (scraper.py) seçkin edebiyat kaynaklarını tarayıp arşive eklemektedir. Lütfen botun çalışmasını bekleyiniz.", 
+                    content: "<p>Arka plandaki Python botu çalıştığında en güncel edebiyat haberleri bu sayfada yer alacaktır.</p>", image: FALLBACK_IMAGE
                 }];
                 renderUI();
             }
+        }
+
+        function updateTimeDisplay(status) {
+            const now = new Date();
+            const timeString = now.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' });
+            document.getElementById('last-update-time').innerHTML = `<span class="w-2 h-2 rounded-full bg-blue-600 mr-2 pulse-dot"></span> Son Güncelleme: ${timeString} (${status})`;
         }
 
         function formatDateTr(dateStr) {
@@ -300,7 +294,6 @@
             return d.toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric', hour:'2-digit', minute:'2-digit' });
         }
 
-        // STREAMING_CHUNK: Rendering User Interface Elements Based on Fetched Data...
         function renderUI() {
             document.getElementById('loading-spinner').classList.add('hidden');
             const contentArea = document.getElementById('content-area');
@@ -309,12 +302,12 @@
 
             if(globalArticles.length === 0) return;
 
-            // 1. Ticker (Kayan Yazı - Tıklanabilir yapıldı, hız düşürüldü)
+            // 1. Ticker
             const ticker = document.getElementById('ticker-content');
             let tickerHTML = '';
             globalArticles.slice(0, 15).forEach((a, index) => {
                 const sourceText = a.source ? a.source : 'Ajans';
-                tickerHTML += `<span class="ticker__item" onclick="openArticle(${index})"><i class="fas fa-star text-yellow-400 mr-2"></i> ${a.title} <span class="text-red-200 text-[10px] ml-1">(${sourceText})</span></span>`;
+                tickerHTML += `<span class="ticker__item" onclick="openArticle(${index})"><i class="fas fa-bookmark text-blue-400 mr-2"></i> ${a.title} <span class="text-gray-400 text-[10px] ml-1">(${sourceText})</span></span>`;
             });
             ticker.innerHTML = tickerHTML + tickerHTML;
 
@@ -323,13 +316,12 @@
             const hIdx = globalArticles.indexOf(hero);
             const heroSourceText = hero.source ? hero.source : 'Ajans';
             document.getElementById('hero-section').innerHTML = `
-                <div class="w-full h-[400px] md:h-[550px] relative" onclick="openArticle(${hIdx})">
+                <div class="w-full h-[400px] md:h-[550px] relative cursor-pointer" onclick="openArticle(${hIdx})">
                     <img src="${hero.image}" class="w-full h-full object-cover transition duration-1000 group-hover:scale-105" onerror="this.src='${FALLBACK_IMAGE}'">
                     <div class="absolute inset-0 bg-gradient-to-t from-gray-900 via-gray-900/80 to-transparent"></div>
                     <div class="absolute bottom-0 left-0 p-6 md:p-12 w-full md:w-3/4">
                         <div class="flex flex-wrap items-center gap-2 mb-4">
-                            <span class="bg-brand-red text-white px-3 py-1 rounded text-[10px] font-bold uppercase tracking-wider">${hero.category || 'GÜNDEM'}</span>
-                            ${hero.isForeign ? '<span class="bg-blue-600 text-white px-3 py-1 rounded text-[10px] font-bold uppercase tracking-wider"><i class="fas fa-language mr-1"></i> Çeviri</span>' : ''}
+                            <span class="bg-blue-600 text-white px-3 py-1 rounded text-[10px] font-bold uppercase tracking-wider">${hero.category || 'GÜNCEL'}</span>
                             <span class="bg-white/20 text-white border border-white/40 px-3 py-1 rounded text-[10px] font-bold tracking-wider">${heroSourceText}</span>
                         </div>
                         <h2 class="text-3xl md:text-5xl font-serif font-bold text-white leading-tight mb-4 drop-shadow-lg">${hero.title}</h2>
@@ -350,16 +342,16 @@
                             <img src="${article.image}" class="w-full h-full object-cover group-hover:scale-105 transition duration-700" onerror="this.src='${FALLBACK_IMAGE}'">
                         </div>
                         <div class="flex items-center justify-between text-[10px] font-bold mb-3 uppercase tracking-wide">
-                            <span class="text-brand-red">${article.category || 'GÜNDEM'}</span>
+                            <span class="text-blue-600">${article.category || 'GÜNCEL'}</span>
                             <span class="text-gray-500 bg-gray-100 px-2 py-1 rounded border border-gray-200">${gridSourceText}</span>
                         </div>
-                        <h3 class="text-xl font-serif font-bold text-gray-900 leading-snug mb-3 group-hover:text-brand-red transition line-clamp-2">${article.title}</h3>
+                        <h3 class="text-xl font-serif font-bold text-gray-900 leading-snug mb-3 group-hover:text-blue-600 transition line-clamp-2">${article.title}</h3>
                         <p class="text-sm text-gray-600 mb-4 line-clamp-3 flex-grow leading-relaxed">${article.desc}</p>
                     </article>
                 `;
             });
 
-            // 4. List (Tam Genişlik Grid Formu)
+            // 4. List
             const listContainer = document.getElementById('news-list');
             listContainer.innerHTML = '';
             globalArticles.slice(4).forEach(article => {
@@ -372,11 +364,10 @@
                         </div>
                         <div class="sm:w-2/3 flex flex-col justify-center">
                             <div class="flex flex-wrap items-center gap-2 text-[10px] font-bold mb-2 uppercase tracking-wide">
-                                <span class="text-brand-red">${article.category || 'GÜNDEM'}</span>
+                                <span class="text-blue-600">${article.category || 'GÜNCEL'}</span>
                                 <span class="text-gray-500 bg-gray-100 px-2 py-0.5 rounded border border-gray-200">${listSourceText}</span>
-                                ${article.isForeign ? '<span class="text-blue-600 bg-blue-50 border border-blue-200 px-2 py-0.5 rounded"><i class="fas fa-language"></i> Çeviri</span>' : ''}
                             </div>
-                            <h3 class="text-xl md:text-2xl font-serif font-bold text-gray-900 leading-snug mb-2 group-hover:text-brand-red transition">${article.title}</h3>
+                            <h3 class="text-xl md:text-2xl font-serif font-bold text-gray-900 leading-snug mb-2 group-hover:text-blue-600 transition">${article.title}</h3>
                             <p class="text-sm text-gray-600 mb-4 line-clamp-2 leading-relaxed">${article.desc}</p>
                             <span class="text-xs text-gray-400 font-bold mt-auto"><i class="far fa-clock mr-1"></i> ${formatDateTr(article.date)}</span>
                         </div>
@@ -385,7 +376,6 @@
             });
         }
 
-        // STREAMING_CHUNK: Managing Local Reading View Interactions...
         function openArticle(index) {
             const article = globalArticles[index];
             if(!article) return;
@@ -396,14 +386,10 @@
             setTimeout(() => { articleView.classList.remove('opacity-0'); articleView.classList.add('opacity-100'); }, 50);
 
             document.getElementById('article-title').innerText = article.title;
-            document.getElementById('article-category').innerText = article.category || 'GÜNDEM';
-            document.getElementById('article-source-name').innerText = article.source ? article.source : 'Haber Kaynağı';
+            document.getElementById('article-category').innerText = article.category || 'GÜNCEL';
+            document.getElementById('article-source-name').innerText = article.source ? article.source : 'Ajans';
             document.getElementById('article-date').innerHTML = `<i class="far fa-clock mr-1"></i> ${formatDateTr(article.date)}`;
-            document.getElementById('article-original-link').href = article.link || '#';
             
-            const badge = document.getElementById('article-translate-badge');
-            article.isForeign ? badge.classList.remove('hidden') : badge.classList.add('hidden');
-
             const imgEl = document.getElementById('article-image');
             imgEl.src = article.image;
             imgEl.onerror = function() { this.src = FALLBACK_IMAGE; };
@@ -426,10 +412,8 @@
 
         document.addEventListener('DOMContentLoaded', () => {
             fetchSystemData();
-            // Her 5 dakikada bir otomatik yenileme (300.000 ms)
             setInterval(fetchSystemData, 300000);
         });
     </script>
 </body>
 </html>
-```eof
