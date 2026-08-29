@@ -12,7 +12,7 @@ import time
 
 # -------------------------------------------------------------------------
 # 1. ANA SAYFA (index.html) İÇİ HABER KAYNAKLARI LİSTESİ
-# (Röportajlar hariç, genel edebiyat ve kültür-sanat duyuruları)
+# (Ulusal ve küresel kültür-sanat, eleştiri ve edebiyat portalları)
 # -------------------------------------------------------------------------
 RSS_SOURCES_NEWS = [
     # Edebiyat, Eleştiri ve Kitap Dünyası
@@ -57,7 +57,7 @@ RSS_SOURCES_INTERVIEWS = [
     {"url": "https://www.theguardian.com/books/interviews/rss", "name": "The Guardian"}
 ]
 
-# ================= ORTAK FONKSİYONLAR =================
+# ================= ORTAK YARDIMCI FONKSİYONLAR =================
 
 def extract_image(entry, content):
     if hasattr(entry, 'media_content') and entry.media_content:
@@ -72,10 +72,9 @@ def extract_image(entry, content):
     return "https://images.unsplash.com/photo-1481627834876-b7833e8f5570?auto=format&fit=crop&w=1200&q=80"
 
 def translate_text(text):
-    """Metni MyMemory API ile çevirir. Uzun metinler için basit bir kontrol yapar."""
+    """Metni MyMemory API ile Türkçeye çevirir."""
     if not text or len(text.strip()) < 5: return text
     try:
-        # API limitini aşmamak için kırpıyoruz
         chunk = text[:490]
         url = f"https://api.mymemory.translated.net/get?q={requests.utils.quote(chunk)}&langpair=en|tr"
         res = requests.get(url, timeout=5)
@@ -91,7 +90,6 @@ def save_to_google_drive(json_str, file_name):
     try:
         creds_json = os.environ.get("GOOGLE_DRIVE_CREDENTIALS")
         if not creds_json:
-            print(f"Uyarı: GOOGLE_DRIVE_CREDENTIALS ortam değişkeni yok. {file_name} yerel olarak kaydedildi.")
             return
 
         creds_dict = json.loads(creds_json)
@@ -108,18 +106,17 @@ def save_to_google_drive(json_str, file_name):
             service.files().update(fileId=items[0]['id'], media_body=media).execute()
         else:
             service.files().create(body={'name': file_name, 'mimeType': 'application/json'}, media_body=media).execute()
-        print(f"Google Drive: {file_name} başarıyla eşitlendi.")
+        print(f"Google Drive: {file_name} eşitlendi.")
     except Exception as e:
         print(f"Drive Hatası ({file_name}): {e}")
 
-# ================= HABERLERİ ÇEKME (INDEX.HTML İÇİN) =================
+# ================= HABERLERİ İŞLEME (INDEX.HTML) =================
 
 def clean_html_news(raw_html):
     if not raw_html: return ""
     soup = BeautifulSoup(raw_html, 'html.parser')
     for element in soup.find_all(['p', 'div', 'span', 'strong', 'em', 'a']):
         text = element.get_text().lower()
-        # Katı Filtreleme: Ana sayfada röportaj ve köşe yazısı istemiyoruz
         if any(keyword in text for keyword in [
             'köşe yazısı', 'söyleşi', 'röportaj', 'özel haber', 'exclusive',
             'konuştuk', 'anlattı', 'ilk olarak şu sitede', 'bizi takip', 'whatsapp', 'read more',
@@ -147,17 +144,13 @@ def fetch_news():
 
         try:
             feed = feedparser.parse(url)
-            for entry in feed.entries[:10]: # Her kaynaktan max 10
+            for entry in feed.entries[:10]:
                 title = entry.get('title', '')
-                
-                # Başlık Filtresi: Söyleşi, röportaj ve köşe yazılarını atla
                 t_lower = title.lower()
                 if any(w in t_lower for w in ['röportaj', 'söyleşi', 'köşe', 'özel', 'konuştuk', 'benim görüşüm', 'interview']):
                     continue
 
                 content = entry.get('content', [{'value': ''}])[0].get('value', '') or entry.get('summary', '') or entry.get('description', '')
-                
-                # İçerik Filtresi
                 c_lower = content.lower()
                 if 'röportaj' in c_lower or 'söyleşi' in c_lower or 'köşemde' in c_lower or 'interview' in c_lower:
                     continue
@@ -167,7 +160,7 @@ def fetch_news():
                 if is_foreign:
                     title = translate_text(title)
                     content = translate_text(content)
-                    time.sleep(0.5)
+                    time.sleep(0.4)
 
                 cleaned_content = clean_html_news(content)
                 if not cleaned_content or len(cleaned_content.strip()) < 15:
@@ -187,17 +180,15 @@ def fetch_news():
                     "isForeign": is_foreign
                 })
         except Exception as e:
-            print(f"Haber Tarama Hatası ({source_name}): {e}")
+            print(f"Hata ({source_name}): {e}")
 
     all_articles.sort(key=lambda x: x.get('date', ''), reverse=True)
     return all_articles[:150]
 
-# ================= RÖPORTAJLARI ÇEKME VE ÇEVİRME (SOYLESI.HTML İÇİN) =================
+# ================= RÖPORTAJLARI ÇEVİRME VE İŞLEME (SOYLESI.HTML) =================
 
 def translate_html_content(html_content):
-    """HTML içeriğindeki paragrafları bularak parça parça çevirmeye çalışır."""
     if not html_content: return ""
-    
     soup = BeautifulSoup(html_content, 'html.parser')
     paragraphs = soup.find_all('p')
     
@@ -208,20 +199,19 @@ def translate_html_content(html_content):
             if len(original_text.strip()) > 10:
                 translated_p = translate_text(original_text)
                 translated_html += f"<p>{translated_p}</p>"
-                time.sleep(0.5) # API'ye yüklenmemek için bekle
+                time.sleep(0.4)
             else:
                 translated_html += str(p)
         else:
             if i == 4:
-                translated_html += "<br><hr><br><p><i>(Aşağıdaki metin orijinal dilindedir. Röportajın tamamına kaynak siteden ulaşabilirsiniz.)</i></p>"
+                translated_html += "<br><hr><br><p><i>(Aşağıdaki metin orijinal dilindedir. Söyleşinin tamamına kaynak siteden ulaşabilirsiniz.)</i></p>"
             translated_html += str(p)
             
     if not translated_html:
          raw_text = soup.get_text()
          trans = translate_text(raw_text[:400])
-         translated_html = f"<p>{trans}...</p><p><i>(Röportajın devamı için orijinal kaynağa gidiniz.)</i></p>"
+         translated_html = f"<p>{trans}...</p><p><i>(Söyleşinin devamı için orijinal kaynağa gidiniz.)</i></p>"
 
-    # HTML temizliği (Gereksiz linkleri ez)
     clean_soup = BeautifulSoup(translated_html, 'html.parser')
     for a in clean_soup.find_all('a'):
         a.unwrap() 
@@ -234,20 +224,18 @@ def fetch_interviews():
         print(f"Röportaj Taranıyor: {source['name']}")
         try:
             feed = feedparser.parse(source["url"])
-            # API limitlerini aşmamak için her kaynaktan sadece en yeni 3 röportajı çekiyoruz
-            for entry in feed.entries[:3]:
+            for entry in feed.entries[:4]: # Her kaynaktan en yeni 4 röportaj
                 title = entry.get('title', '')
                 content = entry.get('content', [{'value': ''}])[0].get('value', '') or entry.get('summary', '') or entry.get('description', '')
                 image = extract_image(entry, content)
                 
-                # Başlığı Çevir
+                # Başlığı Türkçeye Çevir
                 translated_title = translate_text(title)
-                time.sleep(0.5)
+                time.sleep(0.4)
                 
-                # İçeriği Çevir
+                # İçeriği Türkçeye Çevir
                 translated_content = translate_html_content(content)
                 
-                # Özeti Çevrilmiş İçerikten Al
                 soup = BeautifulSoup(translated_content, 'html.parser')
                 translated_desc = soup.get_text()[:200] + "..."
 
@@ -263,34 +251,34 @@ def fetch_interviews():
                     "isForeign": True 
                 })
         except Exception as e:
-             print(f"Hata ({source['name']}): {e}")
+             print(f"Röportaj Hatası ({source['name']}): {e}")
 
     all_interviews.sort(key=lambda x: x.get('date', ''), reverse=True)
     return all_interviews
 
-# ================= ANA ÇALIŞTIRMA BLOĞU =================
+# ================= ANA ÇALIŞTIRMA =================
 
 if __name__ == "__main__":
     os.makedirs("haberler", exist_ok=True)
 
-    # 1. Ana Sayfa Haberlerini İşle ve Kaydet
+    # 1. Haberleri İşle
     print("------------------------------------------")
-    print("Haberler (index.html için) taranıyor...")
+    print("Haberler taranıyor...")
     news_articles = fetch_news()
     news_json = json.dumps(news_articles, ensure_ascii=False, indent=4)
     with open("haberler/haberler.json", "w", encoding="utf-8") as f:
         f.write(news_json)
     save_to_google_drive(news_json, "edebiyat_gundemi_arsiv.json")
-    print(f"{len(news_articles)} haber başarıyla işlendi.")
+    print(f"Toplam {len(news_articles)} haber kaydedildi.")
 
-    # 2. Uluslararası Röportajları İşle ve Kaydet
+    # 2. Söyleşileri İşle ve Çevir
     print("------------------------------------------")
-    print("Röportajlar (soylesi.html için) taranıyor...")
+    print("Uluslararası söyleşiler taranıyor ve çevriliyor...")
     interviews = fetch_interviews()
     interviews_json = json.dumps(interviews, ensure_ascii=False, indent=4)
     with open("haberler/soylesiler.json", "w", encoding="utf-8") as f:
         f.write(interviews_json)
     save_to_google_drive(interviews_json, "edebiyat_gundemi_soylesiler.json")
-    print(f"{len(interviews)} söyleşi başarıyla işlendi.")
+    print(f"Toplam {len(interviews)} söyleşi Türkçeye çevrilerek kaydedildi.")
     print("------------------------------------------")
-    print("Tüm işlemler başarıyla tamamlandı.")
+    print("Tüm bot döngüsü başarıyla tamamlandı.")
