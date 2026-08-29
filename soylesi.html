@@ -125,7 +125,7 @@
         <div id="loading-spinner" class="py-32 text-center text-blue-600 flex flex-col items-center justify-center">
             <i class="fas fa-globe-europe fa-spin text-5xl mb-6 text-gray-800"></i>
             <h3 class="text-2xl font-serif font-bold mb-2 text-gray-800">Uluslararası Ajanslar Taranıyor</h3>
-            <p class="text-sm font-medium text-gray-500 max-w-sm mx-auto">Yabancı metinler Türkçeye çevriliyor, dünya edebiyatının önde gelen isimleriyle yapılan söyleşiler derleniyor...</p>
+            <p class="text-sm font-medium text-gray-500 max-w-sm mx-auto">Yabancı metinler çekiliyor, dünya edebiyatının önde gelen isimleriyle yapılan söyleşiler derleniyor...</p>
         </div>
 
         <!-- ANA SAYFA VİTRİNİ -->
@@ -241,7 +241,7 @@
         </nav>
     </div>
 
-    <!-- STREAMING_CHUNK: Integrating Core Javascript Application State and Handlers... -->
+    <!-- STREAMING_CHUNK: Integrating Aggressive Live RSS Fetcher... -->
     <script>
         // Üst bar günün tarihi
         document.getElementById('top-date').textContent = new Date().toLocaleDateString('tr-TR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
@@ -260,97 +260,100 @@
         mobileMenuOverlay.addEventListener('click', toggleMenu);
 
         let globalArticles = []; 
-        const JSON_URL = 'haberler/soylesiler.json'; // DİKKAT: RÖPORTAJ JSON DOSYASI
-        const FALLBACK_IMAGE = 'https://images.unsplash.com/photo-1506880018603-83d5b814b5a6?auto=format&fit=crop&w=1200&q=80'; // Interview fallback
+        const FALLBACK_IMAGE = 'https://images.unsplash.com/photo-1506880018603-83d5b814b5a6?auto=format&fit=crop&w=1200&q=80';
 
+        // AGRESİF CANLI ÇEKİM MOTORU (Dosya hatası sorununu kökten çözer)
         async function fetchSystemData() {
             try {
-                // 1. Önce Bot Tarafından Oluşturulan JSON'ı dene
-                const response = await fetch(JSON_URL + '?v=' + new Date().getTime());
-                if (!response.ok) throw new Error("Local JSON dosyası bulunamadı.");
+                updateTimeDisplay("Çekiliyor...");
                 
-                const data = await response.json();
-                updateTimeDisplay("JSON");
+                // Hedef uluslararası kaynaklar
+                const sources = [
+                    { url: 'https://lithub.com/category/interviews/feed/', name: 'Literary Hub' },
+                    { url: 'https://www.theguardian.com/books/interviews/rss', name: 'The Guardian Books' },
+                    { url: 'https://electricliterature.com/category/interviews/feed/', name: 'Electric Lit' }
+                ];
 
-                if(data && Array.isArray(data) && data.length > 0) {
-                    globalArticles = data;
-                    renderUI();
-                } else { 
-                    throw new Error("Local JSON içi boş."); 
-                }
-            } catch (error) {
-                console.warn("JSON okunamadı, Canlı RSS Yedek Motoru devreye giriyor...", error);
-                // 2. Yedek Motor: Eğer JSON dosyası yoksa anında canlı kaynaklardan çek.
-                await fetchFallbackInterviews();
-            }
-        }
+                let allInterviews = [];
 
-        async function fetchFallbackInterviews() {
-            const fallbackSources = [
-                { url: 'https://lithub.com/category/interviews/feed/', name: 'Literary Hub' },
-                { url: 'https://www.theguardian.com/books/interviews/rss', name: 'The Guardian Books' }
-            ];
+                // Tüm kaynaklara eşzamanlı istek at (rss2json API'si üzerinden)
+                const fetchPromises = sources.map(source => 
+                    fetch('https://api.rss2json.com/v1/api.json?rss_url=' + encodeURIComponent(source.url))
+                        .then(res => res.json())
+                        .then(data => {
+                            if(data.status === 'ok') {
+                                return data.items.map(item => {
+                                    let img = item.thumbnail || (item.enclosure && item.enclosure.link) || FALLBACK_IMAGE;
+                                    let rawContent = item.content || item.description || "";
+                                    
+                                    // HTML temizliği ve yedek görsel arayışı
+                                    let cleanContent = rawContent.replace(/<a\b[^>]*>(.*?)<\/a>/gi, '$1'); // Linkleri ez
+                                    let div = document.createElement('div');
+                                    div.innerHTML = cleanContent;
+                                    
+                                    if(img === FALLBACK_IMAGE) {
+                                        let imgTag = div.querySelector('img');
+                                        if(imgTag) img = imgTag.src;
+                                    }
 
-            let tempArticles = [];
-            for(let source of fallbackSources) {
-                try {
-                    const res = await fetch('https://api.rss2json.com/v1/api.json?rss_url=' + encodeURIComponent(source.url));
-                    const data = await res.json();
-                    if(data.status === 'ok') {
-                        data.items.forEach(item => {
-                            let img = item.thumbnail || item.enclosure?.link || FALLBACK_IMAGE;
-                            let rawContent = item.content || item.description || "";
-                            
-                            // Linkleri temizle
-                            let cleanContent = rawContent.replace(/<a\b[^>]*>(.*?)<\/a>/gi, '$1');
-                            
-                            let div = document.createElement('div');
-                            div.innerHTML = cleanContent;
-                            if(img === FALLBACK_IMAGE) {
-                                let imgTag = div.querySelector('img');
-                                if(imgTag) img = imgTag.src;
+                                    // Çeviri uyarı metni (Gerçek çeviri botta kaldığı için)
+                                    const translateNote = "<br><br><i>Not: Bu metin otomatik olarak uluslararası edebiyat sitelerinden derlenmiştir. Orijinal tam metne ulaşmak için sayfanın altındaki butonu kullanabilirsiniz.</i>";
+
+                                    return {
+                                        title: item.title,
+                                        link: item.link,
+                                        source: source.name,
+                                        date: item.pubDate,
+                                        category: "ULUSLARARASI SÖYLEŞİ",
+                                        desc: div.textContent.substring(0, 180) + "...",
+                                        content: cleanContent + translateNote,
+                                        image: img,
+                                        isForeign: true
+                                    };
+                                });
                             }
+                            return [];
+                        }).catch(() => []) // Hata olursa o kaynağı boş geç
+                );
 
-                            // Not: Burada anlık API üzerinden tam Türkçe çeviri yapmak tarayıcıyı kitleyebilir.
-                            // Bu yüzden başlığa [Orijinal Dil] uyarısı ekliyoruz. Bot çalışana kadar idare edecek.
-                            tempArticles.push({
-                                title: item.title,
-                                link: item.link,
-                                source: source.name,
-                                date: item.pubDate,
-                                category: "ÖZEL SÖYLEŞİ",
-                                desc: div.textContent.substring(0, 150) + "...",
-                                content: cleanContent,
-                                image: img,
-                                isForeign: true
-                            });
-                        });
-                    }
-                } catch(e) { console.error("Yedek motor hatası:", e); }
-            }
+                // Tüm verilerin gelmesini bekle
+                const results = await Promise.all(fetchPromises);
+                
+                // Dizi içindeki dizileri tek bir düz diziye çevir
+                results.forEach(res => { allInterviews = [...allInterviews, ...res]; });
 
-            if(tempArticles.length === 0) {
-                // Son çare Mock Data
-                tempArticles = [{
-                    title: "Röportaj Arşivi Güncelleniyor",
-                    link: "#", source: "Sistem Mesajı", date: new Date().toISOString(),
-                    category: "BİLGİLENDİRME", desc: "Uluslararası edebi röportajlar taranıp çevrilmektedir. Lütfen daha sonra tekrar deneyin.", content: "<p>Kısa süre içinde yüklenecektir.</p>", image: FALLBACK_IMAGE, isForeign: false
-                }];
+                if(allInterviews.length > 0) {
+                    // Tarihe göre en yeniden eskiye sırala
+                    allInterviews.sort((a, b) => new Date(b.date) - new Date(a.date));
+                    globalArticles = allInterviews;
+                    updateTimeDisplay("Başarılı");
+                    renderUI();
+                } else {
+                    throw new Error("Hiçbir kaynaktan veri gelmedi.");
+                }
+
+            } catch (error) {
+                console.warn("Canlı Çekim Hatası:", error);
                 updateTimeDisplay("Hata");
-            } else {
-                updateTimeDisplay("Canlı RSS");
+                
+                // Sistemin boş kalmasını önleyen Mock Data
+                globalArticles = [{
+                    title: "Uluslararası Arşiv Güncelleniyor", link: "#", source: "The Paris Review / LitHub",
+                    date: new Date().toISOString(), category: "BİLGİ", desc: "Röportajlar taranıp sisteme eklenmektedir. Lütfen bir süre sonra tekrar yenileyin.",
+                    content: "Lütfen bekleyiniz...", image: FALLBACK_IMAGE, isForeign: true
+                }];
+                renderUI();
             }
-
-            tempArticles.sort((a, b) => new Date(b.date) - new Date(a.date));
-            globalArticles = tempArticles;
-            renderUI();
         }
 
         function updateTimeDisplay(status) {
             const now = new Date();
             const timeString = now.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' });
-            let statusText = status === "Hata" ? "(Bağlantı Hatası)" : (status === "Canlı RSS" ? "(Canlı Çekim)" : "");
-            document.getElementById('last-update-time').innerHTML = `<span class="w-2 h-2 rounded-full bg-blue-600 mr-2 pulse-dot"></span> Son Güncelleme: ${timeString} ${statusText}`;
+            let statusText = status === "Hata" ? "(Hata)" : (status === "Çekiliyor..." ? "(Taranıyor)" : "");
+            
+            const badgeColor = status === "Hata" ? "bg-red-600" : "bg-blue-600";
+            
+            document.getElementById('last-update-time').innerHTML = `<span class="w-2 h-2 rounded-full ${badgeColor} mr-2 pulse-dot"></span> Son İşlem: ${timeString} ${statusText}`;
         }
 
         function formatDateTr(dateStr) {
