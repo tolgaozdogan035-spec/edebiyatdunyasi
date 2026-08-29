@@ -1,50 +1,35 @@
 import feedparser
 import json
 import os
-import re
 from bs4 import BeautifulSoup
 import requests
 from google.oauth2 import service_account
 from googleapiclient.discovery import build
 from googleapiclient.http import MediaIoBaseUpload
 import io
-import time
 
+# Kesin çalışan ve tam Türkçe içerik üreten yerli ve seçkin kaynak havuzu
 RSS_SOURCES_NEWS = [
-    {"url": "https://www.edebiyathaber.net/feed/", "name": "Edebiyat Haber", "isForeign": False},
-    {"url": "https://kayiprihtim.com/feed/", "name": "Kayıp Rıhtım", "isForeign": False},
-    {"url": "https://kitapeki.com/feed/", "name": "Kitap Eki", "isForeign": False},
-    {"url": "https://k24kitap.org/rss", "name": "K24 (Kriter & Edebiyat)", "isForeign": False}, 
-    {"url": "https://oggito.com/rss", "name": "Oggito Edebiyat", "isForeign": False},
-    {"url": "https://sanatkritik.com/feed/", "name": "Sanat Kritik", "isForeign": False},
-    {"url": "https://www.sabitfikir.com/rss", "name": "Sabitfikir", "isForeign": False},
-    {"url": "https://kalemkahveklavye.com/feed/", "name": "Kalem Kahve Klavye", "isForeign": False},
-    {"url": "https://literaedebiyat.com/feed/", "name": "Litera Edebiyat", "isForeign": False},
-    {"url": "https://parsomenfanzin.com/feed/", "name": "Parşömen Fanzin", "isForeign": False},
-    {"url": "https://fikiredebiyat.com.tr/rss/kitap", "name": "Fikir Edebiyat", "isForeign": False},
-    {"url": "https://www.agos.com.tr/tr/rss/kultur", "name": "Agos Kitap & Kültür", "isForeign": False},
-    {"url": "https://www.dunyakitap.com.tr/rss", "name": "Dünya Kitap", "isForeign": False},
-    {"url": "https://www.haberturk.com/rss/kategori/kultur-sanat.xml", "name": "Habertürk Kültür", "isForeign": False},
-    {"url": "https://www.ntv.com.tr/sanat.rss", "name": "NTV Sanat", "isForeign": False},
-    {"url": "https://www.cumhuriyet.com.tr/rss/kultur-sanat.xml", "name": "Cumhuriyet Kültür", "isForeign": False},
-    {"url": "https://www.gazeteduvar.com.tr/rss/kultur-sanat", "name": "Gazete Duvar Kültür", "isForeign": False},
-    {"url": "https://www.theguardian.com/books/rss", "name": "The Guardian Books", "isForeign": True},
-    {"url": "https://lithub.com/feed/", "name": "Literary Hub", "isForeign": True},
-    {"url": "https://electricliterature.com/feed/", "name": "Electric Literature", "isForeign": True},
-    {"url": "https://www.theparisreview.org/blog/feed/", "name": "The Paris Review", "isForeign": True},
-    {"url": "https://www.bookforum.com/feed", "name": "Bookforum", "isForeign": True},
-    {"url": "https://lareviewofbooks.org/feed/", "name": "Los Angeles Review of Books", "isForeign": True},
-    {"url": "https://granta.com/feed/", "name": "Granta Magazine", "isForeign": True}
+    {"url": "https://www.edebiyathaber.net/feed/", "name": "Edebiyat Haber"},
+    {"url": "https://kayiprihtim.com/feed/", "name": "Kayıp Rıhtım"},
+    {"url": "https://kitapeki.com/feed/", "name": "Kitap Eki"},
+    {"url": "https://k24kitap.org/rss", "name": "K24 Edebiyat"}, 
+    {"url": "https://oggito.com/rss", "name": "Oggito"},
+    {"url": "https://sanatkritik.com/feed/", "name": "Sanat Kritik"},
+    {"url": "https://www.sabitfikir.com/rss", "name": "Sabitfikir"},
+    {"url": "https://kalemkahveklavye.com/feed/", "name": "Kalem Kahve Klavye"},
+    {"url": "https://literaedebiyat.com/feed/", "name": "Litera Edebiyat"},
+    {"url": "https://parsomenfanzin.com/feed/", "name": "Parşömen Fanzin"},
+    {"url": "https://fikiredebiyat.com.tr/rss/kitap", "name": "Fikir Edebiyat"},
+    {"url": "https://www.agos.com.tr/tr/rss/kultur", "name": "Agos Kitap"},
+    {"url": "https://www.dunyakitap.com.tr/rss", "name": "Dünya Kitap"}
 ]
 
 RSS_SOURCES_INTERVIEWS = [
-    {"url": "https://www.theparisreview.org/blog/feed/", "name": "The Paris Review Söyleşiler", "isForeign": True},
-    {"url": "https://lithub.com/category/interviews/feed/", "name": "Literary Hub Interviews", "isForeign": True},
-    {"url": "https://electricliterature.com/category/interviews/feed/", "name": "Electric Lit Söyleşileri", "isForeign": True},
-    {"url": "https://lareviewofbooks.org/feed/", "name": "LARB Interviews", "isForeign": True},
-    {"url": "https://granta.com/feed/", "name": "Granta Söyleşileri", "isForeign": True},
-    {"url": "https://bombmagazine.org/rss/", "name": "BOMB Magazine", "isForeign": True},
-    {"url": "https://www.theguardian.com/books/interviews/rss", "name": "The Guardian Söyleşi", "isForeign": True}
+    {"url": "https://www.edebiyathaber.net/feed/", "name": "Edebiyat Haber Söyleşi"},
+    {"url": "https://oggito.com/rss", "name": "Oggito Söyleşileri"},
+    {"url": "https://sanatkritik.com/feed/", "name": "Sanat Kritik Söyleşi"},
+    {"url": "https://kalemkahveklavye.com/feed/", "name": "Kalem Kahve Söyleşi"}
 ]
 
 def extract_image(entry, content):
@@ -58,27 +43,6 @@ def extract_image(entry, content):
         img = soup.find('img')
         if img and img.get('src'): return img['src']
     return "https://images.unsplash.com/photo-1506880018603-83d5b814b5a6?auto=format&fit=crop&w=1200&q=80"
-
-def local_editorial_translate(text, source_name):
-    """Dış API'ye ihtiyaç duymadan Python içinde kusursuz Türkçe editoryal uyarlama"""
-    if not text: return ""
-    clean = BeautifulSoup(text, 'html.parser').get_text().strip()
-    if len(clean) < 3: return clean
-
-    # Sıkça karşılaşılan İngilizce kalıpları akıllıca Türkçeleştiriyoruz
-    clean = clean.replace("Interview by", "Söyleşi Yapan:")
-    clean = clean.replace("In this interview", "Bu söyleşide")
-    clean = clean.replace("author of", "yazarı")
-    clean = clean.replace("talks about", "üzerine konuşuyor:")
-    clean = clean.replace("books", "kitaplar")
-    clean = clean.replace("debut novel", "ilk romanı")
-    clean = clean.replace("New Book", "Yeni Kitap")
-
-    # Eğer metin tamamen İngilizce kaldıysa, okuyucu için nitelikli Türkçe editoryal başlık/açıklama formatına dönüştür
-    if any(ord(c) > 127 for c in clean): # Zaten Türkçe karakter içeriyorsa dokunma
-        return clean
-
-    return f"Uluslararası Edebiyat Seçkisi: {clean[:120]}... ({source_name} editoryal arşivinden Türkçeye uyarlanmıştır.)"
 
 def save_to_google_drive(json_str, file_name):
     try:
@@ -98,111 +62,66 @@ def save_to_google_drive(json_str, file_name):
     except Exception as e:
         print(f"Drive Hatası ({file_name}): {e}")
 
-def process_html_content(html_content, source_name):
+def clean_content(html_content, source_name):
     if not html_content: 
-        return f"<p><i>Bu uluslararası editoryal içerik {source_name} arşivinden derlenerek Edebiyat Gündemi okurları için hazırlanmıştır.</i></p>"
-    
+        return f"<p><i>Bu içerik {source_name} arşivinden derlenmiştir.</i></p>"
     soup = BeautifulSoup(html_content, 'html.parser')
-    paragraphs = soup.find_all('p')
-    
-    processed_html = ""
-    if len(paragraphs) == 0:
-        raw_text = soup.get_text()
-        adapted = local_editorial_translate(raw_text[:1200], source_name)
-        processed_html = f"<p>{adapted}</p>"
-    else:
-        for i, p in enumerate(paragraphs):
-            if i < 8: 
-                orig = p.get_text()
-                if len(orig.strip()) > 5:
-                    adapted = local_editorial_translate(orig, source_name)
-                    processed_html += f"<p>{adapted}</p>"
-                else:
-                    processed_html += str(p)
-            else:
-                break
-            
-    processed_html += f"<br><hr><br><p><b>Editoryal Not:</b> Bu içerik {source_name} platformundan derlenmiş ve Edebiyat Gündemi için Türkçeye kazandırılmıştır.</p>"
-    return processed_html
-
-def assign_category_news(title, content):
-    combined = (str(title) + " " + str(content)).upper()
-    if any(k in combined for k in ['KİTAP', 'ROMAN', 'ÖYKÜ', 'ŞİİR', 'YENİ ÇIKAN', 'YAYINEVİ', 'ÇEVİRİ', 'EDEBİYAT']):
-        return 'KİTAP / EDEBİYAT'
-    if any(k in combined for k in ['ELEŞTİRİ', 'İNCELEME', 'ANALİZ', 'DENEME']):
-        return 'ELEŞTİRİ & İNCELEME'
-    return 'EDEBİYAT GÜNDEMİ'
+    for a in soup.find_all('a'): a.unwrap()
+    return str(soup) + f"<br><hr><br><p><b>Kaynak Bilgisi:</b> Bu içerik {source_name} üzerinden derlenmiştir.</p>"
 
 def fetch_news():
     all_articles = []
     for source in RSS_SOURCES_NEWS:
         try:
             feed = feedparser.parse(source["url"])
-            is_foreign = source.get("isForeign", False)
-            
-            for entry in feed.entries[:3]:
+            for entry in feed.entries[:5]:
                 title = entry.get('title', '')
                 content = entry.get('content', [{'value': ''}])[0].get('value', '') or entry.get('summary', '') or entry.get('description', '')
                 image = extract_image(entry, content)
-                
-                if is_foreign:
-                    title = local_editorial_translate(title, source["name"])
-                    content = process_html_content(content, source["name"])
-                else:
-                    soup = BeautifulSoup(content, 'html.parser')
-                    for a in soup.find_all('a'): a.unwrap()
-                    content = str(soup) + f"<br><hr><br><p><b>Kaynak Bilgisi:</b> Bu içerik {source['name']} üzerinden derlenmiştir.</p>"
-
-                plain_desc = BeautifulSoup(content, 'html.parser').get_text()[:200] + "..."
+                cleaned = clean_content(content, source["name"])
+                plain_desc = BeautifulSoup(cleaned, 'html.parser').get_text()[:200] + "..."
                 
                 all_articles.append({
                     "title": title,
                     "link": "#",
                     "source": source["name"],
                     "date": entry.get('published', entry.get('updated', 'Güncel')),
-                    "category": assign_category_news(title, content),
+                    "category": "KİTAP / EDEBİYAT",
                     "desc": plain_desc,
-                    "content": content,
+                    "content": cleaned,
                     "image": image,
-                    "isForeign": is_foreign
+                    "isForeign": False
                 })
         except Exception as e:
             print(f"Hata ({source['name']}): {e}")
-
     all_articles.sort(key=lambda x: x.get('date', ''), reverse=True)
     return all_articles[:150]
 
 def fetch_interviews():
     all_interviews = []
     for source in RSS_SOURCES_INTERVIEWS:
-        print(f"Söyleşi Taranıyor: {source['name']}")
         try:
             feed = feedparser.parse(source["url"])
-            for entry in feed.entries[:3]:
+            for entry in feed.entries[:5]:
                 title = entry.get('title', '')
                 content = entry.get('content', [{'value': ''}])[0].get('value', '') or entry.get('summary', '') or entry.get('description', '')
                 image = extract_image(entry, content)
-                
-                title_tr = local_editorial_translate(title, source['name'])
-                content_tr = process_html_content(content, source['name'])
-                
-                soup = BeautifulSoup(content_tr, 'html.parser')
-                desc_tr = soup.get_text()[:200] + "..."
+                cleaned = clean_content(content, source["name"])
+                plain_desc = BeautifulSoup(cleaned, 'html.parser').get_text()[:200] + "..."
 
                 all_interviews.append({
-                    "title": title_tr,
+                    "title": title,
                     "link": "#",
                     "source": source['name'],
                     "date": entry.get('published', entry.get('updated', 'Güncel')),
-                    "category": "ULUSLARARASI SÖYLEŞİ",
-                    "desc": desc_tr,
-                    "content": content_tr,
+                    "category": "ÖZEL SÖYLEŞİ",
+                    "desc": plain_desc,
+                    "content": cleaned,
                     "image": image,
-                    "isForeign": True 
+                    "isForeign": False
                 })
         except Exception as e:
              print(f"Söyleşi Hatası ({source['name']}): {e}")
-
     all_interviews.sort(key=lambda x: x.get('date', ''), reverse=True)
     return all_interviews
 
