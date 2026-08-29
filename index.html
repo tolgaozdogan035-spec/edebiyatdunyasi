@@ -3,14 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Edebiyat Gündemi | Kültür Sanat ve Kitap Haberleri</title>
+    <title>Edebiyat Gündemi | Türkiye ve Dünya Kültür Sanat Arşivi</title>
     
-    <!-- CSS & Fonts -->
+    <!-- STREAMING_CHUNK: Loading External CSS and Web Fonts... -->
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,600;0,700;0,800;0,900;1,400&display=swap" rel="stylesheet">
 
-    <!-- Tailwind Config -->
+    <!-- STREAMING_CHUNK: Initializing Tailwind Configuration... -->
     <script>
         tailwind.config = {
             theme: {
@@ -26,16 +26,18 @@
         }
     </script>
 
-    <!-- Custom Style & Reader Formats -->
+    <!-- STREAMING_CHUNK: Writing Custom Reader, Ad Banners and Animation CSS... -->
     <style>
         body { color: #1a1a1a; background-color: #fcfcfc; scroll-behavior: smooth; }
         .line-clamp-2 { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
         .line-clamp-3 { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
         
+        /* Ticker Animasyonları ve Etkileşimler */
         .ticker-wrap { width: 100%; overflow: hidden; background-color: #721c24; }
-        .ticker { display: inline-block; white-space: nowrap; padding-right: 100%; animation: ticker 120s linear infinite; }
+        .ticker { display: inline-flex; white-space: nowrap; padding-right: 100%; animation: ticker 90s linear infinite; }
         .ticker-wrap:hover .ticker { animation-play-state: paused; }
-        .ticker__item { display: inline-block; padding: 0 2rem; color: white; font-size: 0.85rem; }
+        .ticker__item { display: inline-flex; align-items: center; padding: 0 1.5rem; color: white; font-size: 0.85rem; cursor: pointer; transition: color 0.2s ease; }
+        .ticker__item:hover { color: #fca5a5; }
         @keyframes ticker { 0% { transform: translate3d(0, 0, 0); } 100% { transform: translate3d(-100%, 0, 0); } }
 
         /* Article Native Reader Styles */
@@ -43,7 +45,11 @@
         .article-body img { max-width: 100%; height: auto; border-radius: 6px; margin: 2rem auto; display: block; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
         .article-body h2, .article-body h3 { font-family: 'Playfair Display', serif; font-weight: 700; font-size: 1.75rem; margin-top: 2rem; color: #111827; }
         .article-body blockquote { border-left: 4px solid #721c24; padding-left: 1rem; font-style: italic; color: #4b5563; background: #fdfbfb; padding: 1rem; }
-        .article-body a { color: #721c24; text-decoration: none; font-weight: bold; pointer-events: none; cursor: default; } /* Link disable */
+        .article-body a { color: #721c24; text-decoration: none; font-weight: bold; pointer-events: none; cursor: default; }
+
+        /* Advertisement Banner Styles */
+        .ad-banner-horizontal { width: 100%; max-width: 970px; height: 90px; margin: 2rem auto; background-color: #f3f4f6; border: 1px solid #e5e7eb; display: flex; align-items: center; justify-content: center; color: #9ca3af; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.1em; font-weight: bold; }
+        .ad-banner-sidebar { width: 100%; max-width: 300px; height: 600px; background-color: #f3f4f6; border: 1px solid #e5e7eb; display: flex; align-items: center; justify-content: center; color: #9ca3af; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.1em; font-weight: bold; margin: 0 auto; position: sticky; top: 100px;}
 
         #mobile-menu-container { transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); transform: translateX(-100%); }
         #mobile-menu-container.open { transform: translateX(0); }
@@ -56,7 +62,7 @@
 </head>
 <body class="font-sans">
 
-    <!-- Top Bar -->
+    <!-- STREAMING_CHUNK: Building the System Information Top Bar... -->
     <div class="border-b border-gray-100 hidden md:block bg-white">
         <div class="container mx-auto px-4 lg:px-8 py-2 flex justify-between items-center text-[11px] text-gray-500 uppercase tracking-wide font-bold">
             <div class="flex items-center space-x-4">
@@ -71,19 +77,19 @@
         </div>
     </div>
 
-    <!-- Header -->
+    <!-- STREAMING_CHUNK: Building Site Logo and Main Header... -->
     <header class="py-8 md:py-12 text-center bg-white border-b border-gray-100">
         <a href="index.html" class="inline-block group">
             <h1 class="text-4xl md:text-6xl font-serif font-black tracking-tight text-brand-text mb-3">
                 Edebiyat <span class="text-brand-red">Gündemi</span>
             </h1>
             <p class="text-[10px] md:text-xs uppercase tracking-[0.3em] text-gray-400 font-bold">
-                TÜRKİYE VE DÜNYA KÜLTÜR SANAT HABERLERİ
+                TÜRKİYE VE DÜNYA KÜLTÜR SANAT HABERLERİ KÜRASİYONU
             </p>
         </a>
     </header>
 
-    <!-- Navbar -->
+    <!-- STREAMING_CHUNK: Building Main Sticky Navigation... -->
     <nav class="sticky top-0 bg-white/95 backdrop-blur-md z-40 shadow-sm border-b border-gray-200">
         <div class="container mx-auto px-4 lg:px-8 py-3 flex justify-between items-center">
             <button id="menu-btn" class="text-gray-800 text-xl hover:text-brand-red transition focus:outline-none p-2"><i class="fas fa-bars"></i></button>
@@ -92,7 +98,7 @@
         </div>
     </nav>
 
-    <!-- Ticker -->
+    <!-- STREAMING_CHUNK: Building Clickable News Ticker Interface... -->
     <div class="flex bg-brand-red text-white shadow-md relative z-30">
         <div class="bg-brand-dark font-bold px-4 py-2 text-[10px] md:text-xs tracking-wider uppercase flex items-center whitespace-nowrap z-10 shadow-xl border-r border-red-900">
             <i class="fas fa-satellite-dish mr-2 text-yellow-400"></i> CANLI AKIŞ
@@ -102,13 +108,13 @@
         </div>
     </div>
 
-    <!-- MAIN APP WRAPPER -->
+    <!-- STREAMING_CHUNK: Constructing the Main Content Grid, Ads and Reader View... -->
     <main class="container mx-auto px-4 lg:px-8 py-10 min-h-screen relative">
         
         <div id="loading-spinner" class="py-32 text-center text-brand-red flex flex-col items-center justify-center">
             <i class="fas fa-sync-alt fa-spin text-5xl mb-6 text-gray-800"></i>
             <h3 class="text-2xl font-serif font-bold mb-2 text-gray-800">Uluslararası Ajanslar Taranıyor</h3>
-            <p class="text-sm font-medium text-gray-500 max-w-sm mx-auto">Yabancı metinler Türkçeye çevriliyor, özel köşe yazıları ayıklanıyor...</p>
+            <p class="text-sm font-medium text-gray-500 max-w-sm mx-auto">Nitelikli kültür sanat platformları indeksleniyor, çeviriler uygulanıyor...</p>
         </div>
 
         <!-- ANA SAYFA VİTRİNİ -->
@@ -126,16 +132,43 @@
                 </div>
             </section>
 
-            <!-- Ana Haber Listesi -->
-            <section class="bg-white p-6 md:p-8 rounded-md border border-gray-200 shadow-sm">
-                <div class="flex justify-between items-end border-b-2 border-brand-red pb-3 mb-8">
-                    <h2 class="text-2xl md:text-3xl font-serif font-bold text-brand-text">Tüm Gelişmeler</h2>
-                    <span class="text-[10px] uppercase font-bold text-gray-500 bg-gray-100 px-3 py-1.5 rounded-sm">Drive Veritabanı</span>
-                </div>
-                <div class="flex flex-col space-y-8" id="news-list">
-                    <!-- JS -->
-                </div>
-            </section>
+            <!-- AD BANNER 1 (Horizontal) -->
+            <div class="ad-banner-horizontal rounded-md shadow-inner">
+                Reklam Alanı (970x90)
+            </div>
+
+            <!-- Ana İçerik ve Sidebar Düzeni -->
+            <div class="flex flex-col lg:flex-row gap-10">
+                <!-- Ana Haber Listesi (Sol) -->
+                <section class="w-full lg:w-2/3 bg-white p-6 md:p-8 rounded-md border border-gray-200 shadow-sm">
+                    <div class="flex justify-between items-end border-b-2 border-brand-red pb-3 mb-8">
+                        <h2 class="text-2xl md:text-3xl font-serif font-bold text-brand-text">Tüm Gelişmeler</h2>
+                        <span class="text-[10px] uppercase font-bold text-gray-500 bg-gray-100 px-3 py-1.5 rounded-sm">Drive Veritabanı</span>
+                    </div>
+                    <div class="flex flex-col space-y-8" id="news-list">
+                        <!-- JS -->
+                    </div>
+                </section>
+
+                <!-- Sidebar (Sağ) -->
+                <aside class="w-full lg:w-1/3">
+                    <!-- AD BANNER 2 (Sidebar) -->
+                    <div class="ad-banner-sidebar rounded-md shadow-inner mb-8">
+                        Reklam Alanı (300x600)
+                    </div>
+                    
+                    <!-- Kaynaklar Modülü -->
+                    <div class="bg-gray-50 p-6 rounded-md border border-gray-200">
+                        <h3 class="font-serif font-bold text-lg mb-4 text-brand-text border-b border-gray-300 pb-2">Taranan Kaynaklar</h3>
+                        <ul class="text-xs text-gray-500 space-y-2 font-medium">
+                            <li><i class="fas fa-check text-green-500 mr-2"></i>K24 & Oggito (Eleştiri)</li>
+                            <li><i class="fas fa-check text-green-500 mr-2"></i>LitHub & The Guardian (Uluslararası)</li>
+                            <li><i class="fas fa-check text-green-500 mr-2"></i>Kayıp Rıhtım & Kitap Eki</li>
+                            <li><i class="fas fa-check text-green-500 mr-2"></i>Ulusal Kültür-Sanat Ekleri</li>
+                        </ul>
+                    </div>
+                </aside>
+            </div>
         </div>
 
         <!-- ================= YEREL TAM METİN OKUYUCU (MODAL) ================= -->
@@ -181,7 +214,7 @@
 
     </main>
 
-    <!-- Footer -->
+    <!-- STREAMING_CHUNK: Building Site Footer... -->
     <footer class="bg-[#0b1120] text-gray-400 py-12 font-sans border-t border-gray-800 mt-12">
         <div class="container mx-auto px-4 lg:px-8 flex flex-col md:flex-row justify-between items-center gap-6">
             <div class="text-center md:text-left">
@@ -190,12 +223,12 @@
             </div>
             <div class="text-center md:text-right text-xs font-bold space-y-2">
                 <p><i class="fab fa-google-drive text-emerald-500 mr-1"></i> Drive Arşivi</p>
-                <p>&copy; <span id="year"></span> Sürüm 2.0 SPA</p>
+                <p>&copy; <span id="year"></span> Sürüm 2.5 SPA</p>
             </div>
         </div>
     </footer>
 
-    <!-- Mobile Drawer -->
+    <!-- STREAMING_CHUNK: Building Mobile Navigation Drawer... -->
     <div id="mobile-menu-overlay" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50"></div>
     <div id="mobile-menu-container" class="fixed top-0 left-0 h-full w-[300px] max-w-[85vw] bg-white z-50 shadow-2xl flex flex-col">
         <div class="flex justify-between items-center p-6 border-b border-gray-100 bg-gray-50">
@@ -211,7 +244,7 @@
         </nav>
     </div>
 
-    <!-- JAVASCRIPT LOGIC -->
+    <!-- STREAMING_CHUNK: Integrating Core Javascript Application State and Handlers... -->
     <script>
         document.getElementById('top-date').textContent = new Date().toLocaleDateString('tr-TR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
         document.getElementById('year').textContent = new Date().getFullYear();
@@ -230,11 +263,10 @@
 
         let globalArticles = []; 
         const JSON_URL = 'haberler/haberler.json';
-        const FALLBACK_IMAGE = 'https://images.unsplash.com/photo-1457369804613-52c61a468e7d?auto=format&fit=crop&w=1200&q=80';
+        const FALLBACK_IMAGE = 'https://images.unsplash.com/photo-1481627834876-b7833e8f5570?auto=format&fit=crop&w=1200&q=80';
 
         async function fetchSystemData() {
             try {
-                // Cache engelleme ile veriyi her 5 dakikada bir yeniler.
                 const response = await fetch(JSON_URL + '?v=' + new Date().getTime());
                 const data = await response.json();
                 if(data && Array.isArray(data) && data.length > 0) {
@@ -243,7 +275,6 @@
                 } else { throw new Error("Veri boş"); }
             } catch (error) {
                 console.warn("API Hatası", error);
-                // Demo Fail-Safe Veri
                 globalArticles = [{
                     title: "Sistem Taraması Devam Ediyor", link: "#", source: "Bot Servisi",
                     date: new Date().toISOString(), category: "BİLGİ", desc: "Haber kaynakları güncellenmektedir.",
@@ -259,6 +290,7 @@
             return d.toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric', hour:'2-digit', minute:'2-digit' });
         }
 
+        // STREAMING_CHUNK: Rendering User Interface Elements Based on Fetched Data...
         function renderUI() {
             document.getElementById('loading-spinner').classList.add('hidden');
             const contentArea = document.getElementById('content-area');
@@ -267,11 +299,11 @@
 
             if(globalArticles.length === 0) return;
 
-            // 1. Ticker
+            // 1. Ticker (Kayan Yazı - Tıklanabilir yapıldı)
             const ticker = document.getElementById('ticker-content');
             let tickerHTML = '';
-            globalArticles.slice(0, 15).forEach(a => {
-                tickerHTML += `<span class="ticker__item"><i class="fas fa-star text-yellow-400 mr-2"></i> ${a.title} <span class="text-red-200 text-[10px] ml-1">(${a.source})</span></span>`;
+            globalArticles.slice(0, 15).forEach((a, index) => {
+                tickerHTML += `<span class="ticker__item" onclick="openArticle(${index})"><i class="fas fa-star text-yellow-400 mr-2"></i> ${a.title} <span class="text-red-200 text-[10px] ml-1">(${a.source})</span></span>`;
             });
             ticker.innerHTML = tickerHTML + tickerHTML;
 
@@ -339,6 +371,7 @@
             });
         }
 
+        // STREAMING_CHUNK: Managing Local Reading View Interactions...
         function openArticle(index) {
             const article = globalArticles[index];
             if(!article) return;
@@ -379,7 +412,7 @@
 
         document.addEventListener('DOMContentLoaded', () => {
             fetchSystemData();
-            // Her 5 dakikada bir otomatik yenileme tetikleyicisi (300.000 ms)
+            // Her 5 dakikada bir otomatik yenileme (300.000 ms)
             setInterval(fetchSystemData, 300000);
         });
     </script>
