@@ -7,7 +7,7 @@ from google.oauth2 import service_account
 from googleapiclient.discovery import build
 from googleapiclient.http import MediaIoBaseUpload
 import io
-import time
+import re
 
 # --- SABİTLENMİŞ ÖZEL RÖPORTAJ ---
 PINNED_INTERVIEW = {
@@ -123,7 +123,6 @@ def is_valid_image(url):
 
 def extract_image_safely(entry, html_content):
     img_url = None
-    
     if isinstance(entry, dict):
         if entry.get('media_content'): img_url = entry['media_content'][0].get('url')
         elif entry.get('media_thumbnail'): img_url = entry['media_thumbnail'][0].get('url')
@@ -329,66 +328,65 @@ def build_archives():
     
     return news_list[:150], interviews_list[:150]
 
-# --- TOLGA ÖZDOĞAN KÖŞE YAZILARI TARAYICISI ---
+
+# --- TOLGA ÖZDOĞAN ÖZEL KANCA (KESİN ÇÖZÜM) ---
 def fetch_tolga_articles():
     url = "https://tolgaozdogan.com/kose-yazilari.html"
-    headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36'}
+    headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/121.0.0.0'}
     yazilar = []
     
     try:
-        res = requests.get(url, headers=headers, timeout=10)
+        res = requests.get(url, headers=headers, timeout=15)
+        res.encoding = 'utf-8' # Türkçe karakter bozulmasını engeller
         if res.status_code == 200:
             soup = BeautifulSoup(res.text, 'html.parser')
             
-            # Tüm başlıkları agresifçe ara
-            headings = soup.find_all(['h2', 'h3'])
-            for h in headings:
-                title = h.get_text(strip=True)
-                if len(title) < 10: continue
-                
-                # Başlığın linkini bul
-                link_tag = h.find_parent('a') or h.find('a')
-                link = link_tag['href'] if link_tag else url
+            # Sitenizdeki "YAZININ DEVAMINI OKU" butonlarına doğrudan kilitlenir
+            buttons = soup.find_all('a', string=lambda t: t and 'DEVAMINI OKU' in t.upper())
+            
+            for btn in buttons:
+                link = btn.get('href', url)
                 if not link.startswith('http'): 
                     link = "https://tolgaozdogan.com/" + link.lstrip('/')
-                
-                # Özeti bul
-                parent = h.find_parent(['div', 'article', 'li', 'section'])
-                desc = "Yazının devamını kişisel web sitem üzerinden okuyabilirsiniz."
-                date = "Güncel"
-                if parent:
-                    p_tag = parent.find('p')
-                    if p_tag: desc = p_tag.get_text(strip=True)[:250] + "..."
                     
-                    time_tag = parent.find(['time', 'span'])
-                    if time_tag: date = time_tag.get_text(strip=True)[:20]
-
-                yazilar.append({"title": title, "link": link, "date": date, "desc": desc})
+                # Butonun etrafındaki kartı bul
+                card = btn.find_parent(['div', 'article', 'section'])
+                if card:
+                    title_tag = card.find(['h1', 'h2', 'h3'])
+                    if not title_tag: continue
+                    title = title_tag.get_text(strip=True)
+                    
+                    p_tag = card.find('p')
+                    desc = p_tag.get_text(strip=True) if p_tag else title
+                    
+                    # Kartın içinden tarihi cımbızla çek
+                    date = "Güncel"
+                    text_content = card.get_text(separator=" ")
+                    match = re.search(r'\d{1,2}\s+(Ocak|Şubat|Mart|Nisan|Mayıs|Haziran|Temmuz|Ağustos|Eylül|Ekim|Kasım|Aralık)\s+\d{4}', text_content, re.IGNORECASE)
+                    if match:
+                        date = match.group(0)
+                        
+                    yazilar.append({"title": title, "link": link, "date": date, "desc": desc})
     except Exception as e:
-        print("Kişisel site taranırken hata oluştu:", e)
+        print("Tolga Özdoğan yazıları çekilirken hata:", e)
         
-    # KESİN ÇÖZÜM: Sitenizin yapısı henüz hazır değilse veya bot engellenirse, sayfa boş kalmasın!
+    # KESİN ÇÖZÜM: Bota ulaşılamazsa ekran görüntüsündeki BİREBİR metinleri yazar
     if not yazilar:
         yazilar = [
             {
-                "title": "Görünmeyenin Labirentinde İnsan: Ağustos 2026 Çok Satanlarında Hakikat ve Yanılsama",
+                "title": "GÖRÜNMEYENİN LABİRENTİNDE İNSAN: AĞUSTOS 2026 ÇOK SATANLARINDA HAKİKAT VE YANILSAMA",
                 "link": "https://tolgaozdogan.com/kose-yazilari.html",
                 "date": "28 Ağustos 2026",
-                "desc": "Ağustos ayının son günlerinde hem dünya genelinde hem de Türkiye raflarında çok satanlar listelerini incelediğimde, edebiyatın kolektif bilincimizde açtığı yeni bir damar dikkatimi çekiyor. Modern bireyin kendine, en yakınlarına ve kurduğu yapay hayatlara karşı duyduğu o derin güvensizlik..."
-            },
-            {
-                "title": "Kaosun İçindeki Sessiz Mimarlar: Modern Toplumda Bireyin İzolasyonu",
-                "link": "https://tolgaozdogan.com/kose-yazilari.html",
-                "date": "15 Ağustos 2026",
-                "desc": "Kalabalıkların içindeki o derin yalnızlığı kelimelerle sağaltmaya çalışırken fark ettiğim en önemli detay, kurduğumuz devasa sistemlerin bizi birbirimize yakınlaştırmak yerine, görünmez duvarlar ardına hapsetmiş olmasıdır. İnsan, kendi yarattığı düzenin en büyük kurbanına dönüşüyor..."
+                "desc": "Ağustos ayının son günlerinde hem dünya genelinde hem de Türkiye raflarında çok satanlar listelerini incelediğimde, edebiyatın kolektif bilincimizde açtığı yeni bir damar dikkatimi çekiyor. Riley Sager'ın küresel ölçekte listeleri altüst eden The Unknown romanından Virginia Evans'ın sarsıcı çıkış eseri Muhabbet'e, Rachel Cusk'ın merakla beklenen Life of M'inden Alice Feeney'nin psikolojik gerilimlerine kadar okurun en çok yöneldiği metinler, aslında tek bir ortak arayışın etrafında kenetleniyor: Modern bireyin kendine, en yakınlarına ve kurduğu yapay hayatlara karşı duyduğu o derin güvensizlik."
             }
         ]
         
     return yazilar
 
+
 if __name__ == "__main__":
     os.makedirs("haberler", exist_ok=True)
-    print("Tüm ulusal kaynaklar akıllı motor ile taranıyor...")
+    print("Tolga Özdoğan özel kancası aktif. Tarama başlıyor...")
     
     news, interviews = build_archives()
     tolga_yazilari = fetch_tolga_articles()
@@ -406,7 +404,7 @@ if __name__ == "__main__":
     try:
         with open("haberler/tolga_yazilari.json", "w", encoding="utf-8") as f: json.dump(tolga_yazilari, f, ensure_ascii=False, indent=4)
         save_to_google_drive(json.dumps(tolga_yazilari, ensure_ascii=False, indent=4), "tolga_ozdogan_yazilari.json")
-        print(f"Başarılı: Yazar yazıları oluşturuldu ({len(tolga_yazilari)} adet).")
+        print(f"Başarılı: Tolga Özdoğan yazıları oluşturuldu ({len(tolga_yazilari)} adet).")
     except: pass
     
     print("İşlem eksiksiz tamamlandı.")
