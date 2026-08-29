@@ -10,6 +10,82 @@ from googleapiclient.http import MediaIoBaseUpload
 import io
 import time
 
+# --- SABİTLENMİŞ ÖZEL RÖPORTAJ ---
+PINNED_INTERVIEW = {
+    "title": "Edebiyatın yükselen yıldızı: TOLGA ÖZDOĞAN",
+    "link": "#",
+    "source": "Özel Söyleşi",
+    "date": "Güncel",
+    "category": "ÖZEL SÖYLEŞİ",
+    "desc": "Fuarcılık sektöründeki yöneticilik kariyerini edebiyat dünyasındaki derin gözlemleriyle harmanlayan yazar Tolga Özdoğan ile yazarlık serüveni ve 'Leyla - Yasak Mevsim' üzerine çok özel bir söyleşi.",
+    "content": """
+    <p><strong>- Sizi yakından tanıyabilir miyiz?</strong></p>
+    <p>Ben Tolga Özdoğan. 1985 yılının Nisan ayında doğdum ve havasıyla, suyuyla, ritmiyle ruhuma en çok hitap eden şehirde, İzmir’de yaşıyorum. Profesyonel hayatımda fuarcılık sektöründe görev yapıyorum; aynı zamanda 20 yıla aşkın sektöre emek veren eski bir gazeteciyim. Fuarcılık gibi son derece dinamik, insan odaklı ve tempolu bir sektörde yöneticilik yaparken, gazeteci kimliğim dünyayı görsel bir estetikle algılamamı sağlıyor. Ancak tüm bu unvanların ötesinde, hayatımdaki en sarsılmaz kimliklerim; eşim Sevim’e duyduğum derin yol arkadaşlığı ve 2017 doğumlu oğlumuz Ege’nin babası olmamdır. Gündüzleri iş dünyasının o bitmek bilmeyen koşturmacasında kitleleri ağırlarken, geceleri kelimelerin o sessiz, yalıtılmış ve sonsuz evrenine sığınıyorum. Ben, kalabalıkların içindeki o yalnızlığı kelimelerle sağaltmaya çalışan biriyim.</p>
+    
+    <p><strong>- Yazarlığa adım atmanızdaki asıl kırılma noktası ne oldu?</strong></p>
+    <p>İnsanın dünyadaki varoluşunu, kendi eliyle yarattığı o büyük kaosu ve ardından umutsuzca aradığı düzeni derinlemesine sorgulamaya başladığım dönemler en büyük eşikti. İş dünyasında ve toplumsal hayatta insanların kurduğu sistemleri, taktıkları maskeleri ve içlerindeki çelişkileri gözlemlemek bende bir tortu oluşturdu. Bu tortunun zihnimde birikip taşma noktasına gelmesi, o karmaşayı kâğıt üzerinde anlamlandırarak bir edebi düzene kavuşturma ihtiyacı doğurdu. Sadece gözlemlemek yetmemeye, o gözlemleri kalıcı bir forma dönüştürme arzusu ağır basmaya başladığında yazar olmanın kaçınılmaz olduğunu anladım.</p>
+    
+    <p><strong>- Sizi ilk kez kalemi elinize almaya iten özel bir an var mıydı?</strong></p>
+    <p>Mekanik daktilolara duyduğum o tarifsiz tutku aslında bir tesadüf değildi. O tuşlara her bastığımda çıkan tok, ritmik ses, kâğıda işleyen o fiziksel güç, bana her zaman henüz anlatılmamış hikâyelerin kapısını araladı. O ses bir nevi geçmişin kalbi gibi atıyordu. Fakat kalemi elime temelli almamı ve bir eser bırakma güdüsünü tetikleyen asıl büyük patlama, oğlum Ege’nin dünyaya gelişidir. Bir insan yetiştirirken zamana karşı ne kadar aciz olduğunuzu fark ediyorsunuz. Ona, geleceğe ve dünyaya benden geriye kalacak en anlamlı izin, zamana direnen kelimeler olması gerektiğine inandığım o an, yazarlığa ilk ve en güçlü adımı attım.</p>
+    
+    <p><strong>- Çocukluğunuzdaki veya gençliğinizdeki okuma alışkanlıklarınızın bugünkü yazım dilinize ve üslubunuza nasıl bir etkisi oldu?</strong></p>
+    <p>Okumak, zihnimin sınırlarını çok erken yaşta yıktı. Dostoyevski’nin Karamazov Kardeşler‘deki o emsalsiz psikolojik derinliği, insan ruhunun karanlık dehlizlerine inmekten korkmamayı öğretti bana. Gabriel García Márquez’in Yüzyıllık Yalnızlık‘ta ustalıkla kurduğu büyülü evren, hayal gücümün prangalarını kopardı. George Orwell’in 1984 ile yüzümüze çarptığı sistem eleştirisi ve distopik gerçeklik, toplumsal yapıları sorgulama biçimimi şekillendirdi. Buna Carl Sagan’ın o muazzam kozmik vizyonunu, Erich Maria Remarque’ın ve Theodore Dreiser’ın çarpıcı edebi dokunuşlarını da eklediğinizde, ortaya çok katmanlı bir altyapı çıkıyor. Tüm bu ustalardan süzülenler, üslubumda hem gerçekçi ve sert bir yüzleşmeyi hem de geniş bir düşünsel zemini aynı potada eritmemi sağladı.</p>
+    
+    <p><strong>- Hangi deneyimlerden sonra yazar olmaya karar verdiniz?</strong></p>
+    <p>Yıllardır fuarcılık sektörünün tam kalbinde, uluslararası organizasyonları yönetiyorum. Bu iş bana binlerce insanla, farklı kültürlerle ve yüzlerce farklı dinamikle temas etme şansı veriyor. Bir gazeteci ve tasarımcı olarak görsel bir düzen yaratmaya çalışırken, bir yandan da insanın o kusurlu, öngörülemez doğasına tanıklık ediyorum. İnsanların toplum içinde kurduğu suni sistemleri, hırslarını, yıktıkları kuralları yakından gözlemlemek, içimdeki anlatma arzusunu körükledi. Toplumsal çelişkilerimizi ve bireyin kendi içindeki o bitmek bilmeyen denge arayışını izlemek, beni tüm bu kaotik deneyimleri felsefi ve edebi bir süzgeçten geçirmeye mecbur bıraktı.</p>
+    
+    <p><strong>- İyi bir yazar olmanın şartları nelerdir siz bu yolda nasıl bir yöntem izlediniz?</strong></p>
+    <p>İyi bir yazar her şeyden önce yargılamadan, sadece “anlamak” için bakabilen keskin bir gözlemci olmalıdır. Dünyaya bir yargıç gibi değil, bir kâşif gibi yaklaşmalıdır. Ben bu yolda acele etmemeyi, kelimelerin içimde demlenmesine zaman tanımayı seçtim. Bazen bir cep saatinin kusursuz mekaniğini incelerken, bazen de evimdeki tatlı su akvaryumunda süzülen melek balıklarının o telaşsız ritmine bakarken yakaladığım o sessiz detayları, metinlerimin kalbine yerleştirmeye çalıştım. Disiplin ve hayatın akışındaki o gizli ahengi yakalayabilmek, benim temel yöntemim oldu.</p>
+    
+    <p><strong>- Kaleme aldığınız ilk kitap nedir ve varsa diğer kitaplarınız nelerdir?</strong></p>
+    <p>Yazım hayatım, insanın kendi varoluşunu ve sistemle olan mücadelesini kurgu dışı bir düzlemde, felsefi bir derinlikle incelediğim Kaosun Mimarı İnsan ile başladı. Ardından bu temanın tamamlayıcısı niteliğindeki Düzenin Savunucusu İnsan geldi. Kurgu dünyasında ise tabuları, insan doğasının zaaflarını ve kural tanımaz bir hikâyeyi anlattığım Leyla – Yasak Mevsim romanımı kaleme aldım.</p>
+    
+    <p><strong>- Kitaplarınızdaki konuları yazmaya yönlendiren en önemli etken ya da etkenler nelerdir?</strong></p>
+    <p>En temel etken; insanın o zıtlıklarla dolu, öngörülemez doğasıdır. Bizler, kendi elimizle kusursuz diye inşa ettiğimiz sistemleri ve düzenleri, gün gelip kendi hırslarımızla bir kaosa çeviren; ardından o yarattığımız yıkıntılar arasında yeniden umutsuzca bir çıkış yolu arayan varlıklarız. Yıkma ve yapma dürtüleri arasındaki o ince çizgi, insanın kendi zihniyle girdiği o acımasız savaş, kalemimi yönlendiren en güçlü pusuladır. Ben, içimizdeki o bitmeyen fırtınaları deşifre etmek istiyorum.</p>
+    
+    <p><strong>- Hikâyeyi kurgularken karakterlerinizin kaderini önceden tamamen planlıyor musunuz, yoksa yazım sürecinde karakterlerin kendi yollarını çizdiği oluyor mu?</strong></p>
+    <p>Masaya oturduğumda zihnimde elbette sağlam bir mimari iskelet oluyor. Ancak edebiyat matematiğe benzemiyor. Kelimeler kâğıda dökülmeye başladığında, özellikle de Leyla – Yasak Mevsim’in derinlerine inerken bunu iliklerime kadar hissettim; karakterler bir anda canlanıyor ve kendi nefeslerini almaya başlıyorlar. Sizin onlara bir tanrı gibi çizdiğiniz o dar sınırları aşıyor, kendi doğruları, yanlışları ve arzularıyla hikâyeyi bambaşka bir mecraya sürüklüyorlar. Yazarlık tam da bu noktada onlara hükmetmek değil, onların sesine saygı duyup yollarını açabilme erdemidir.</p>
+    
+    <p><strong>- Size ilham veren şeyler nelerdir?</strong></p>
+    <p>İlham benim için büyük şatafatlarda değil, yaşanmışlıklarda ve detaylarda saklıdır. Tarihin ağırlığını taşıyan vintage bir obje; örneğin 1970’lerden kalma mekanik bir kol saati ya da eski bir porselen biblo, zihnimde o dönemin yaşanmışlıklarına dair yepyeni pencereler açabilir. Evimizin neşesi, Afrika gri papağanımız Paşa’nın zeki ve anlık bir tepkisi, bir canlının dünyayı nasıl algıladığına dair bana ilham verebilir. Kısacası hayatın içinde otantik olan, yaşanmışlık barındıran her detay kalemimi besliyor.</p>
+    
+    <p><strong>- En çok hangi dönemlerde üretken oluyorsunuz ve yazma konusunda sizi en çok motive eden şey nedir?</strong></p>
+    <p>Gündüzün koşturmacası bitip de dünyanın sessizliğe büründüğü o derin gece saatlerinde kalemim özgürleşiyor. Beni en çok motive eden şey ise zamana direnen bir iz bırakmak; özellikle oğlum Ege’ye, babasının zihninden dökülen kelimelerle inşa edilmiş, hiçbir zaman yıkılmayacak edebi bir miras bırakma düşüncesi içimdeki en güçlü yakıt.</p>
+    
+    <p><strong>- Okuyucular neden sizin kitabınızı okumalı?</strong></p>
+    <p>Okuyuculara hazır, süslü reçeteler sunmuyorum; onlara kendi içlerindeki kaosu gösterecek net bir ayna tutuyorum. Maskelerinden sıyrılıp, insan doğasının o çelişkili ama bir o kadar da büyüleyici gerçeğiyle yüzleşmek istiyorlarsa sayfalarımın arasında kendilerini bulacaklardır.</p>
+    
+    <p><strong>- Kitap ya da kitaplarınızdaki ana fikirler ve vermek istediğiniz mesajlar nelerdir?</strong></p>
+    <p>İnsan zihninin yıkıcı ve yapıcı gücü arasındaki o bitmek bilmeyen savaş… En büyük savaş alanımız her zaman kendi içimizdir. Dünyayı değiştirmeye kalkışmadan önce, içimizdeki o kaosu anlamak, yüzleşmek ve kendi düzenimizi savunmak zorundayız.</p>
+    
+    <p><strong>- Yazar olmanın ve yazmanın sizin için zor yanları nelerdir, bunlarla nasıl başa çıktınız?</strong></p>
+    <p>Fuarcılık sektörünün tam kalbinde, yöneticilik gibi yüksek tempolu ve insan odaklı bir görevi yürütürken edebi bir izolasyon sağlamak en büyük zorluk. Bu dengeyi, yazmayı bir sorumluluk veya iş olarak değil, ruhsal bir sığınak olarak görerek kuruyorum.</p>
+    
+    <p><strong>- Yazar tıkanıklığı yaşadığınızda bu durumun üstesinden nasıl geliyorsunuz?</strong></p>
+    <p>Asla kelimelerle inatlaşmıyorum. Zihnim yorulduğunda dünyamı değiştiriyorum. Farklı ilgi alanlarıma odaklanıyorum. Aceleci davranmak ve aşırı endişeli olmak sizi bir tıkanıklığa itebiliyor. Tabi ki eşimin, oğlumun, ailemin ve dostlarımın destekleri de çok önemli.</p>
+    
+    <p><strong>- Kitaplarınızı kitlelere ulaştırmak için ne gibi organizasyonlar yapıyorsunuz?</strong></p>
+    <p>Dijital dünyayı ve modern araçları iletişimde aktif kullanıyorum. Ancak asıl heyecanım, önümüzdeki Eylül ayında gerçekleştireceğimiz lansman ve imza günü. Kelimelerin kâğıttan taşıp okurla fiziksel olarak buluşacağı o an için sabırsızlanıyorum.</p>
+    
+    <p><strong>- Kitap fuarlarındaki okur-yazar buluşmalarının sizin için önemi nedir?</strong></p>
+    <p>Yıllarını fuarcılık sektörüne vermiş biri olarak, yüz yüze iletişimin, o sinerjinin gücüne inanıyorum. Bir kitabın sayfalarından çıkıp, onu okuyan gözlerle doğrudan temas kurmak, yazarın ruhunu besleyen en büyük ödül. Fuarlar, edebiyatın ete kemiğe büründüğü gerçek şölenlerdir. Elbette bende kitap fuarlarında okuyucularımla buluşmayı arzu ediyorum ve bu yönde çalışmalar yapıyorum.</p>
+    
+    <p><strong>- Şu an üzerinde çalıştığınız yeni projeleriniz var mı?</strong></p>
+    <p>Yazarlık kariyerime roman yazarı olarak devam etmeyi planlıyor ve arzu ediyorum. Takdir edersiniz ki bir romanı oluşturmak zaman ve emek isteyen bir iş. Üzerinde çalıştığım taslaklarım elbette var. Öncesinde gerçekten çok inandığım ve ilk göz ağrım dediğim Leyla Yasak Mevsim’i geniş kitleler ve edebiyat dünyası ile tam olarak buluşturmak istiyorum. Gönül rahatlığı ile söyleyebilirim ki önümüzdeki dönemde de okuyucularım ve edebiyat severlerin ilham alacağı eserleri yayınlamaya devam edeceğim.</p>
+    
+    <p><strong>- Sizi en çok duygulandıran geri dönüşler nelerdir?</strong></p>
+    <p>Bir okurumun, satırlarımda kendi içsel savaşıyla yüzleşme cesaretini bulduğunu ve hayatındaki o kaosu düzene sokmak için ayağa kalktığını söylemesi… Bir yazar için kelimelerinin bir başkasının hayatına dokunmasından daha tatmin edici bir geri dönüş olamaz. Ayrıca yeni çıkan romanım için bir edebiyat yarışmasında aday gösterileceğini öğrenmek benim için eşsiz bir duyguydu.</p>
+    
+    <p><strong>- Yazar adaylarına ne gibi tavsiyelerde bulunmak istersiniz?</strong></p>
+    <p>Sadece kendi türünüzde değil; bilimden tarihe, klasiklerden bilim kurguya kadar çok geniş bir yelpazede beslenin. Hemen yayımlama telaşına düşmeyin. Kelimelerin zihninizde kendi ağırlığını bulmasına izin verin. Benim yayınladığım eserlerim 4 yıllık bir çalışmanın ürünü. Gözlem yapın ama başkalarının ne dediğine kulak tıkayın. Dünyayı bir kâşif gibi izleyip, kendi sesinizi inşa edin. Unutmayın kelimeler sizin nefesiniz, kaleminiz ise sesinizdir.</p>
+    
+    <br><hr><br><p><b>Kaynak Bilgisi:</b> Bu özel röportaj Edebiyat Gündemi için derlenmiştir.</p>
+    """,
+    "image": "images/tolga_ozdogan.png", # 1. Adımda oluşturduğunuz dosya yolu
+    "isForeign": False
+}
+# -----------------------------------------------
+
 # --- KAYNAKLAR ---
 RSS_SOURCES_NEWS = [
     {"url": "https://www.edebiyathaber.net/feed/", "name": "Edebiyat Haber"},
@@ -39,25 +115,18 @@ RSS_SOURCES_INTERVIEWS = [
 
 # --- %100 GARANTİLİ VE KESİNTİSİZ ÇEVİRİ MOTORU ---
 def robust_translate(text):
-    """Metni tek seferde çevirir, hata alırsak pes etmez, bekleyip tekrar dener."""
     if not text or len(text.strip()) < 3: 
         return text
-    
-    # Google Translate'in 5000 karakter sınırını aşmamak için güvenli kesim yapıyoruz
     safe_text = text[:4800] 
     
-    for attempt in range(4): # 4 kez inatla çevirmeyi dener
+    for attempt in range(4): 
         try:
-            # İstekler arasına nefes payı koyarak spam algısını kırıyoruz
             time.sleep(2) 
             tr_text = GoogleTranslator(source='en', target='tr').translate(safe_text)
-            
-            # Gelen yanıt gerçekten çeviriyse ve hata kodu içermiyorsa kabul et
             if tr_text and "Error 500" not in tr_text and "Server Error" not in tr_text:
                 return tr_text
         except Exception:
-            time.sleep(3) # Hata olursa 3 saniye bekle, engeli kaldırıp tekrar dene
-            
+            time.sleep(3) 
     return text
 
 # --- YARDIMCI FONKSİYONLAR ---
@@ -84,14 +153,12 @@ def get_full_article_and_image(url, fallback_html):
         res = requests.get(url, headers=headers, timeout=10)
         if res.status_code == 200:
             soup = BeautifulSoup(res.text, 'html.parser')
-            
             meta_img = soup.find('meta', property='og:image')
             if meta_img and meta_img.get('content'):
                 og_image = meta_img.get('content')
             
             paragraphs = soup.find_all('p')
             article_ps = [p.get_text(strip=True) for p in paragraphs if len(p.get_text(strip=True)) > 60]
-            
             if len(article_ps) > 2:
                 full_html = "".join([f"<p>{text}</p>" for text in article_ps[:10]])
     except Exception:
@@ -99,24 +166,14 @@ def get_full_article_and_image(url, fallback_html):
     return full_html, og_image
 
 def translate_html_content_batched(html_content, source_name):
-    """
-    Paragraf paragraf istek atıp API'yi çökertmek yerine,
-    tüm paragrafları tekilleştirip tek bir çeviri isteği atar.
-    """
     if not html_content: return ""
-    
     soup = BeautifulSoup(html_content, 'html.parser')
     paragraphs = [p.get_text(strip=True) for p in soup.find_all('p') if len(p.get_text(strip=True)) > 20]
-    
     if not paragraphs: return ""
     
-    # Paragrafları çift satır atlaması ile birleştirip TEK bir metin yapıyoruz
     combined_text = "\n\n".join(paragraphs)
-    
-    # Güçlü motorla tek seferde tamamını çeviriyoruz
     translated_combined = robust_translate(combined_text)
     
-    # Çevrilen metni tekrar paragraflara bölüp HTML'i inşa ediyoruz
     translated_html = ""
     for tp in translated_combined.split("\n\n"):
         if tp.strip():
@@ -223,7 +280,12 @@ def fetch_interviews():
         except Exception as e:
              print(f"Söyleşi Hatası ({source['name']}): {e}")
              
+    # Çekilen diğer söyleşileri tarihe göre sıralıyoruz
     all_interviews.sort(key=lambda x: x.get('date', ''), reverse=True)
+    
+    # Sizin özel röportajınızı HER ZAMAN listesinin en başına (0. indekse) ekliyoruz!
+    all_interviews.insert(0, PINNED_INTERVIEW)
+    
     return all_interviews[:100]
 
 if __name__ == "__main__":
@@ -235,7 +297,7 @@ if __name__ == "__main__":
         json.dump(news_articles, f, ensure_ascii=False, indent=4)
     save_to_google_drive(json.dumps(news_articles, ensure_ascii=False, indent=4), "edebiyat_gundemi_arsiv.json")
 
-    print("Söyleşiler ayrı olarak işleniyor...")
+    print("Söyleşiler ayrı olarak işleniyor ve özel röportaj başa sabitleniyor...")
     interviews = fetch_interviews()
     with open("haberler/soylesiler.json", "w", encoding="utf-8") as f:
         json.dump(interviews, f, ensure_ascii=False, indent=4)
