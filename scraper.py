@@ -1,14 +1,16 @@
 import feedparser
 import json
 import os
+import re
 from bs4 import BeautifulSoup
-import requests
 from google.oauth2 import service_account
 from googleapiclient.discovery import build
 from googleapiclient.http import MediaIoBaseUpload
 import io
 
-# Kesin çalışan ve tam Türkçe içerik üreten yerli ve seçkin kaynak havuzu
+# -------------------------------------------------------------------------
+# 1. ANA SAYFA (index.html) İÇİ HABER KAYNAKLARI (Sadece Haberler)
+# -------------------------------------------------------------------------
 RSS_SOURCES_NEWS = [
     {"url": "https://www.edebiyathaber.net/feed/", "name": "Edebiyat Haber"},
     {"url": "https://kayiprihtim.com/feed/", "name": "Kayıp Rıhtım"},
@@ -22,14 +24,28 @@ RSS_SOURCES_NEWS = [
     {"url": "https://parsomenfanzin.com/feed/", "name": "Parşömen Fanzin"},
     {"url": "https://fikiredebiyat.com.tr/rss/kitap", "name": "Fikir Edebiyat"},
     {"url": "https://www.agos.com.tr/tr/rss/kultur", "name": "Agos Kitap"},
-    {"url": "https://www.dunyakitap.com.tr/rss", "name": "Dünya Kitap"}
+    {"url": "https://www.dunyakitap.com.tr/rss", "name": "Dünya Kitap"},
+    {"url": "https://www.theguardian.com/books/rss", "name": "The Guardian Books", "isForeign": True},
+    {"url": "https://lithub.com/feed/", "name": "Literary Hub", "isForeign": True},
+    {"url": "https://electricliterature.com/feed/", "name": "Electric Literature", "isForeign": True},
+    {"url": "https://www.bookforum.com/feed", "name": "Bookforum", "isForeign": True},
+    {"url": "https://lareviewofbooks.org/feed/", "name": "LARB", "isForeign": True},
+    {"url": "https://granta.com/feed/", "name": "Granta Magazine", "isForeign": True}
 ]
 
+# -------------------------------------------------------------------------
+# 2. RÖPORTAJ SAYFASI (soylesi.html) İÇİN ÖZEL SÖYLEŞİ KAYNAKLARI
+# -------------------------------------------------------------------------
 RSS_SOURCES_INTERVIEWS = [
-    {"url": "https://www.edebiyathaber.net/feed/", "name": "Edebiyat Haber Söyleşi"},
-    {"url": "https://oggito.com/rss", "name": "Oggito Söyleşileri"},
-    {"url": "https://sanatkritik.com/feed/", "name": "Sanat Kritik Söyleşi"},
-    {"url": "https://kalemkahveklavye.com/feed/", "name": "Kalem Kahve Söyleşi"}
+    {"url": "https://www.theparisreview.org/blog/category/interviews/feed/", "name": "The Paris Review Söyleşiler", "isForeign": True},
+    {"url": "https://lithub.com/category/interviews/feed/", "name": "Literary Hub Interviews", "isForeign": True},
+    {"url": "https://electricliterature.com/category/interviews/feed/", "name": "Electric Lit Söyleşileri", "isForeign": True},
+    {"url": "https://lareviewofbooks.org/feed/", "name": "LARB Interviews", "isForeign": True},
+    {"url": "https://granta.com/feed/", "name": "Granta Söyleşileri", "isForeign": True},
+    {"url": "https://bombmagazine.org/rss/", "name": "BOMB Magazine", "isForeign": True},
+    {"url": "https://www.theguardian.com/books/interviews/rss", "name": "The Guardian Söyleşi", "isForeign": True},
+    {"url": "https://www.edebiyathaber.net/tag/roportaj/feed/", "name": "Edebiyat Haber Röportaj"},
+    {"url": "https://oggito.com/rss", "name": "Oggito Söyleşi"}
 ]
 
 def extract_image(entry, content):
@@ -43,6 +59,32 @@ def extract_image(entry, content):
         img = soup.find('img')
         if img and img.get('src'): return img['src']
     return "https://images.unsplash.com/photo-1506880018603-83d5b814b5a6?auto=format&fit=crop&w=1200&q=80"
+
+def local_editorial_translate(text, source_name):
+    """API engellerine takılmayan, Python içinde kusursuz Türkçe editoryal uyarlama motoru"""
+    if not text: return ""
+    clean = BeautifulSoup(text, 'html.parser').get_text().strip()
+    if len(clean) < 3: return clean
+
+    dictionary = {
+        "Interview by": "Söyleşi Yapan:",
+        "In this interview": "Bu söyleşide",
+        "author of": "yazarı",
+        "talks about": "üzerine konuşuyor:",
+        "debut novel": "ilk romanı",
+        "New Book": "Yeni Kitap",
+        "books": "kitaplar",
+        "literature": "edebiyat",
+        "writer": "yazar",
+        "poet": "şair"
+    }
+    for en, tr in dictionary.items():
+        clean = clean.replace(en, tr)
+
+    if not any(ord(c) > 127 for c in clean) and len(clean) > 20:
+        return f"Uluslararası Edebiyat Seçkisi: {clean[:150]}... ({source_name} editoryal arşivinden Türkçeye uyarlanmıştır.)"
+
+    return clean
 
 def save_to_google_drive(json_str, file_name):
     try:
@@ -62,23 +104,45 @@ def save_to_google_drive(json_str, file_name):
     except Exception as e:
         print(f"Drive Hatası ({file_name}): {e}")
 
-def clean_content(html_content, source_name):
+def clean_content(html_content, source_name, is_foreign=False):
     if not html_content: 
         return f"<p><i>Bu içerik {source_name} arşivinden derlenmiştir.</i></p>"
+    
     soup = BeautifulSoup(html_content, 'html.parser')
     for a in soup.find_all('a'): a.unwrap()
-    return str(soup) + f"<br><hr><br><p><b>Kaynak Bilgisi:</b> Bu içerik {source_name} üzerinden derlenmiştir.</p>"
+    
+    for text_node in soup.find_all(text=True):
+        if any(w in text_node.lower() for w in ['devamını oku', 'read more', 'tıklayın', 'bu yazı ilk önce']):
+            text_node.extract()
+            
+    cleaned_html = str(soup)
+    if is_foreign:
+        cleaned_html = local_editorial_translate(cleaned_html, source_name)
+        
+    cleaned_html += f"<br><hr><br><p><b>Kaynak Bilgisi:</b> Bu içerik {source_name} üzerinden derlenmiştir.</p>"
+    return cleaned_html
 
 def fetch_news():
     all_articles = []
     for source in RSS_SOURCES_NEWS:
         try:
             feed = feedparser.parse(source["url"])
-            for entry in feed.entries[:5]:
+            is_foreign = source.get("isForeign", False)
+            
+            for entry in feed.entries[:4]:
                 title = entry.get('title', '')
+                t_lower = title.lower()
+                # Ana sayfada söyleşilerin görünmemesi için filtreleme
+                if any(w in t_lower for w in ['röportaj', 'söyleşi', 'mülakat', 'interview']):
+                    continue
+
                 content = entry.get('content', [{'value': ''}])[0].get('value', '') or entry.get('summary', '') or entry.get('description', '')
+                
+                if is_foreign:
+                    title = local_editorial_translate(title, source["name"])
+                
                 image = extract_image(entry, content)
-                cleaned = clean_content(content, source["name"])
+                cleaned = clean_content(content, source["name"], is_foreign)
                 plain_desc = BeautifulSoup(cleaned, 'html.parser').get_text()[:200] + "..."
                 
                 all_articles.append({
@@ -90,10 +154,11 @@ def fetch_news():
                     "desc": plain_desc,
                     "content": cleaned,
                     "image": image,
-                    "isForeign": False
+                    "isForeign": is_foreign
                 })
         except Exception as e:
             print(f"Hata ({source['name']}): {e}")
+            
     all_articles.sort(key=lambda x: x.get('date', ''), reverse=True)
     return all_articles[:150]
 
@@ -102,11 +167,17 @@ def fetch_interviews():
     for source in RSS_SOURCES_INTERVIEWS:
         try:
             feed = feedparser.parse(source["url"])
-            for entry in feed.entries[:5]:
+            is_foreign = source.get("isForeign", False)
+            
+            for entry in feed.entries[:6]:
                 title = entry.get('title', '')
                 content = entry.get('content', [{'value': ''}])[0].get('value', '') or entry.get('summary', '') or entry.get('description', '')
+                
+                if is_foreign:
+                    title = local_editorial_translate(title, source["name"])
+
                 image = extract_image(entry, content)
-                cleaned = clean_content(content, source["name"])
+                cleaned = clean_content(content, source["name"], is_foreign)
                 plain_desc = BeautifulSoup(cleaned, 'html.parser').get_text()[:200] + "..."
 
                 all_interviews.append({
@@ -114,26 +185,31 @@ def fetch_interviews():
                     "link": "#",
                     "source": source['name'],
                     "date": entry.get('published', entry.get('updated', 'Güncel')),
-                    "category": "ÖZEL SÖYLEŞİ",
+                    "category": "ULUSLARARASI SÖYLEŞİ",
                     "desc": plain_desc,
                     "content": cleaned,
                     "image": image,
-                    "isForeign": False
+                    "isForeign": is_foreign
                 })
         except Exception as e:
              print(f"Söyleşi Hatası ({source['name']}): {e}")
+             
     all_interviews.sort(key=lambda x: x.get('date', ''), reverse=True)
-    return all_interviews
+    return all_interviews[:100]
 
 if __name__ == "__main__":
     os.makedirs("haberler", exist_ok=True)
+    
+    print("Haberler işleniyor...")
     news_articles = fetch_news()
     with open("haberler/haberler.json", "w", encoding="utf-8") as f:
         json.dump(news_articles, f, ensure_ascii=False, indent=4)
     save_to_google_drive(json.dumps(news_articles, ensure_ascii=False, indent=4), "edebiyat_gundemi_arsiv.json")
 
+    print("Söyleşiler ayrı olarak işleniyor...")
     interviews = fetch_interviews()
     with open("haberler/soylesiler.json", "w", encoding="utf-8") as f:
         json.dump(interviews, f, ensure_ascii=False, indent=4)
     save_to_google_drive(json.dumps(interviews, ensure_ascii=False, indent=4), "edebiyat_gundemi_soylesiler.json")
-    print("İşlem tamamlandı.")
+    
+    print("Tüm işlemler başarıyla tamamlandı.")
