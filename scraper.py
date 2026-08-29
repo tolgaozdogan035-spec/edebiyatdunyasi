@@ -112,20 +112,15 @@ ALL_SOURCES = [
 
 # --- SIFIR HATA FOTOĞRAF DEDEKTÖRÜ ---
 def is_valid_image(url):
-    """Gelen URL'nin SAHTE bir fotoğraf olup olmadığını kontrol eder."""
     if not url: return False
     url = url.strip()
-    # Eğer link http ile başlamıyorsa, data:image kodlu sahte bir gıf ise REDDET.
     if not url.startswith("http"): return False
-    # "Avatar", "logo" veya "1x1" boyutlu şeffaf lazy load resimlerini REDDET.
     if any(x in url.lower() for x in ["avatar", "logo", "1x1", "data:image"]): return False
     return True
 
 def extract_image_safely(entry, html_content):
-    """Gerçek resmi bulana kadar tüm olasılıkları dener, sahteleri ayıklar."""
     img_url = None
     
-    # 1. RSS medya etiketlerini tara
     if isinstance(entry, dict):
         if entry.get('media_content'): img_url = entry['media_content'][0].get('url')
         elif entry.get('media_thumbnail'): img_url = entry['media_thumbnail'][0].get('url')
@@ -141,16 +136,13 @@ def extract_image_safely(entry, html_content):
 
     if is_valid_image(img_url): return img_url
     
-    # 2. İçeriğin içindeki img etiketlerini derinlemesine tara
     if html_content:
         soup = BeautifulSoup(html_content, 'html.parser')
         for img in soup.find_all('img'):
-            # Gerçek resim linki genellikle lazy-load etiketlerine gizlenir
             src = img.get('data-src') or img.get('data-lazy-src') or img.get('src')
             if is_valid_image(src):
                 return src
 
-    # 3. Eğer hiçbiri bulunamadıysa GARANTİ varsayılan resim
     return "https://images.unsplash.com/photo-1506880018603-83d5b814b5a6?auto=format&fit=crop&w=1200&q=80"
 
 
@@ -166,7 +158,6 @@ def clean_turkish_content(html_content, source_name):
         text = p.get_text(strip=True)
         text_lower = text.lower()
         
-        # Çöp satırları sil
         if len(text) < 150:
             if any(w in text_lower for w in ["yorum", "okuma süresi", "yazar:", "tarafından yazıldı", "the post", "first appeared"]): continue
         if any(w in text_lower for w in ['devamını oku', 'read more', 'tıklayın', 'bu yazı ilk önce', 'tamamını oku', 'haberin devamı', 'the post', 'first appeared']): continue
@@ -185,7 +176,6 @@ def clean_turkish_content(html_content, source_name):
     return valid_html + f"<br><hr><br><p><b>Kaynak Bilgisi:</b> Bu içerik {source_name} üzerinden derlenmiştir.</p>"
 
 def get_safe_feed(url):
-    """Önce normal, sonra rss2json API ile engelleri aşar."""
     headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/121.0.0.0'}
     
     try:
@@ -251,7 +241,6 @@ def build_archives():
         feed = get_safe_feed(source["url"])
         if not feed: continue
         
-        # EDEBİYAT SÖYLEŞİLERİ İÇİN LİMİTİ 15'E ÇIKARTIYORUZ!
         entry_limit = 15 if "soylesi" in source["url"].lower() else 5
         
         for entry in getattr(feed, 'entries', [])[:entry_limit]:
@@ -259,7 +248,6 @@ def build_archives():
                 title = entry.get('title', '') if isinstance(entry, dict) else getattr(entry, 'title', '')
                 link = entry.get('link', '') if isinstance(entry, dict) else getattr(entry, 'link', '')
                 
-                # Akıllı Kategori Ayrımı
                 is_interview = False
                 if any(w in title.lower() or w in link.lower() for w in ['röportaj', 'söyleşi', 'mülakat', 'interview']):
                     is_interview = True
@@ -268,12 +256,14 @@ def build_archives():
 
                 raw_content = get_article_body(entry)
                 
-                # Yeni ve Güvenli Fotoğraf Ayıklayıcı
                 final_image = extract_image_safely(entry, raw_content)
                 final_content = clean_turkish_content(raw_content, source["name"])
                 
                 plain_desc = BeautifulSoup(final_content, 'html.parser').get_text()[:200] + "..."
-                pub_date = entry.get('published', 'Güncel') if isinstance(entry, dict) else getattr(entry, 'published', 'Güncel')
+                
+                # --- TARİH (NONE) HATASINA KESİN ÇÖZÜM ---
+                raw_date = entry.get('published') if isinstance(entry, dict) else getattr(entry, 'published', None)
+                pub_date = str(raw_date) if raw_date else 'Güncel'
                 
                 article_data = {
                     "title": title, "link": "#", "source": source["name"], "date": pub_date,
@@ -290,10 +280,10 @@ def build_archives():
                     
             except: continue
 
-    news_list.sort(key=lambda x: x.get('date', ''), reverse=True)
-    interviews_list.sort(key=lambda x: x.get('date', ''), reverse=True)
+    # --- SIRALAMA HATASINA KARŞI GÜVENLİ SORT ---
+    news_list.sort(key=lambda x: str(x.get('date') or 'Güncel'), reverse=True)
+    interviews_list.sort(key=lambda x: str(x.get('date') or 'Güncel'), reverse=True)
     
-    # RÖPORTAJINIZI LİSTENİN BAŞINA SABİTLE
     interviews_list.insert(0, PINNED_INTERVIEW)
     
     return news_list[:150], interviews_list[:150]
