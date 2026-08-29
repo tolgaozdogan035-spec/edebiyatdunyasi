@@ -111,53 +111,67 @@ RSS_SOURCES_INTERVIEWS = [
     {"url": "https://www.edebiyathaber.net/tag/roportaj/feed/", "name": "Edebiyat Haber Röportaj"}
 ]
 
-# --- 1. KENDİ ÖZEL ÇEVİRİ MOTORUMUZ (Sıfır Dışa Bağımlılık, Sıfır Hata) ---
+# --- 1. MASKELENMİŞ YÜKSEK GÜVENLİKLİ ÇEVİRİ MOTORU ---
 def custom_translate(text):
-    """Metni engellenemeyen Google dahili API'si ile sorunsuz çevirir."""
-    if not text or len(text.strip()) < 5: return text
-    url = "https://translate.googleapis.com/translate_a/single"
-    # Çok uzun metinleri güvenli çeviri için 4000 karakterlik bloklara ayırır
-    chunks = [text[i:i+4000] for i in range(0, len(text), 4000)]
-    translated_full = ""
+    """Google'ın bot engellemesini aşmak için güçlü tarayıcı başlıklarıyla çeviri yapar."""
+    if not text or len(text.strip()) < 3: return text
     
-    for chunk in chunks:
-        params = {"client": "gtx", "sl": "en", "tl": "tr", "dt": "t", "q": chunk}
-        for _ in range(3): # 3 kere inatla dener
-            try:
-                res = requests.get(url, params=params, timeout=10)
-                if res.status_code == 200:
-                    data = res.json()
-                    translated_full += "".join([i[0] for i in data[0] if i[0]])
-                    break
-            except Exception:
-                time.sleep(2)
-    return translated_full if translated_full else text
+    headers = {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36',
+        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8',
+    }
+    
+    # 1. Yöntem: Google gtx
+    try:
+        url = "https://translate.googleapis.com/translate_a/single"
+        params = {"client": "gtx", "sl": "en", "tl": "tr", "dt": "t", "q": text[:4000]}
+        res = requests.get(url, params=params, headers=headers, timeout=10)
+        if res.status_code == 200:
+            data = res.json()
+            translated = "".join([i[0] for i in data[0] if i[0]])
+            if translated: return translated
+    except: pass
+
+    # 2. Yöntem (Yedek): Google dict-chrome-ex
+    try:
+        url = "https://clients5.google.com/translate_a/t"
+        params = {"client": "dict-chrome-ex", "sl": "en", "tl": "tr", "q": text[:4000]}
+        res = requests.get(url, params=params, headers=headers, timeout=10)
+        if res.status_code == 200:
+            data = res.json()
+            if isinstance(data, list) and len(data) > 0:
+                return data[0]
+            elif isinstance(data, str):
+                return data
+    except: pass
+    
+    return text
 
 def translate_html_content_safe(html_content, source_name):
-    """HTML yapısını koruyarak tüm metni tek seferde çevirir, yamalı metinleri bitirir."""
+    """Çeviriyi paragraf paragraf dinlenerek yapar, HTML'i bozmaz ve spama takılmaz."""
     if not html_content: return ""
     soup = BeautifulSoup(html_content, 'html.parser')
-    paragraphs = [p.get_text(strip=True) for p in soup.find_all('p') if len(p.get_text(strip=True)) > 20]
+    paragraphs = soup.find_all('p')
     
+    # Eğer metinde paragraf etiketi yoksa bile düz metni kurtarır
     if not paragraphs:
         raw = soup.get_text(strip=True)
         if len(raw) < 20: return html_content
-        paragraphs = [raw]
+        tr_text = custom_translate(raw)
+        return f"<p>{tr_text}</p><br><hr><br><p><b>Kaynak Bilgisi:</b> Bu uluslararası içerik {source_name} üzerinden derlenmiş ve eksiksiz olarak Türkçeye çevrilmiştir.</p>"
 
-    # Tüm paragrafları tekilleştirip tek seferde çeviriye yolla
-    combined = " ||| ".join(paragraphs)
-    translated_combined = custom_translate(combined)
-    
     translated_html = ""
-    for tp in translated_combined.split(" ||| "):
-        tp_clean = tp.replace("|||", "").strip()
-        if tp_clean:
-            translated_html += f"<p>{tp_clean}</p>"
+    for p in paragraphs:
+        text = p.get_text(strip=True)
+        if len(text) > 15:
+            tr_text = custom_translate(text)
+            translated_html += f"<p>{tr_text}</p>"
+            time.sleep(0.3) # API'yi kitlememek için nefes payı
             
     translated_html += f"<br><hr><br><p><b>Kaynak Bilgisi:</b> Bu uluslararası içerik {source_name} üzerinden derlenmiş ve eksiksiz olarak Türkçeye çevrilmiştir.</p>"
     return translated_html
 
-# --- 2. YERLİ HABER TEMİZLEYİCİSİ (Yazar, Tarih, Yorum Sayısını Yok Eder) ---
+# --- 2. YERLİ HABER TEMİZLEYİCİSİ ---
 def clean_turkish_content(html_content, source_name):
     if not html_content: return ""
     soup = BeautifulSoup(html_content, 'html.parser')
@@ -168,13 +182,10 @@ def clean_turkish_content(html_content, source_name):
     for p in soup.find_all('p'):
         text = p.get_text(strip=True)
         text_lower = text.lower()
-        
-        # DİKKAT: Yazar ismi, "Ağustos", "Yorum" içeren kısa çöp metinleri atla!
         if len(text) < 100 and ("yorum" in text_lower or "ağustos" in text_lower or "eylül" in text_lower):
             continue
         if any(w in text_lower for w in ['devamını oku', 'read more', 'tıklayın', 'bu yazı ilk önce']):
             continue
-            
         if len(text) > 30:
             valid_html += f"<p>{text}</p>"
             
@@ -183,9 +194,8 @@ def clean_turkish_content(html_content, source_name):
         
     return valid_html + f"<br><hr><br><p><b>Kaynak Bilgisi:</b> Bu içerik {source_name} üzerinden derlenmiştir.</p>"
 
-# --- 3. DUVAR AŞICI RSS ÇEKİCİ (Güvenli İstekler) ---
+# --- 3. DUVAR AŞICI RSS ÇEKİCİ ---
 def get_safe_feed(url):
-    """RSS2JSON servisi ile The Paris Review gibi zorlu sitelerin WAF engelini aşar."""
     try:
         r2j_url = f"https://api.rss2json.com/v1/api.json?rss_url={requests.utils.quote(url)}"
         res = requests.get(r2j_url, timeout=10)
@@ -209,7 +219,6 @@ def get_safe_feed(url):
                 return dummy
     except: pass
     
-    # Yedek Plan: Normal İstek
     try:
         return feedparser.parse(url)
     except: pass
@@ -236,9 +245,7 @@ def extract_image_from_rss(entry, content):
     return None
 
 def get_article_body(entry, link, is_foreign):
-    """Haberi zorla taramak yerine %99 temiz olan RSS gövdesini kullanır, siteye saldırmaz."""
     content = ""
-    # Önce RSS'in içindeki tertemiz içeriği al
     if isinstance(entry, dict) and entry.get('content'):
         content = entry['content'][0].get('value', '')
     elif hasattr(entry, 'content') and len(entry.content) > 0:
@@ -248,7 +255,6 @@ def get_article_body(entry, link, is_foreign):
     else:
         content = getattr(entry, 'summary', '')
 
-    # Eğer yabancı siteyse ve içerik 500 karakterden kısaysa mecburen sayfayı tara
     if is_foreign and len(BeautifulSoup(content, 'html.parser').get_text()) < 500:
         headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/121.0.0.0'}
         proxies = [link, f"https://api.allorigins.win/raw?url={requests.utils.quote(link)}"]
@@ -279,8 +285,7 @@ def save_to_google_drive(json_str, file_name):
             service.files().update(fileId=items[0]['id'], media_body=media).execute()
         else:
             service.files().create(body={'name': file_name, 'mimeType': 'application/json'}, media_body=media).execute()
-    except Exception as e:
-        print(f"Drive Hatası ({file_name}): {e}")
+    except: pass
 
 # --- ANA İŞLEMLER ---
 def fetch_news():
@@ -328,7 +333,6 @@ def fetch_interviews():
                 title = entry.get('title', '') if isinstance(entry, dict) else getattr(entry, 'title', '')
                 link = entry.get('link', '') if isinstance(entry, dict) else getattr(entry, 'link', '')
                 
-                # İçeriği çekerken akıllı davran
                 raw_content = get_article_body(entry, link, is_foreign)
                 rss_image = extract_image_from_rss(entry, raw_content)
                 final_image = rss_image or "https://images.unsplash.com/photo-1506880018603-83d5b814b5a6?auto=format&fit=crop&w=1200&q=80"
@@ -351,7 +355,6 @@ def fetch_interviews():
             except: continue
             
     all_interviews.sort(key=lambda x: x.get('date', ''), reverse=True)
-    # SABİT RÖPORTAJINIZ KESİN OLARAK BAŞA EKLENİR
     all_interviews.insert(0, PINNED_INTERVIEW)
     
     return all_interviews[:100]
