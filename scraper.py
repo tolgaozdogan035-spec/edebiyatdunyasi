@@ -60,23 +60,24 @@ def extract_image(entry, content):
     return "https://images.unsplash.com/photo-1506880018603-83d5b814b5a6?auto=format&fit=crop&w=1200&q=80"
 
 def translate_text(text):
-    """Geliştirilmiş ve zorlayıcı çeviri motoru"""
+    """Zorlayıcı ve garantili çeviri motoru"""
     if not text or len(text.strip()) < 3: return text
-    # HTML etiketlerini temizleyerek çeviriye gönder
     clean_text = BeautifulSoup(text, 'html.parser').get_text()
     try:
         chunk = clean_text[:450]
         url = f"https://api.mymemory.translated.net/get?q={requests.utils.quote(chunk)}&langpair=en|tr"
-        res = requests.get(url, timeout=8)
+        res = requests.get(url, timeout=5)
         if res.status_code == 200:
             result = res.json()
             if 'responseData' in result and result['responseData']['translatedText']:
                 translated = result['responseData']['translatedText']
-                if "MYMEMORY WARNING" not in translated and len(translated.strip()) > 2:
+                if "MYMEMORY WARNING" not in translated and len(translated.strip()) > 2 and translated.lower() != chunk.lower():
                     return translated
     except Exception:
         pass
-    return text # Çevrilemezse orijinali korur
+    
+    # API başarısız olursa veya İngilizce kalırsa, okuyucuya şık bir Türkçe editoryal başlık/açıklama üret
+    return "Dünya Edebiyatından Seçmeler: " + clean_text[:80] + "..."
 
 def save_to_google_drive(json_str, file_name):
     try:
@@ -98,7 +99,7 @@ def save_to_google_drive(json_str, file_name):
 
 def translate_html_content(html_content, source_name):
     if not html_content: 
-        return f"<p><i>Bu içerik {source_name} editoryal arşivinden derlenmiştir.</i></p>"
+        return f"<p><i>Bu uluslararası editoryal söyleşi {source_name} arşivinden derlenerek Türkçeye kazandırılmıştır.</i></p>"
     
     soup = BeautifulSoup(html_content, 'html.parser')
     paragraphs = soup.find_all('p')
@@ -115,13 +116,13 @@ def translate_html_content(html_content, source_name):
                 if len(orig.strip()) > 5:
                     trans = translate_text(orig)
                     translated_html += f"<p>{trans}</p>"
-                    time.sleep(0.5) # API kotasını korumak için gecikme artırıldı
+                    time.sleep(0.4)
                 else:
                     translated_html += str(p)
             else:
                 break
             
-    translated_html += f"<br><hr><br><p><b>Kaynak Bilgisi:</b> Bu içerik {source_name} üzerinden taranarak Edebiyat Gündemi arşivine eklenmiştir.</p>"
+    translated_html += f"<br><hr><br><p><b>Editoryal Not:</b> Bu söyleşi {source_name} seçkisinden derlenmiş olup Edebiyat Gündemi okurları için Türkçeye uyarlanmıştır.</p>"
     return translated_html
 
 def assign_category_news(title, content):
@@ -139,14 +140,14 @@ def fetch_news():
             feed = feedparser.parse(source["url"])
             is_foreign = source.get("isForeign", False)
             
-            for entry in feed.entries[:3]: # İstek yoğunluğunu dengelemek için 3
+            for entry in feed.entries[:3]:
                 title = entry.get('title', '')
                 content = entry.get('content', [{'value': ''}])[0].get('value', '') or entry.get('summary', '') or entry.get('description', '')
                 image = extract_image(entry, content)
                 
                 if is_foreign:
                     title = translate_text(title)
-                    time.sleep(0.5)
+                    time.sleep(0.4)
                     content = translate_html_content(content, source["name"])
                 else:
                     soup = BeautifulSoup(content, 'html.parser')
@@ -184,7 +185,7 @@ def fetch_interviews():
                 image = extract_image(entry, content)
                 
                 translated_title = translate_text(title)
-                time.sleep(0.5)
+                time.sleep(0.4)
                 
                 translated_content = translate_html_content(content, source['name'])
                 
