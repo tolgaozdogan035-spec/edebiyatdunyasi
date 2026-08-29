@@ -10,11 +10,7 @@ from googleapiclient.http import MediaIoBaseUpload
 import io
 import time
 
-# -------------------------------------------------------------------------
-# 1. ANA SAYFA (index.html) İÇİ EDEBİYAT, KİTAP VE ELEŞTİRİ AĞIRLIKLI KAYNAKLAR
-# -------------------------------------------------------------------------
 RSS_SOURCES_NEWS = [
-    # Türkiye'nin Seçkin Edebiyat ve Kitap Platformları
     {"url": "https://www.edebiyathaber.net/feed/", "name": "Edebiyat Haber", "isForeign": False},
     {"url": "https://kayiprihtim.com/feed/", "name": "Kayıp Rıhtım", "isForeign": False},
     {"url": "https://kitapeki.com/feed/", "name": "Kitap Eki", "isForeign": False},
@@ -32,8 +28,6 @@ RSS_SOURCES_NEWS = [
     {"url": "https://www.ntv.com.tr/sanat.rss", "name": "NTV Sanat", "isForeign": False},
     {"url": "https://www.cumhuriyet.com.tr/rss/kultur-sanat.xml", "name": "Cumhuriyet Kültür", "isForeign": False},
     {"url": "https://www.gazeteduvar.com.tr/rss/kultur-sanat", "name": "Gazete Duvar Kültür", "isForeign": False},
-    
-    # Uluslararası Prestijli Edebiyat ve Kitap İnceleme Mecraları (KESİNLİKLE ÇEVRİLECEK)
     {"url": "https://www.theguardian.com/books/rss", "name": "The Guardian Books", "isForeign": True},
     {"url": "https://lithub.com/feed/", "name": "Literary Hub", "isForeign": True},
     {"url": "https://electricliterature.com/feed/", "name": "Electric Literature", "isForeign": True},
@@ -43,9 +37,6 @@ RSS_SOURCES_NEWS = [
     {"url": "https://granta.com/feed/", "name": "Granta Magazine", "isForeign": True}
 ]
 
-# -------------------------------------------------------------------------
-# 2. RÖPORTAJ SAYFASI (soylesi.html) İÇİN DÜNYANIN EN ÜNLÜ SÖYLEŞİ KAYNAKLARI
-# -------------------------------------------------------------------------
 RSS_SOURCES_INTERVIEWS = [
     {"url": "https://www.theparisreview.org/blog/feed/", "name": "The Paris Review (Söyleşiler)", "isForeign": True},
     {"url": "https://lithub.com/category/interviews/feed/", "name": "Literary Hub Interviews", "isForeign": True},
@@ -55,8 +46,6 @@ RSS_SOURCES_INTERVIEWS = [
     {"url": "https://bombmagazine.org/rss/", "name": "BOMB Magazine Interviews", "isForeign": True},
     {"url": "https://www.theguardian.com/books/interviews/rss", "name": "The Guardian Books Söyleşi", "isForeign": True}
 ]
-
-# ================= ORTAK YARDIMCI FONKSİYONLAR =================
 
 def extract_image(entry, content):
     if hasattr(entry, 'media_content') and entry.media_content:
@@ -71,7 +60,6 @@ def extract_image(entry, content):
     return "https://images.unsplash.com/photo-1506880018603-83d5b814b5a6?auto=format&fit=crop&w=1200&q=80"
 
 def translate_text(text):
-    """Güvenli ve gecikmeli çeviri motoru"""
     if not text or len(text.strip()) < 3: return text
     try:
         chunk = text[:480]
@@ -91,17 +79,13 @@ def save_to_google_drive(json_str, file_name):
     try:
         creds_json = os.environ.get("GOOGLE_DRIVE_CREDENTIALS")
         if not creds_json: return
-
         creds_dict = json.loads(creds_json)
         SCOPES = ['https://www.googleapis.com/auth/drive.file']
         creds = service_account.Credentials.from_service_account_info(creds_dict, scopes=SCOPES)
         service = build('drive', 'v3', credentials=creds)
-
         results = service.files().list(q=f"name='{file_name}' and trashed=false", spaces='drive', fields='files(id, name)').execute()
         items = results.get('files', [])
-
         media = MediaIoBaseUpload(io.BytesIO(json_str.encode('utf-8')), mimetype='application/json', resumable=True)
-
         if items:
             service.files().update(fileId=items[0]['id'], media_body=media).execute()
         else:
@@ -109,11 +93,10 @@ def save_to_google_drive(json_str, file_name):
     except Exception as e:
         print(f"Drive Hatası ({file_name}): {e}")
 
-# ================= İÇERİK ÇEVİRİSİ =================
-
-def translate_html_content(html_content, source_name, article_link):
+def translate_html_content(html_content, source_name):
+    """Dış bağlantı eklemeden sadece metni çevirir ve kaynak adını belirtir"""
     if not html_content: 
-        return f"<p><i>Bu içerik {source_name} editoryal arşivinden derlenmiştir. Detaylar için orijinal bağlantıyı ziyaret edebilirsiniz.</i></p>"
+        return f"<p><i>Bu içerik {source_name} editoryal arşivinden derlenmiştir.</i></p>"
     
     soup = BeautifulSoup(html_content, 'html.parser')
     paragraphs = soup.find_all('p')
@@ -121,11 +104,11 @@ def translate_html_content(html_content, source_name, article_link):
     translated_html = ""
     if len(paragraphs) == 0:
         raw_text = soup.get_text()
-        trans = translate_text(raw_text[:700])
+        trans = translate_text(raw_text[:1000])
         translated_html = f"<p>{trans}</p>"
     else:
         for i, p in enumerate(paragraphs):
-            if i < 6: 
+            if i < 8: # Daha fazla paragraf alarak içeriği uzatıyoruz
                 orig = p.get_text()
                 if len(orig.strip()) > 5:
                     trans = translate_text(orig)
@@ -136,10 +119,9 @@ def translate_html_content(html_content, source_name, article_link):
             else:
                 break
             
-    translated_html += f"<br><hr><br><p><b>Kaynak Notu:</b> Bu editoryal içerik {source_name} kaynağından Türkçeye çevrilmiştir. Metnin tamamına <a href='{article_link}' target='_blank' style='color:#1d4ed8; font-weight:bold;'>orijinal kaynaktan</a> ulaşabilirsiniz.</p>"
+    # Sadece kaynak adı görünür, dışarıya link verilmez
+    translated_html += f"<br><hr><br><p><b>Kaynak Bilgisi:</b> Bu içerik {source_name} üzerinden taranarak Edebiyat Gündemi arşivine eklenmiştir.</p>"
     return translated_html
-
-# ================= HABERLERİ İŞLEME (INDEX.HTML) =================
 
 def assign_category_news(title, content):
     combined = (str(title) + " " + str(content)).upper()
@@ -161,21 +143,20 @@ def fetch_news():
                 content = entry.get('content', [{'value': ''}])[0].get('value', '') or entry.get('summary', '') or entry.get('description', '')
                 image = extract_image(entry, content)
                 
-                # KESİN ÇEVİRİ KONTROLÜ
                 if is_foreign:
                     title = translate_text(title)
                     time.sleep(0.3)
-                    content = translate_html_content(content, source["name"], entry.get('link', '#'))
+                    content = translate_html_content(content, source["name"])
                 else:
                     soup = BeautifulSoup(content, 'html.parser')
                     for a in soup.find_all('a'): a.unwrap()
-                    content = str(soup)
+                    content = str(soup) + f"<br><hr><br><p><b>Kaynak Bilgisi:</b> Bu içerik {source['name']} üzerinden derlenmiştir.</p>"
 
                 plain_desc = BeautifulSoup(content, 'html.parser').get_text()[:200] + "..."
                 
                 all_articles.append({
                     "title": title,
-                    "link": entry.get('link', '#'),
+                    "link": "#", # Dışarıya gitmeyi engellemek için linkler pasifize edildi
                     "source": source["name"],
                     "date": entry.get('published', entry.get('updated', 'Güncel')),
                     "category": assign_category_news(title, content),
@@ -189,8 +170,6 @@ def fetch_news():
 
     all_articles.sort(key=lambda x: x.get('date', ''), reverse=True)
     return all_articles[:150]
-
-# ================= RÖPORTAJLARI ÇEVİRME VE ÇOKLU KAYNAKTAN ÇEKME =================
 
 def fetch_interviews():
     all_interviews = []
@@ -206,14 +185,14 @@ def fetch_interviews():
                 translated_title = translate_text(title)
                 time.sleep(0.3)
                 
-                translated_content = translate_html_content(content, source['name'], entry.get('link', '#'))
+                translated_content = translate_html_content(content, source['name'])
                 
                 soup = BeautifulSoup(translated_content, 'html.parser')
                 translated_desc = soup.get_text()[:200] + "..."
 
                 all_interviews.append({
                     "title": translated_title,
-                    "link": entry.get('link', '#'),
+                    "link": "#", # Dışarıya gitmeyi engellemek için linkler pasifize edildi
                     "source": source["name"],
                     "date": entry.get('published', entry.get('updated', 'Güncel')),
                     "category": "ULUSLARARASI SÖYLEŞİ",
@@ -228,26 +207,15 @@ def fetch_interviews():
     all_interviews.sort(key=lambda x: x.get('date', ''), reverse=True)
     return all_interviews
 
-# ================= ANA ÇALIŞTIRMA =================
-
 if __name__ == "__main__":
     os.makedirs("haberler", exist_ok=True)
-
-    print("------------------------------------------")
-    print("Edebiyat odaklı haberler taranıyor ve yabancı kaynaklar Türkçeye çevriliyor...")
     news_articles = fetch_news()
-    news_json = json.dumps(news_articles, ensure_ascii=False, indent=4)
     with open("haberler/haberler.json", "w", encoding="utf-8") as f:
-        f.write(news_json)
-    save_to_google_drive(news_json, "edebiyat_gundemi_arsiv.json")
-    print(f"Toplam {len(news_articles)} edebiyat içeriği kaydedildi.")
+        json.dump(news_articles, f, ensure_ascii=False, indent=4)
+    save_to_google_drive(json.dumps(news_articles, ensure_ascii=False, indent=4), "edebiyat_gundemi_arsiv.json")
 
-    print("------------------------------------------")
-    print("Dünyanın en ünlü edebi dergilerinden söyleşiler taranıyor ve çevriliyor...")
     interviews = fetch_interviews()
-    interviews_json = json.dumps(interviews, ensure_ascii=False, indent=4)
     with open("haberler/soylesiler.json", "w", encoding="utf-8") as f:
-        f.write(interviews_json)
-    save_to_google_drive(interviews_json, "edebiyat_gundemi_soylesiler.json")
-    print(f"Toplam {len(interviews)} prestijli uluslararası söyleşi başarıyla işlendi.")
-    print("------------------------------------------")
+        json.dump(interviews, f, ensure_ascii=False, indent=4)
+    save_to_google_drive(json.dumps(interviews, ensure_ascii=False, indent=4), "edebiyat_gundemi_soylesiler.json")
+    print("İşlem tamamlandı.")
