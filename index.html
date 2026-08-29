@@ -34,7 +34,8 @@
         
         /* Ticker Animasyonları ve Etkileşimler */
         .ticker-wrap { width: 100%; overflow: hidden; background-color: #721c24; }
-        .ticker { display: inline-flex; white-space: nowrap; padding-right: 100%; animation: ticker 90s linear infinite; }
+        /* Animasyon süresi 240s yapılarak hızı yavaşlatıldı */
+        .ticker { display: inline-flex; white-space: nowrap; padding-right: 100%; animation: ticker 240s linear infinite; }
         .ticker-wrap:hover .ticker { animation-play-state: paused; }
         .ticker__item { display: inline-flex; align-items: center; padding: 0 1.5rem; color: white; font-size: 0.85rem; cursor: pointer; transition: color 0.2s ease; }
         .ticker__item:hover { color: #fca5a5; }
@@ -49,7 +50,6 @@
 
         /* Advertisement Banner Styles */
         .ad-banner-horizontal { width: 100%; max-width: 970px; height: 90px; margin: 2rem auto; background-color: #f3f4f6; border: 1px solid #e5e7eb; display: flex; align-items: center; justify-content: center; color: #9ca3af; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.1em; font-weight: bold; }
-        .ad-banner-sidebar { width: 100%; max-width: 300px; height: 600px; background-color: #f3f4f6; border: 1px solid #e5e7eb; display: flex; align-items: center; justify-content: center; color: #9ca3af; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.1em; font-weight: bold; margin: 0 auto; position: sticky; top: 100px;}
 
         #mobile-menu-container { transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); transform: translateX(-100%); }
         #mobile-menu-container.open { transform: translateX(0); }
@@ -92,9 +92,21 @@
     <!-- STREAMING_CHUNK: Building Main Sticky Navigation... -->
     <nav class="sticky top-0 bg-white/95 backdrop-blur-md z-40 shadow-sm border-b border-gray-200">
         <div class="container mx-auto px-4 lg:px-8 py-3 flex justify-between items-center">
-            <button id="menu-btn" class="text-gray-800 text-xl hover:text-brand-red transition focus:outline-none p-2"><i class="fas fa-bars"></i></button>
-            <div class="text-[11px] font-bold text-gray-500 uppercase tracking-widest hidden md:block">Harici Sayfalara Yönlendirmeyen Akıllı Okuyucu Sistemi</div>
-            <button class="text-gray-800 text-xl hover:text-brand-red transition focus:outline-none p-2"><i class="fas fa-search"></i></button>
+            <!-- Mobile Menu Button -->
+            <button id="menu-btn" class="text-gray-800 text-xl hover:text-brand-red transition focus:outline-none p-2 md:hidden"><i class="fas fa-bars"></i></button>
+            
+            <!-- Desktop Navigation Links -->
+            <div class="hidden md:flex flex-grow justify-center space-x-8 text-[13px] font-bold text-gray-700 uppercase tracking-widest">
+                <a href="index.html" class="hover:text-brand-red transition text-brand-red border-b-2 border-brand-red pb-1">Ana Sayfa</a>
+                <a href="soylesi.html" class="hover:text-brand-red transition pb-1">Röportaj</a>
+                <a href="yazarlar.html" class="hover:text-brand-red transition pb-1">Yazarlar</a>
+                <a href="reklam.html" class="hover:text-brand-red transition pb-1">Reklam</a>
+                <a href="iletisim.html" class="hover:text-brand-red transition pb-1">İletişim</a>
+                <a href="kunye.html" class="hover:text-brand-red transition pb-1">Künye</a>
+            </div>
+
+            <!-- Search Button -->
+            <button class="text-gray-800 text-xl hover:text-brand-red transition focus:outline-none p-2 ml-auto"><i class="fas fa-search"></i></button>
         </div>
     </nav>
 
@@ -137,37 +149,21 @@
                 Reklam Alanı (970x90)
             </div>
 
-            <!-- Ana İçerik ve Sidebar Düzeni -->
-            <div class="flex flex-col lg:flex-row gap-10">
-                <!-- Ana Haber Listesi (Sol) -->
-                <section class="w-full lg:w-2/3 bg-white p-6 md:p-8 rounded-md border border-gray-200 shadow-sm">
-                    <div class="flex justify-between items-end border-b-2 border-brand-red pb-3 mb-8">
-                        <h2 class="text-2xl md:text-3xl font-serif font-bold text-brand-text">Tüm Gelişmeler</h2>
-                        <span class="text-[10px] uppercase font-bold text-gray-500 bg-gray-100 px-3 py-1.5 rounded-sm">Drive Veritabanı</span>
-                    </div>
-                    <div class="flex flex-col space-y-8" id="news-list">
-                        <!-- JS -->
-                    </div>
-                </section>
-
-                <!-- Sidebar (Sağ) -->
-                <aside class="w-full lg:w-1/3">
-                    <!-- AD BANNER 2 (Sidebar) -->
-                    <div class="ad-banner-sidebar rounded-md shadow-inner mb-8">
-                        Reklam Alanı (300x600)
-                    </div>
-                    
-                    <!-- Kaynaklar Modülü -->
-                    <div class="bg-gray-50 p-6 rounded-md border border-gray-200">
-                        <h3 class="font-serif font-bold text-lg mb-4 text-brand-text border-b border-gray-300 pb-2">Taranan Kaynaklar</h3>
-                        <ul class="text-xs text-gray-500 space-y-2 font-medium">
-                            <li><i class="fas fa-check text-green-500 mr-2"></i>K24 & Oggito (Eleştiri)</li>
-                            <li><i class="fas fa-check text-green-500 mr-2"></i>LitHub & The Guardian (Uluslararası)</li>
-                            <li><i class="fas fa-check text-green-500 mr-2"></i>Kayıp Rıhtım & Kitap Eki</li>
-                            <li><i class="fas fa-check text-green-500 mr-2"></i>Ulusal Kültür-Sanat Ekleri</li>
-                        </ul>
-                    </div>
-                </aside>
+            <!-- Ana Haber Listesi (Tam Genişlik) -->
+            <section class="w-full bg-white p-6 md:p-8 rounded-md border border-gray-200 shadow-sm">
+                <div class="flex justify-between items-end border-b-2 border-brand-red pb-3 mb-8">
+                    <h2 class="text-2xl md:text-3xl font-serif font-bold text-brand-text">Tüm Gelişmeler</h2>
+                    <span class="text-[10px] uppercase font-bold text-gray-500 bg-gray-100 px-3 py-1.5 rounded-sm">Drive Veritabanı</span>
+                </div>
+                <!-- Grid yapısına çevirerek tüm alanı daha verimli kullanalım -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8" id="news-list">
+                    <!-- JS -->
+                </div>
+            </section>
+            
+            <!-- AD BANNER 2 (Horizontal Bottom) -->
+            <div class="ad-banner-horizontal rounded-md shadow-inner">
+                Reklam Alanı (970x90)
             </div>
         </div>
 
@@ -223,7 +219,7 @@
             </div>
             <div class="text-center md:text-right text-xs font-bold space-y-2">
                 <p><i class="fab fa-google-drive text-emerald-500 mr-1"></i> Drive Arşivi</p>
-                <p>&copy; <span id="year"></span> Sürüm 2.5 SPA</p>
+                <p>&copy; <span id="year"></span> Sürüm 2.6 SPA</p>
             </div>
         </div>
     </footer>
@@ -237,9 +233,12 @@
         </div>
         <nav class="flex-grow py-4 overflow-y-auto">
             <ul class="text-sm font-bold uppercase tracking-wide text-gray-700">
-                <li><a href="#" class="block px-8 py-3 text-brand-red bg-red-50 border-l-4 border-brand-red">Güncel Akış</a></li>
-                <li class="border-t border-gray-100 my-2"></li>
-                <li><a href="#" class="block px-8 py-3 text-gray-500"><i class="fas fa-robot mr-2"></i> Sistem Hakkında</a></li>
+                <li><a href="index.html" class="block px-8 py-3 text-brand-red bg-red-50 border-l-4 border-brand-red">Ana Sayfa</a></li>
+                <li><a href="soylesi.html" class="block px-8 py-3 hover:text-brand-red hover:bg-gray-50 transition">Röportaj</a></li>
+                <li><a href="yazarlar.html" class="block px-8 py-3 hover:text-brand-red hover:bg-gray-50 transition">Yazarlar</a></li>
+                <li><a href="reklam.html" class="block px-8 py-3 hover:text-brand-red hover:bg-gray-50 transition">Reklam</a></li>
+                <li><a href="iletisim.html" class="block px-8 py-3 hover:text-brand-red hover:bg-gray-50 transition">İletişim</a></li>
+                <li><a href="kunye.html" class="block px-8 py-3 hover:text-brand-red hover:bg-gray-50 transition">Künye</a></li>
             </ul>
         </nav>
     </div>
@@ -299,26 +298,29 @@
 
             if(globalArticles.length === 0) return;
 
-            // 1. Ticker (Kayan Yazı - Tıklanabilir yapıldı)
+            // 1. Ticker (Kayan Yazı - Tıklanabilir yapıldı, hız düşürüldü)
             const ticker = document.getElementById('ticker-content');
             let tickerHTML = '';
             globalArticles.slice(0, 15).forEach((a, index) => {
-                tickerHTML += `<span class="ticker__item" onclick="openArticle(${index})"><i class="fas fa-star text-yellow-400 mr-2"></i> ${a.title} <span class="text-red-200 text-[10px] ml-1">(${a.source})</span></span>`;
+                // Undefined önlemi eklendi
+                const sourceText = a.source ? a.source : 'Ajans';
+                tickerHTML += `<span class="ticker__item" onclick="openArticle(${index})"><i class="fas fa-star text-yellow-400 mr-2"></i> ${a.title} <span class="text-red-200 text-[10px] ml-1">(${sourceText})</span></span>`;
             });
             ticker.innerHTML = tickerHTML + tickerHTML;
 
             // 2. Hero
             const hero = globalArticles[0];
             const hIdx = globalArticles.indexOf(hero);
+            const heroSourceText = hero.source ? hero.source : 'Ajans';
             document.getElementById('hero-section').innerHTML = `
                 <div class="w-full h-[400px] md:h-[550px] relative" onclick="openArticle(${hIdx})">
                     <img src="${hero.image}" class="w-full h-full object-cover transition duration-1000 group-hover:scale-105" onerror="this.src='${FALLBACK_IMAGE}'">
                     <div class="absolute inset-0 bg-gradient-to-t from-gray-900 via-gray-900/80 to-transparent"></div>
                     <div class="absolute bottom-0 left-0 p-6 md:p-12 w-full md:w-3/4">
                         <div class="flex flex-wrap items-center gap-2 mb-4">
-                            <span class="bg-brand-red text-white px-3 py-1 rounded text-[10px] font-bold uppercase tracking-wider">${hero.category}</span>
+                            <span class="bg-brand-red text-white px-3 py-1 rounded text-[10px] font-bold uppercase tracking-wider">${hero.category || 'GÜNDEM'}</span>
                             ${hero.isForeign ? '<span class="bg-blue-600 text-white px-3 py-1 rounded text-[10px] font-bold uppercase tracking-wider"><i class="fas fa-language mr-1"></i> Çeviri</span>' : ''}
-                            <span class="bg-white/20 text-white border border-white/40 px-3 py-1 rounded text-[10px] font-bold tracking-wider">${hero.source}</span>
+                            <span class="bg-white/20 text-white border border-white/40 px-3 py-1 rounded text-[10px] font-bold tracking-wider">${heroSourceText}</span>
                         </div>
                         <h2 class="text-3xl md:text-5xl font-serif font-bold text-white leading-tight mb-4 drop-shadow-lg">${hero.title}</h2>
                         <p class="text-gray-300 line-clamp-2 md:text-lg mb-4 font-medium drop-shadow">${hero.desc}</p>
@@ -331,14 +333,15 @@
             gridContainer.innerHTML = '';
             globalArticles.slice(1, 4).forEach(article => {
                 const idx = globalArticles.indexOf(article);
+                const gridSourceText = article.source ? article.source : 'Ajans';
                 gridContainer.innerHTML += `
                     <article class="flex flex-col bg-white border border-gray-200 p-5 rounded-md shadow-sm hover:shadow-xl transition-all duration-300 cursor-pointer group" onclick="openArticle(${idx})">
                         <div class="relative w-full h-48 mb-4 overflow-hidden rounded bg-gray-50">
                             <img src="${article.image}" class="w-full h-full object-cover group-hover:scale-105 transition duration-700" onerror="this.src='${FALLBACK_IMAGE}'">
                         </div>
                         <div class="flex items-center justify-between text-[10px] font-bold mb-3 uppercase tracking-wide">
-                            <span class="text-brand-red">${article.category}</span>
-                            <span class="text-gray-500 bg-gray-100 px-2 py-1 rounded border border-gray-200">${article.source}</span>
+                            <span class="text-brand-red">${article.category || 'GÜNDEM'}</span>
+                            <span class="text-gray-500 bg-gray-100 px-2 py-1 rounded border border-gray-200">${gridSourceText}</span>
                         </div>
                         <h3 class="text-xl font-serif font-bold text-gray-900 leading-snug mb-3 group-hover:text-brand-red transition line-clamp-2">${article.title}</h3>
                         <p class="text-sm text-gray-600 mb-4 line-clamp-3 flex-grow leading-relaxed">${article.desc}</p>
@@ -346,20 +349,21 @@
                 `;
             });
 
-            // 4. List
+            // 4. List (Tam Genişlik Grid Formuna Çevrildi)
             const listContainer = document.getElementById('news-list');
             listContainer.innerHTML = '';
             globalArticles.slice(4).forEach(article => {
                 const idx = globalArticles.indexOf(article);
+                const listSourceText = article.source ? article.source : 'Ajans';
                 listContainer.innerHTML += `
                     <article class="flex flex-col sm:flex-row gap-6 bg-white border border-gray-100 p-4 rounded-md shadow-sm hover:shadow-md transition-shadow cursor-pointer group" onclick="openArticle(${idx})">
-                        <div class="sm:w-1/3 lg:w-1/4 flex-shrink-0 relative overflow-hidden rounded bg-gray-50 border border-gray-100">
+                        <div class="sm:w-1/3 flex-shrink-0 relative overflow-hidden rounded bg-gray-50 border border-gray-100">
                             <img src="${article.image}" class="w-full h-48 sm:h-36 object-cover group-hover:scale-105 transition duration-500" onerror="this.src='${FALLBACK_IMAGE}'">
                         </div>
-                        <div class="sm:w-2/3 lg:w-3/4 flex flex-col justify-center">
+                        <div class="sm:w-2/3 flex flex-col justify-center">
                             <div class="flex flex-wrap items-center gap-2 text-[10px] font-bold mb-2 uppercase tracking-wide">
-                                <span class="text-brand-red">${article.category}</span>
-                                <span class="text-gray-500 bg-gray-100 px-2 py-0.5 rounded border border-gray-200">${article.source}</span>
+                                <span class="text-brand-red">${article.category || 'GÜNDEM'}</span>
+                                <span class="text-gray-500 bg-gray-100 px-2 py-0.5 rounded border border-gray-200">${listSourceText}</span>
                                 ${article.isForeign ? '<span class="text-blue-600 bg-blue-50 border border-blue-200 px-2 py-0.5 rounded"><i class="fas fa-language"></i> Çeviri</span>' : ''}
                             </div>
                             <h3 class="text-xl md:text-2xl font-serif font-bold text-gray-900 leading-snug mb-2 group-hover:text-brand-red transition">${article.title}</h3>
@@ -382,10 +386,10 @@
             setTimeout(() => { articleView.classList.remove('opacity-0'); articleView.classList.add('opacity-100'); }, 50);
 
             document.getElementById('article-title').innerText = article.title;
-            document.getElementById('article-category').innerText = article.category;
-            document.getElementById('article-source-name').innerText = article.source;
+            document.getElementById('article-category').innerText = article.category || 'GÜNDEM';
+            document.getElementById('article-source-name').innerText = article.source ? article.source : 'Haber Kaynağı';
             document.getElementById('article-date').innerHTML = `<i class="far fa-clock mr-1"></i> ${formatDateTr(article.date)}`;
-            document.getElementById('article-original-link').href = article.link;
+            document.getElementById('article-original-link').href = article.link || '#';
             
             const badge = document.getElementById('article-translate-badge');
             article.isForeign ? badge.classList.remove('hidden') : badge.classList.add('hidden');
