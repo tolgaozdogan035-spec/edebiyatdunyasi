@@ -82,11 +82,15 @@ PINNED_INTERVIEW = {
     "image": "https://edebiyatgundemi.com/images/tolga_ozdogan.png", 
 }
 
-# --- YENİ YERLİ KAYNAKLARIMIZ ---
-RSS_SOURCES_NEWS = [
+# --- TEK BİR MERKEZİ KAYNAK LİSTESİ ---
+# Artık ayrı ayrı söyleşi aramıyoruz. Bot bu listedeki her haberi okuyup 
+# neyin "Haber", neyin "Söyleşi" olduğuna kendisi karar verip ilgili listeye atacak.
+ALL_SOURCES = [
     {"url": "https://www.edebiyathaber.net/feed/", "name": "Edebiyat Haber"},
     {"url": "https://kayiprihtim.com/category/haberler/edebiyat/feed/", "name": "Kayıp Rıhtım"},
+    {"url": "https://kayiprihtim.com/category/haberler/roportajlar/feed/", "name": "Kayıp Rıhtım Röportaj"},
     {"url": "https://kitapeki.com/feed/", "name": "Kitap Eki"},
+    {"url": "https://kitapeki.com/category/soylesi/feed/", "name": "Kitap Eki Söyleşi"},
     {"url": "https://k24kitap.org/rss", "name": "K24 Edebiyat"}, 
     {"url": "https://oggito.com/rss", "name": "Oggito"},
     {"url": "https://sanatkritik.com/feed/", "name": "Sanat Kritik"},
@@ -107,85 +111,100 @@ RSS_SOURCES_NEWS = [
     {"url": "https://tr.euronews.com/rss?level=theme&name=kultur", "name": "Euronews"}
 ]
 
-RSS_SOURCES_INTERVIEWS = [
-    {"url": "https://www.edebiyathaber.net/tag/roportaj/feed/", "name": "Edebiyat Haber Röportaj"},
-    {"url": "https://kayiprihtim.com/category/haberler/roportajlar/feed/", "name": "Kayıp Rıhtım Röportaj"},
-    {"url": "https://kitapeki.com/category/soylesi/feed/", "name": "Kitap Eki Söyleşi"},
-    {"url": "https://oggito.com/rss", "name": "Oggito Söyleşi"},
-    {"url": "https://sanatokur.com/kategori/soylesiler/feed/", "name": "Sanat Okur Söyleşi"}
-]
-
-# --- YERLİ HABER TEMİZLEYİCİSİ ---
+# --- SIFIR HATA: TEMİZLEYİCİ ---
 def clean_turkish_content(html_content, source_name):
-    """Tarih, yazar adı, 'okuma süresi' ve 'yorum' gibi istenmeyen çöp metinleri ayıklar."""
+    """'The post', 'first appeared' gibi WordPress eklenti çöplerini ve yazarları siler."""
     if not html_content: return ""
     soup = BeautifulSoup(html_content, 'html.parser')
-    for a in soup.find_all('a'): a.unwrap()
-    for img in soup.find_all('img'): img.decompose()
+    
+    # Gereksiz etiketleri tamamen uçur
+    for tag in soup.find_all(['a', 'img', 'script', 'style']):
+        tag.decompose()
 
     valid_html = ""
-    months = ["ocak", "şubat", "mart", "nisan", "mayıs", "haziran", "temmuz", "ağustos", "eylül", "ekim", "kasım", "aralık"]
-    
     for p in soup.find_all('p'):
         text = p.get_text(strip=True)
         text_lower = text.lower()
         
         # Çöp Metin Filtresi
         if len(text) < 150:
-            if "yorum" in text_lower and any(c.isdigit() for c in text): continue
-            if "okuma süresi" in text_lower: continue
-            if "yazar:" in text_lower: continue
-            if "tarafından yazıldı" in text_lower: continue
-            # Tarih formatlarını (Örn: 29 Ağustos 2026, 18.33) atlar
-            if any(m in text_lower for m in months) and any(c.isdigit() for c in text) and not text.endswith('.'):
-                continue
-                
-        if any(w in text_lower for w in ['devamını oku', 'read more', 'tıklayın', 'bu yazı ilk önce', 'tamamını oku', 'haberin devamı']):
-            continue
+            if any(w in text_lower for w in ["yorum", "okuma süresi", "yazar:", "tarafından yazıldı", "the post", "first appeared"]): continue
+        if any(w in text_lower for w in ['devamını oku', 'read more', 'tıklayın', 'bu yazı ilk önce', 'tamamını oku', 'haberin devamı', 'the post', 'first appeared']): continue
             
-        if len(text) > 40:
+        if len(text) > 30:
             valid_html += f"<p>{text}</p>"
             
+    # Eğer <p> etiketi yoksa ve düz metin gelmişse, onu kurtar!
     if not valid_html:
-        valid_html = f"<p>{soup.get_text(strip=True)}</p>"
-        
+        text = soup.get_text(strip=True)
+        # WordPress kalıntılarını cümleden ayır
+        for bad_phrase in ["The post", "the post", "first appeared on", "yazısı ilk önce"]:
+            if bad_phrase in text:
+                text = text.split(bad_phrase)[0]
+        if len(text) > 30:
+            valid_html = f"<p>{text}</p>"
+            
     return valid_html + f"<br><hr><br><p><b>Kaynak Bilgisi:</b> Bu içerik {source_name} üzerinden derlenmiştir.</p>"
 
 def get_safe_feed(url):
-    """Yerli sitelere standart ve güvenli bir User-Agent ile bağlanır."""
-    headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/121.0.0.0'}
+    """RSS bağlantısını güvenli kurar."""
+    headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'}
     try:
-        # Önce requests ile temiz veri çekmeyi dener
         res = requests.get(url, headers=headers, timeout=10)
         if res.status_code == 200:
             return feedparser.parse(res.content)
     except: pass
-    
-    # Yedek olarak doğrudan feedparser
+    try: return feedparser.parse(url)
+    except: return None
+
+def get_og_image(url):
+    """Eğer haberin RSS'inde fotoğraf yoksa, sitenin içine girip orijinal resmi (og:image) çeker."""
     try:
-        return feedparser.parse(url)
+        headers = {'User-Agent': 'Mozilla/5.0'}
+        res = requests.get(url, headers=headers, timeout=5)
+        soup = BeautifulSoup(res.text, 'html.parser')
+        meta_img = soup.find('meta', property='og:image')
+        if meta_img and meta_img.get('content'):
+            return meta_img.get('content')
     except: pass
     return None
 
-def extract_image_from_rss(entry, content):
+def extract_image_safely(entry, link):
+    """Önce RSS'e bakar, yoksa og:image'a bakar, o da yoksa varsayılan resmi atar."""
+    img_url = None
+    
+    # 1. RSS Medya Kontrolü
     if isinstance(entry, dict):
-        if entry.get('media_content'): return entry['media_content'][0].get('url')
-        if entry.get('media_thumbnail'): return entry['media_thumbnail'][0].get('url')
-        if entry.get('enclosures'):
+        if entry.get('media_content'): img_url = entry['media_content'][0].get('url')
+        elif entry.get('media_thumbnail'): img_url = entry['media_thumbnail'][0].get('url')
+        elif entry.get('enclosures'):
             for enc in entry['enclosures']:
-                if 'image' in enc.get('type', ''): return enc['href']
+                if 'image' in enc.get('type', ''): img_url = enc['href']
     else:
-        if hasattr(entry, 'media_content'): return entry.media_content[0].get('url')
-        if hasattr(entry, 'media_thumbnail'): return entry.media_thumbnail[0].get('url')
-        if hasattr(entry, 'enclosures'):
+        if hasattr(entry, 'media_content'): img_url = entry.media_content[0].get('url')
+        elif hasattr(entry, 'media_thumbnail'): img_url = entry.media_thumbnail[0].get('url')
+        elif hasattr(entry, 'enclosures'):
             for enc in entry.enclosures:
-                if 'image' in enc.get('type', ''): return enc['href']
-                
-    if content:
+                if 'image' in enc.get('type', ''): img_url = enc['href']
+
+    # 2. RSS İçerik Kontrolü
+    if not img_url:
+        content = ""
+        if isinstance(entry, dict) and entry.get('content'): content = entry['content'][0].get('value', '')
+        elif hasattr(entry, 'content') and len(entry.content) > 0: content = entry.content[0].value
+        elif isinstance(entry, dict): content = entry.get('summary', '')
+        else: content = getattr(entry, 'summary', '')
+        
         soup = BeautifulSoup(content, 'html.parser')
         img = soup.find('img')
-        if img and img.get('src'): return img['src']
-    return None
+        if img and img.get('src'): img_url = img['src']
+
+    # 3. Hala fotoğraf yoksa sitenin orijinal linkine git (og:image)
+    if not img_url and link:
+        img_url = get_og_image(link)
+
+    # 4. Hiçbiri olmazsa Standart Resim
+    return img_url or "https://images.unsplash.com/photo-1506880018603-83d5b814b5a6?auto=format&fit=crop&w=1200&q=80"
 
 def get_article_body(entry):
     content = ""
@@ -216,74 +235,72 @@ def save_to_google_drive(json_str, file_name):
             service.files().create(body={'name': file_name, 'mimeType': 'application/json'}, media_body=media).execute()
     except: pass
 
-# --- ANA İŞLEMLER ---
-def fetch_news():
-    all_articles = []
-    for source in RSS_SOURCES_NEWS:
+# --- ANA MOTOR (AKILLI YÖNLENDİRİCİ) ---
+def build_archives():
+    news_list = []
+    interviews_list = []
+    
+    for source in ALL_SOURCES:
         feed = get_safe_feed(source["url"])
         if not feed: continue
-        for entry in getattr(feed, 'entries', [])[:3]:
-            try:
-                title = entry.get('title', '') if isinstance(entry, dict) else getattr(entry, 'title', '')
-                if any(w in title.lower() for w in ['röportaj', 'söyleşi', 'interview']): continue
-                
-                raw_content = get_article_body(entry)
-                rss_image = extract_image_from_rss(entry, raw_content)
-                final_image = rss_image or "https://images.unsplash.com/photo-1506880018603-83d5b814b5a6?auto=format&fit=crop&w=1200&q=80"
-                
-                final_content = clean_turkish_content(raw_content, source["name"])
-                plain_desc = BeautifulSoup(final_content, 'html.parser').get_text()[:200] + "..."
-                pub_date = entry.get('published', 'Güncel') if isinstance(entry, dict) else getattr(entry, 'published', 'Güncel')
-                
-                all_articles.append({
-                    "title": title, "link": "#", "source": source["name"], "date": pub_date,
-                    "category": "KİTAP / EDEBİYAT", "desc": plain_desc, "content": final_content,
-                    "image": final_image, "isForeign": False
-                })
-            except: continue
-    all_articles.sort(key=lambda x: x.get('date', ''), reverse=True)
-    return all_articles[:150]
-
-def fetch_interviews():
-    all_interviews = []
-    for source in RSS_SOURCES_INTERVIEWS:
-        feed = get_safe_feed(source["url"])
-        if not feed: continue
+        
         for entry in getattr(feed, 'entries', [])[:5]:
             try:
                 title = entry.get('title', '') if isinstance(entry, dict) else getattr(entry, 'title', '')
-                raw_content = get_article_body(entry)
-                rss_image = extract_image_from_rss(entry, raw_content)
-                final_image = rss_image or "https://images.unsplash.com/photo-1506880018603-83d5b814b5a6?auto=format&fit=crop&w=1200&q=80"
+                link = entry.get('link', '') if isinstance(entry, dict) else getattr(entry, 'link', '')
                 
+                # AKILLI FİLTRE: Haber mi Söyleşi mi?
+                is_interview = False
+                if any(w in title.lower() or w in link.lower() for w in ['röportaj', 'söyleşi', 'mülakat', 'interview']):
+                    is_interview = True
+
+                raw_content = get_article_body(entry)
+                final_image = extract_image_safely(entry, link)
                 final_content = clean_turkish_content(raw_content, source["name"])
+                
                 plain_desc = BeautifulSoup(final_content, 'html.parser').get_text()[:200] + "..."
                 pub_date = entry.get('published', 'Güncel') if isinstance(entry, dict) else getattr(entry, 'published', 'Güncel')
-
-                all_interviews.append({
-                    "title": title, "link": "#", "source": source['name'], "date": pub_date,
-                    "category": "ÖZEL SÖYLEŞİ",
+                
+                article_data = {
+                    "title": title, "link": "#", "source": source["name"], "date": pub_date,
                     "desc": plain_desc, "content": final_content,
                     "image": final_image, "isForeign": False
-                })
+                }
+
+                if is_interview:
+                    article_data["category"] = "ÖZEL SÖYLEŞİ"
+                    interviews_list.append(article_data)
+                else:
+                    article_data["category"] = "KİTAP / EDEBİYAT"
+                    news_list.append(article_data)
+                    
             except: continue
-            
-    all_interviews.sort(key=lambda x: x.get('date', ''), reverse=True)
-    # SABİT RÖPORTAJINIZ KESİN OLARAK BAŞA EKLENİR
-    all_interviews.insert(0, PINNED_INTERVIEW)
+
+    # Haberleri Tarihe Göre Sırala
+    news_list.sort(key=lambda x: x.get('date', ''), reverse=True)
+    interviews_list.sort(key=lambda x: x.get('date', ''), reverse=True)
     
-    return all_interviews[:100]
+    # SABİT RÖPORTAJINIZI SÖYLEŞİLER LİSTESİNİN EN BAŞINA EKLE
+    interviews_list.insert(0, PINNED_INTERVIEW)
+    
+    return news_list[:150], interviews_list[:100]
 
 if __name__ == "__main__":
     os.makedirs("haberler", exist_ok=True)
+    print("Tüm ulusal kaynaklar akıllı motorla taranıyor...")
+    
+    news, interviews = build_archives()
+    
     try:
-        news = fetch_news()
         with open("haberler/haberler.json", "w", encoding="utf-8") as f: json.dump(news, f, ensure_ascii=False, indent=4)
         save_to_google_drive(json.dumps(news, ensure_ascii=False, indent=4), "edebiyat_gundemi_arsiv.json")
+        print(f"Başarılı: {len(news)} haber eklendi.")
     except: pass
     
     try:
-        interviews = fetch_interviews()
         with open("haberler/soylesiler.json", "w", encoding="utf-8") as f: json.dump(interviews, f, ensure_ascii=False, indent=4)
         save_to_google_drive(json.dumps(interviews, ensure_ascii=False, indent=4), "edebiyat_gundemi_soylesiler.json")
+        print(f"Başarılı: {len(interviews)} söyleşi (Sabit Röportaj dahil) eklendi.")
     except: pass
+    
+    print("İşlem eksiksiz tamamlandı.")
