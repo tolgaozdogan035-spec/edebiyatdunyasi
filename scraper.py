@@ -351,3 +351,78 @@ if __name__ == "__main__":
     except: pass
     
     print("İşlem eksiksiz tamamlandı.")
+# --- TOLGA ÖZDOĞAN KÖŞE YAZILARI TARAYICISI ---
+def fetch_tolga_articles():
+    url = "https://tolgaozdogan.com/kose-yazilari.html"
+    headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'}
+    yazilar = []
+    
+    try:
+        res = requests.get(url, headers=headers, timeout=10)
+        if res.status_code == 200:
+            soup = BeautifulSoup(res.text, 'html.parser')
+            
+            # Sitenizdeki yazıların başlıklarını bul (h1, h2, h3 etiketleri veya linkler)
+            # Sitenizin tasarımına göre esnek bir arama yapar:
+            cards = soup.find_all('div', class_=lambda x: x and ('card' in x.lower() or 'post' in x.lower() or 'item' in x.lower()))
+            
+            # Eğer div sınıfı bulunamazsa, içindeki <article> veya direkt linkleri ara
+            if not cards:
+                cards = soup.find_all('article')
+                
+            for card in cards:
+                title_tag = card.find(['h2', 'h3', 'h4'])
+                if not title_tag: continue
+                title = title_tag.get_text(strip=True)
+                
+                link_tag = card.find('a')
+                link = link_tag['href'] if link_tag else url
+                if not link.startswith('http'): 
+                    link = "https://tolgaozdogan.com/" + link.lstrip('/')
+                
+                # Tarihi veya okuma süresini bul
+                date_tag = card.find('span', class_=lambda x: x and ('date' in x.lower() or 'time' in x.lower() or 'meta' in x.lower()))
+                date = date_tag.get_text(strip=True) if date_tag else "Güncel"
+                
+                # Özeti bul
+                p_tag = card.find('p')
+                desc = p_tag.get_text(strip=True) if p_tag else title
+                
+                yazilar.append({
+                    "title": title,
+                    "link": link,
+                    "date": date,
+                    "desc": desc[:200] + "..."
+                })
+    except Exception as e:
+        print("Tolga Özdoğan yazıları çekilirken hata:", e)
+        
+    return yazilar
+
+if __name__ == "__main__":
+    os.makedirs("haberler", exist_ok=True)
+    print("Tüm ulusal kaynaklar akıllı motor ile taranıyor...")
+    
+    news, interviews = build_archives()
+    tolga_yazilari = fetch_tolga_articles() # Sizin yazılarınız çekiliyor
+    
+    # 1. Haberleri Kaydet
+    try:
+        with open("haberler/haberler.json", "w", encoding="utf-8") as f: json.dump(news, f, ensure_ascii=False, indent=4)
+        save_to_google_drive(json.dumps(news, ensure_ascii=False, indent=4), "edebiyat_gundemi_arsiv.json")
+    except: pass
+    
+    # 2. Söyleşileri Kaydet
+    try:
+        with open("haberler/soylesiler.json", "w", encoding="utf-8") as f: json.dump(interviews, f, ensure_ascii=False, indent=4)
+        save_to_google_drive(json.dumps(interviews, ensure_ascii=False, indent=4), "edebiyat_gundemi_soylesiler.json")
+    except: pass
+
+    # 3. SİZİN YAZILARINIZI KAYDET
+    try:
+        with open("haberler/tolga_yazilari.json", "w", encoding="utf-8") as f: json.dump(tolga_yazilari, f, ensure_ascii=False, indent=4)
+        save_to_google_drive(json.dumps(tolga_yazilari, ensure_ascii=False, indent=4), "tolga_ozdogan_yazilari.json")
+        print(f"Başarılı: Sizin sitenizden {len(tolga_yazilari)} adet köşe yazısı çekildi.")
+    except: pass
+    
+    print("İşlem eksiksiz tamamlandı.")
