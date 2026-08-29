@@ -32,7 +32,6 @@
         .line-clamp-2 { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
         .line-clamp-3 { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
         
-        /* Ticker Animasyonları ve Etkileşimler */
         .ticker-wrap { width: 100%; overflow: hidden; background-color: #0b1120; } 
         .ticker { display: inline-flex; white-space: nowrap; padding-right: 100%; animation: ticker 240s linear infinite; }
         .ticker-wrap:hover .ticker { animation-play-state: paused; }
@@ -40,14 +39,12 @@
         .ticker__item:hover { color: #60a5fa; } 
         @keyframes ticker { 0% { transform: translate3d(0, 0, 0); } 100% { transform: translate3d(-100%, 0, 0); } }
 
-        /* Article Native Reader Styles */
         .article-body p { margin-bottom: 1.5rem; line-height: 1.85; color: #374151; font-size: 1.15rem; font-family: 'Playfair Display', serif; }
         .article-body img { max-width: 100%; height: auto; border-radius: 6px; margin: 2rem auto; display: block; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
         .article-body h2, .article-body h3 { font-family: 'Playfair Display', serif; font-weight: 700; font-size: 1.75rem; margin-top: 2rem; color: #111827; }
         .article-body blockquote { border-left: 4px solid #1d4ed8; padding-left: 1rem; font-style: italic; color: #4b5563; background: #eff6ff; padding: 1rem; }
         .article-body a { color: #1d4ed8; text-decoration: none; font-weight: bold; pointer-events: none; cursor: default; }
 
-        /* Advertisement Banner Styles */
         .ad-banner-horizontal { width: 100%; max-width: 970px; height: 90px; margin: 2rem auto; background-color: #f3f4f6; border: 1px solid #e5e7eb; display: flex; align-items: center; justify-content: center; color: #9ca3af; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.1em; font-weight: bold; }
 
         #mobile-menu-container { transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); transform: translateX(-100%); }
@@ -61,22 +58,20 @@
 </head>
 <body class="font-sans">
 
-    <!-- STREAMING_CHUNK: Building the System Information Top Bar... -->
     <div class="border-b border-gray-100 hidden md:block bg-white">
         <div class="container mx-auto px-4 lg:px-8 py-2 flex justify-between items-center text-[11px] text-gray-500 uppercase tracking-wide font-bold">
             <div class="flex items-center space-x-4">
                 <span id="top-date">Yükleniyor...</span>
                 <span class="border-l border-gray-300 pl-4 flex items-center text-blue-600" id="last-update-time">
-                    <!-- JS ile Son Güncelleme Saati Buraya Gelecek -->
+                    <!-- JS -->
                 </span>
             </div>
             <div class="flex items-center space-x-6">
-                <span class="text-blue-600"><i class="fas fa-globe-americas mr-1"></i> Uluslararası Çeviri Ağı Aktif</span>
+                <span class="text-blue-600"><i class="fas fa-globe-americas mr-1"></i> Bot Çeviri Arşivi Aktif</span>
             </div>
         </div>
     </div>
 
-    <!-- STREAMING_CHUNK: Building Site Logo and Main Header... -->
     <header class="py-8 md:py-12 text-center bg-white border-b border-gray-100">
         <a href="index.html" class="inline-block group">
             <h1 class="text-4xl md:text-6xl font-serif font-black tracking-tight text-brand-text mb-3">
@@ -88,7 +83,6 @@
         </a>
     </header>
 
-    <!-- STREAMING_CHUNK: Building Main Sticky Navigation... -->
     <nav class="sticky top-0 bg-white/95 backdrop-blur-md z-40 shadow-sm border-b border-gray-200">
         <div class="container mx-auto px-4 lg:px-8 py-3 flex justify-between items-center">
             <button id="menu-btn" class="text-gray-800 text-xl hover:text-brand-red transition focus:outline-none p-2 md:hidden"><i class="fas fa-bars"></i></button>
@@ -106,26 +100,23 @@
         </div>
     </nav>
 
-    <!-- STREAMING_CHUNK: Building Clickable News Ticker Interface... -->
     <div class="flex bg-brand-dark text-white shadow-md relative z-30">
         <div class="bg-blue-600 font-bold px-4 py-2 text-[10px] md:text-xs tracking-wider uppercase flex items-center whitespace-nowrap z-10 shadow-xl border-r border-blue-800">
             <i class="fas fa-language mr-2 text-white"></i> ÇEVİRİ AKIŞI
         </div>
         <div class="ticker-wrap flex items-center cursor-default z-0">
-            <div class="ticker" id="ticker-content"><span class="ticker__item">Uluslararası arşiv taranıyor...</span></div>
+            <div class="ticker" id="ticker-content"><span class="ticker__item">Arşiv okunuyor...</span></div>
         </div>
     </div>
 
-    <!-- STREAMING_CHUNK: Constructing the Main Content Grid, Ads and Reader View... -->
     <main class="container mx-auto px-4 lg:px-8 py-10 min-h-screen relative">
         
         <div id="loading-spinner" class="py-32 text-center text-blue-600 flex flex-col items-center justify-center">
-            <i class="fas fa-globe-europe fa-spin text-5xl mb-6 text-gray-800"></i>
-            <h3 class="text-2xl font-serif font-bold mb-2 text-gray-800">Uluslararası Ajanslar Taranıyor</h3>
-            <p class="text-sm font-medium text-gray-500 max-w-sm mx-auto">Yabancı metinler anlık olarak Türkçeye çevriliyor, dünya edebiyatının önde gelen isimleriyle yapılan söyleşiler derleniyor. Bu işlem birkaç saniye sürebilir...</p>
+            <i class="fas fa-database fa-spin text-5xl mb-6 text-gray-800"></i>
+            <h3 class="text-2xl font-serif font-bold mb-2 text-gray-800">Yerel Arşiv Okunuyor</h3>
+            <p class="text-sm font-medium text-gray-500 max-w-sm mx-auto">Python botunun hazırladığı çeviri dosyası (soylesiler.json) yükleniyor...</p>
         </div>
 
-        <!-- ANA SAYFA VİTRİNİ -->
         <div id="content-area" class="hidden space-y-12 transition-all duration-700 opacity-0">
             
             <section class="w-full relative group overflow-hidden rounded-md shadow-lg border border-gray-200 cursor-pointer" id="hero-section">
@@ -145,16 +136,12 @@
             <section class="w-full bg-white p-6 md:p-8 rounded-md border border-gray-200 shadow-sm">
                 <div class="flex justify-between items-end border-b-2 border-blue-600 pb-3 mb-8">
                     <h2 class="text-2xl md:text-3xl font-serif font-bold text-brand-text">Tüm Söyleşiler</h2>
-                    <span class="text-[10px] uppercase font-bold text-gray-500 bg-gray-100 px-3 py-1.5 rounded-sm">Canlı Çeviri Arşivi</span>
+                    <span class="text-[10px] uppercase font-bold text-gray-500 bg-gray-100 px-3 py-1.5 rounded-sm">Drive Veritabanı</span>
                 </div>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-8" id="news-list">
                     <!-- JS -->
                 </div>
             </section>
-            
-            <div class="ad-banner-horizontal rounded-md shadow-inner">
-                Reklam Alanı (970x90)
-            </div>
         </div>
 
         <!-- ================= YEREL TAM METİN OKUYUCU (MODAL) ================= -->
@@ -183,8 +170,8 @@
             <div class="mt-10 bg-gray-50 p-6 rounded-md border border-gray-200">
                 <div class="flex flex-col md:flex-row justify-between items-center gap-4">
                     <div>
-                        <h4 class="text-[10px] font-bold uppercase tracking-widest text-gray-500 mb-1">Kaynak Beyanı ve Çeviri</h4>
-                        <p class="text-sm text-gray-800 font-medium">Bu söyleşi <strong id="article-source-name" class="text-blue-600">Kaynak</strong> üzerinden otomatik taranarak Türkçeye çevrilmiştir.</p>
+                        <h4 class="text-[10px] font-bold uppercase tracking-widest text-gray-500 mb-1">Kaynak Beyanı</h4>
+                        <p class="text-sm text-gray-800 font-medium">Bu söyleşi <strong id="article-source-name" class="text-blue-600">Kaynak</strong> üzerinden botumuz tarafından otomatik çevrilmiştir.</p>
                     </div>
                     <a id="article-original-link" href="#" target="_blank" rel="noopener noreferrer" class="bg-white border border-gray-300 text-gray-700 hover:text-white hover:bg-blue-600 hover:border-blue-600 px-5 py-2.5 rounded text-xs font-bold uppercase tracking-wider transition shadow-sm whitespace-nowrap">
                         Orijinal Metni İncele <i class="fas fa-external-link-alt ml-2"></i>
@@ -195,12 +182,11 @@
 
     </main>
 
-    <!-- STREAMING_CHUNK: Building Site Footer... -->
     <footer class="bg-[#0b1120] text-gray-400 py-12 font-sans border-t border-gray-800 mt-12">
         <div class="container mx-auto px-4 lg:px-8 flex flex-col md:flex-row justify-between items-center gap-6">
             <div class="text-center md:text-left">
                 <h2 class="text-2xl font-serif font-bold text-white mb-2">Edebiyat <span class="text-brand-red">Gündemi</span></h2>
-                <p class="text-[10px] uppercase tracking-widest text-gray-500">Uluslararası Röportaj Çeviri Sistemi</p>
+                <p class="text-[10px] uppercase tracking-widest text-gray-500">Bot Kontrollü Çeviri Arşivi</p>
             </div>
             <div class="text-center md:text-right text-xs font-bold space-y-2">
                 <p>&copy; <span id="year"></span> Edebiyat Gündemi</p>
@@ -208,7 +194,6 @@
         </div>
     </footer>
 
-    <!-- STREAMING_CHUNK: Building Mobile Navigation Drawer... -->
     <div id="mobile-menu-overlay" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50"></div>
     <div id="mobile-menu-container" class="fixed top-0 left-0 h-full w-[300px] max-w-[85vw] bg-white z-50 shadow-2xl flex flex-col">
         <div class="flex justify-between items-center p-6 border-b border-gray-100 bg-gray-50">
@@ -227,7 +212,7 @@
         </nav>
     </div>
 
-    <!-- STREAMING_CHUNK: Integrating Aggressive Translation Live Fetcher... -->
+    <!-- STREAMING_CHUNK: Integrating Local JSON Fetcher... -->
     <script>
         document.getElementById('top-date').textContent = new Date().toLocaleDateString('tr-TR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
         document.getElementById('year').textContent = new Date().getFullYear();
@@ -245,104 +230,35 @@
         mobileMenuOverlay.addEventListener('click', toggleMenu);
 
         let globalArticles = []; 
+        
+        // DİKKAT: Botun çalışıp oluşturacağı dosya yolu. (Eğer bot çalışmadıysa bu dosya yoktur, hata verir)
+        const JSON_URL = 'haberler/soylesiler.json'; 
         const FALLBACK_IMAGE = 'https://images.unsplash.com/photo-1506880018603-83d5b814b5a6?auto=format&fit=crop&w=1200&q=80';
 
-        // Anlık Tarayıcı İçi Çeviri Fonksiyonu (Hızlı Çeviri API'si kullanıyoruz)
-        async function translateText(text) {
-            if (!text || text.length < 5) return text;
-            try {
-                // Sadece başlığı veya özet kısmını çevirmek için kırpıyoruz (API limitini aşmamak için)
-                const chunk = text.substring(0, 300);
-                const response = await fetch(`https://api.mymemory.translated.net/get?q=${encodeURIComponent(chunk)}&langpair=en|tr`);
-                const data = await response.json();
-                if (data && data.responseData && data.responseData.translatedText) {
-                    return data.responseData.translatedText;
-                }
-            } catch (e) {
-                console.warn("Çeviri Hatası:", e);
-            }
-            return text; // Hata olursa orijinalini döndür
-        }
-
-        // AGRESİF CANLI ÇEKİM VE ÇEVİRİ MOTORU
         async function fetchSystemData() {
             try {
-                updateTimeDisplay("Çevriliyor...");
+                updateTimeDisplay("Aranıyor...");
+                const response = await fetch(JSON_URL + '?v=' + new Date().getTime());
+                if (!response.ok) throw new Error("soylesiler.json dosyası henüz bot tarafından oluşturulmamış.");
                 
-                // Kaynak listesi genişletildi (Bir site çalışmazsa diğeri çalışsın)
-                const sources = [
-                    { url: 'https://electricliterature.com/category/interviews/feed/', name: 'Electric Lit' },
-                    { url: 'https://lithub.com/category/interviews/feed/', name: 'Literary Hub' },
-                    { url: 'https://bombmagazine.org/rss/', name: 'BOMB Magazine' },
-                    { url: 'https://www.theparisreview.org/blog/category/interviews/feed/', name: 'Paris Review' }
-                ];
-
-                let allInterviews = [];
-
-                for (let source of sources) {
-                    try {
-                        const res = await fetch('https://api.rss2json.com/v1/api.json?rss_url=' + encodeURIComponent(source.url));
-                        const data = await res.json();
-                        
-                        if(data.status === 'ok') {
-                            for (let i = 0; i < Math.min(data.items.length, 5); i++) { // Her kaynaktan max 5 haber al ki çeviri kilitlenmesin
-                                const item = data.items[i];
-                                let img = item.thumbnail || (item.enclosure && item.enclosure.link) || FALLBACK_IMAGE;
-                                let rawContent = item.content || item.description || "";
-                                
-                                // HTML Temizliği
-                                let cleanContent = rawContent.replace(/<a\b[^>]*>(.*?)<\/a>/gi, '$1'); 
-                                let div = document.createElement('div');
-                                div.innerHTML = cleanContent;
-                                
-                                if(img === FALLBACK_IMAGE) {
-                                    let imgTag = div.querySelector('img');
-                                    if(imgTag) img = imgTag.src;
-                                }
-
-                                // BEKLETEREK ÇEVİRİ YAPIYORUZ (Canlı Çeviri)
-                                const translatedTitle = await translateText(item.title);
-                                const originalDesc = div.textContent.substring(0, 150) + "...";
-                                const translatedDesc = await translateText(originalDesc);
-
-                                const translateNote = "<br><br><hr><br><i>Not: Bu söyleşinin başlığı ve özeti yapay zeka aracılığıyla İngilizceden Türkçeye otomatik çevrilmiştir. Orijinal tam metne ulaşmak için sayfanın altındaki butonu kullanabilirsiniz.</i>";
-
-                                allInterviews.push({
-                                    title: translatedTitle,
-                                    link: item.link,
-                                    source: source.name,
-                                    date: item.pubDate,
-                                    category: "ULUSLARARASI SÖYLEŞİ",
-                                    desc: translatedDesc,
-                                    content: cleanContent + translateNote, // İçeriği olduğu gibi bırakıp altına not düşüyoruz (Aksi takdirde API çok yavaşlar)
-                                    image: img,
-                                    isForeign: true
-                                });
-                            }
-                        }
-                    } catch (e) {
-                        console.warn(`Kaynak hatası (${source.name}):`, e);
-                    }
-                }
-
-                if(allInterviews.length > 0) {
-                    allInterviews.sort((a, b) => new Date(b.date) - new Date(a.date));
-                    globalArticles = allInterviews;
+                const data = await response.json();
+                
+                if(data && Array.isArray(data) && data.length > 0) {
+                    globalArticles = data;
                     updateTimeDisplay("Başarılı");
                     renderUI();
-                } else {
-                    throw new Error("Hiçbir kaynaktan veri gelmedi.");
+                } else { 
+                    throw new Error("JSON dosyası boş."); 
                 }
-
             } catch (error) {
-                console.warn("Tamamen Hata:", error);
-                updateTimeDisplay("Hata");
+                console.warn("Veri Okuma Hatası:", error);
+                updateTimeDisplay("Dosya Yok / Hata");
                 
-                // Fallback Mock Data (Türkçe)
+                // Eğer Bot henüz .json dosyasını oluşturmadıysa gösterilecek ekran
                 globalArticles = [{
-                    title: "Haruki Murakami ile Son Kitabı Üzerine", link: "#", source: "The Paris Review",
-                    date: new Date().toISOString(), category: "ÖZEL SÖYLEŞİ", desc: "Usta yazar Murakami, yazım ritüellerini ve yalnızlığın edebiyattaki yerini anlattı.",
-                    content: "Çeviri servisine şu an ulaşılamıyor, lütfen daha sonra tekrar deneyin.", image: FALLBACK_IMAGE, isForeign: true
+                    title: "Sistem Botu Henüz Çalışmadı", link: "#", source: "Sistem Uyarısı",
+                    date: new Date().toISOString(), category: "BİLGİ", desc: "Arka plandaki scraper.py botu henüz çalışıp soylesiler.json dosyasını oluşturmadı. Lütfen botun çalışmasını bekleyiniz.",
+                    content: "<p>Uluslararası çeviriler scraper.py botu tarafından yapılıp bu sayfaya aktarılacaktır.</p>", image: FALLBACK_IMAGE, isForeign: false
                 }];
                 renderUI();
             }
@@ -351,11 +267,10 @@
         function updateTimeDisplay(status) {
             const now = new Date();
             const timeString = now.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' });
-            let statusText = status === "Hata" ? "(Hata)" : (status === "Çevriliyor..." ? "(Çevriliyor)" : "");
+            let statusText = status === "Dosya Yok / Hata" ? "(Hata)" : (status === "Başarılı" ? "(Güncel)" : "");
+            const badgeColor = status === "Dosya Yok / Hata" ? "bg-red-600" : "bg-blue-600";
             
-            const badgeColor = status === "Hata" ? "bg-red-600" : "bg-blue-600";
-            
-            document.getElementById('last-update-time').innerHTML = `<span class="w-2 h-2 rounded-full ${badgeColor} mr-2 pulse-dot"></span> Son İşlem: ${timeString} ${statusText}`;
+            document.getElementById('last-update-time').innerHTML = `<span class="w-2 h-2 rounded-full ${badgeColor} mr-2 pulse-dot"></span> Son Kontrol: ${timeString} ${statusText}`;
         }
 
         function formatDateTr(dateStr) {
@@ -364,7 +279,6 @@
             return d.toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric', hour:'2-digit', minute:'2-digit' });
         }
 
-        // STREAMING_CHUNK: Rendering User Interface Elements Based on Fetched Data...
         function renderUI() {
             document.getElementById('loading-spinner').classList.add('hidden');
             const contentArea = document.getElementById('content-area');
@@ -373,7 +287,6 @@
 
             if(globalArticles.length === 0) return;
 
-            // 1. Ticker
             const ticker = document.getElementById('ticker-content');
             let tickerHTML = '';
             globalArticles.slice(0, 15).forEach((a, index) => {
@@ -382,7 +295,6 @@
             });
             ticker.innerHTML = tickerHTML + tickerHTML;
 
-            // 2. Hero
             const hero = globalArticles[0];
             const hIdx = globalArticles.indexOf(hero);
             const heroSourceText = hero.source ? hero.source : 'Uluslararası Ajans';
@@ -402,7 +314,6 @@
                 </div>
             `;
 
-            // 3. Grid
             const gridContainer = document.getElementById('news-grid');
             gridContainer.innerHTML = '';
             globalArticles.slice(1, 4).forEach(article => {
@@ -423,7 +334,6 @@
                 `;
             });
 
-            // 4. List (Tam Genişlik Grid Formu)
             const listContainer = document.getElementById('news-list');
             listContainer.innerHTML = '';
             globalArticles.slice(4).forEach(article => {
