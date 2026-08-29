@@ -81,7 +81,7 @@ PINNED_INTERVIEW = {
     
     <br><hr><br><p><b>Kaynak Bilgisi:</b> Bu özel röportaj Edebiyat Gündemi için derlenmiştir.</p>
     """,
-    "image": "images/tolga_ozdogan.png", # 1. Adımda oluşturduğunuz dosya yolu
+    "image": "images/tolga_ozdogan.png",
     "isForeign": False
 }
 # -----------------------------------------------
@@ -113,7 +113,21 @@ RSS_SOURCES_INTERVIEWS = [
     {"url": "https://www.edebiyathaber.net/tag/roportaj/feed/", "name": "Edebiyat Haber Röportaj"}
 ]
 
-# --- %100 GARANTİLİ VE KESİNTİSİZ ÇEVİRİ MOTORU ---
+# --- YARDIMCI FONKSİYONLAR ---
+def get_safe_feed(url):
+    """Güvenlik duvarlarını (Cloudflare vb.) aşmak için Chrome tarayıcısı kimliği kullanır."""
+    headers = {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+        'Accept': 'application/rss+xml, application/xml, text/xml, */*'
+    }
+    try:
+        res = requests.get(url, headers=headers, timeout=15)
+        if res.status_code == 200:
+            return feedparser.parse(res.content)
+    except Exception:
+        pass
+    return feedparser.parse(url) # Son çare olarak normal istek atar
+
 def robust_translate(text):
     if not text or len(text.strip()) < 3: 
         return text
@@ -129,7 +143,6 @@ def robust_translate(text):
             time.sleep(3) 
     return text
 
-# --- YARDIMCI FONKSİYONLAR ---
 def extract_image_from_rss(entry, content):
     if hasattr(entry, 'media_content') and entry.media_content:
         for media in entry.media_content:
@@ -148,7 +161,7 @@ def get_full_article_and_image(url, fallback_html):
     og_image = None
     try:
         headers = {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
         }
         res = requests.get(url, headers=headers, timeout=10)
         if res.status_code == 200:
@@ -213,7 +226,7 @@ def fetch_news():
     all_articles = []
     for source in RSS_SOURCES_NEWS:
         try:
-            feed = feedparser.parse(source["url"])
+            feed = get_safe_feed(source["url"])
             is_foreign = source.get("isForeign", False)
             for entry in feed.entries[:3]:
                 title = entry.get('title', '')
@@ -251,7 +264,7 @@ def fetch_interviews():
     all_interviews = []
     for source in RSS_SOURCES_INTERVIEWS:
         try:
-            feed = feedparser.parse(source["url"])
+            feed = get_safe_feed(source["url"])
             is_foreign = source.get("isForeign", False)
             for entry in feed.entries[:4]:
                 title = entry.get('title', '')
@@ -280,10 +293,7 @@ def fetch_interviews():
         except Exception as e:
              print(f"Söyleşi Hatası ({source['name']}): {e}")
              
-    # Çekilen diğer söyleşileri tarihe göre sıralıyoruz
     all_interviews.sort(key=lambda x: x.get('date', ''), reverse=True)
-    
-    # Sizin özel röportajınızı HER ZAMAN listesinin en başına (0. indekse) ekliyoruz!
     all_interviews.insert(0, PINNED_INTERVIEW)
     
     return all_interviews[:100]
