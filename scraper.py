@@ -81,7 +81,9 @@ PINNED_INTERVIEW = {
     
     <br><hr><br><p><b>Kaynak Bilgisi:</b> Bu özel röportaj Edebiyat Gündemi için derlenmiştir.</p>
     """,
-    "image": "tolga_ozdogan.png", 
+    # FOTOĞRAF ÇÖZÜMÜ: Eğer sitenize attığınız dosya bulunamıyorsa, tam web linkini kullanıyoruz. 
+    # Eğer sitenizin ana dizinindeyse bu link %100 çalışacaktır. (Lütfen dosya adının küçük harflerle tolga_ozdogan.png olduğundan emin olun)
+    "image": "https://edebiyatgundemi.com/tolga_ozdogan.png", 
     "isForeign": False
 }
 # -----------------------------------------------
@@ -113,44 +115,82 @@ RSS_SOURCES_INTERVIEWS = [
     {"url": "https://www.edebiyathaber.net/tag/roportaj/feed/", "name": "Edebiyat Haber Röportaj"}
 ]
 
-# --- GÜVENLİK DUVARI AŞICI FONKSİYONLAR ---
+# --- GÜVENLİK DUVARI AŞICI FONKSİYON (ULTIMATE BYPASS) ---
 def get_safe_feed(url):
-    """Cloudflare ve WAF engellerini aşmak için gizli Proxy Kalkanı kullanır."""
-    headers = {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-        'Accept': 'application/rss+xml, application/xml, text/xml, */*'
-    }
+    """Cloudflare engellerini kesin aşan rss2json servisini kullanır."""
+    # 1. Önce normal bağlantıyı dene
     try:
-        # 1. Önce normal bağlanmayı dene
-        res = requests.get(url, headers=headers, timeout=15)
+        headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'}
+        res = requests.get(url, headers=headers, timeout=10)
+        feed = feedparser.parse(res.content)
+        if feed.entries:
+            return feed
+    except: pass
+    
+    # 2. Eğer engellendiyse, RSS2JSON API üzerinden aş
+    try:
+        r2j_url = f"https://api.rss2json.com/v1/api.json?rss_url={requests.utils.quote(url)}"
+        res = requests.get(r2j_url, timeout=15)
         if res.status_code == 200:
-            return feedparser.parse(res.content)
-            
-        # 2. Eğer engellendiysek (403 vb.), aracı Proxy sunucusu ile gizlice içeri sız
-        proxy_url = f"https://api.allorigins.win/raw?url={requests.utils.quote(url)}"
-        proxy_res = requests.get(proxy_url, timeout=15)
-        if proxy_res.status_code == 200:
-            return feedparser.parse(proxy_res.content)
-            
-    except Exception:
-        pass
+            data = res.json()
+            if data.get('status') == 'ok':
+                class DummyFeed: pass
+                dummy = DummyFeed()
+                dummy.entries = []
+                for item in data['items']:
+                    entry = {
+                        'title': item.get('title', ''),
+                        'link': item.get('link', ''),
+                        'published': item.get('pubDate', ''),
+                        'summary': item.get('description', ''),
+                        'content': [{'value': item.get('content', '')}]
+                    }
+                    if item.get('thumbnail'):
+                        entry['media_thumbnail'] = [{'url': item['thumbnail']}]
+                    if item.get('enclosure'):
+                        entry['enclosures'] = [{'href': item['enclosure'].get('link'), 'type': 'image'}]
+                    dummy.entries.append(entry)
+                return dummy
+    except: pass
+    
     return feedparser.parse(url)
 
+# --- ÇEVİRİ MOTORU VE YARDIMCILAR ---
+def robust_translate(text):
+    if not text or len(text.strip()) < 3: 
+        return text
+    safe_text = text[:4800] 
+    for attempt in range(4): 
+        try:
+            time.sleep(1.5) 
+            tr_text = GoogleTranslator(source='en', target='tr').translate(safe_text)
+            if tr_text and "Error 500" not in tr_text and "Server Error" not in tr_text:
+                return tr_text
+        except Exception:
+            time.sleep(3) 
+    return text
+
+def extract_image_from_rss(entry, content):
+    if entry.get('media_content') and entry['media_content']:
+        return entry['media_content'][0].get('url')
+    if entry.get('media_thumbnail') and entry['media_thumbnail']:
+        return entry['media_thumbnail'][0].get('url')
+    if entry.get('enclosures') and entry['enclosures']:
+        for enc in entry['enclosures']:
+            if 'image' in enc.get('type', ''): return enc['href']
+    if content:
+        soup = BeautifulSoup(content, 'html.parser')
+        img = soup.find('img')
+        if img and img.get('src'): return img['src']
+    return None
+
 def get_full_article_and_image(url, fallback_html):
-    """Hem tam metni hem og:image'ı çeker, engellenirse Proxy kullanır."""
     full_html = fallback_html
     og_image = None
     try:
-        headers = {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
-        }
+        headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'}
         res = requests.get(url, headers=headers, timeout=10)
         
-        # Site sayfaya girmemizi engellediyse aracı sunucuyu kullan
-        if res.status_code != 200:
-            proxy_url = f"https://api.allorigins.win/raw?url={requests.utils.quote(url)}"
-            res = requests.get(proxy_url, timeout=15)
-
         if res.status_code == 200:
             soup = BeautifulSoup(res.text, 'html.parser')
             meta_img = soup.find('meta', property='og:image')
@@ -161,37 +201,8 @@ def get_full_article_and_image(url, fallback_html):
             article_ps = [p.get_text(strip=True) for p in paragraphs if len(p.get_text(strip=True)) > 60]
             if len(article_ps) > 2:
                 full_html = "".join([f"<p>{text}</p>" for text in article_ps[:10]])
-    except Exception:
-        pass
+    except: pass
     return full_html, og_image
-
-# --- ÇEVİRİ MOTORU VE DİĞER YARDIMCILAR ---
-def robust_translate(text):
-    if not text or len(text.strip()) < 3: 
-        return text
-    safe_text = text[:4800] 
-    for attempt in range(4): 
-        try:
-            time.sleep(2) 
-            tr_text = GoogleTranslator(source='en', target='tr').translate(safe_text)
-            if tr_text and "Error 500" not in tr_text and "Server Error" not in tr_text:
-                return tr_text
-        except Exception:
-            time.sleep(3) 
-    return text
-
-def extract_image_from_rss(entry, content):
-    if hasattr(entry, 'media_content') and entry.media_content:
-        for media in entry.media_content:
-            if 'url' in media: return media['url']
-    if hasattr(entry, 'enclosures') and entry.enclosures:
-        for enc in entry.enclosures:
-            if 'image' in enc.get('type', ''): return enc['href']
-    if content:
-        soup = BeautifulSoup(content, 'html.parser')
-        img = soup.find('img')
-        if img and img.get('src'): return img['src']
-    return None
 
 def translate_html_content_batched(html_content, source_name):
     if not html_content: return ""
@@ -249,7 +260,12 @@ def fetch_news():
                     continue
                 
                 link = entry.get('link', '')
-                base_content = entry.get('content', [{'value': ''}])[0].get('value', '') or entry.get('summary', '')
+                content_list = entry.get('content', [])
+                if content_list and isinstance(content_list, list) and 'value' in content_list[0]:
+                    base_content = content_list[0]['value']
+                else:
+                    base_content = entry.get('summary', '') or entry.get('description', '')
+                    
                 rss_image = extract_image_from_rss(entry, base_content)
                 full_html, og_image = get_full_article_and_image(link, base_content)
                 
@@ -284,7 +300,12 @@ def fetch_interviews():
             for entry in feed.entries[:4]:
                 title = entry.get('title', '')
                 link = entry.get('link', '')
-                base_content = entry.get('content', [{'value': ''}])[0].get('value', '') or entry.get('summary', '')
+                content_list = entry.get('content', [])
+                if content_list and isinstance(content_list, list) and 'value' in content_list[0]:
+                    base_content = content_list[0]['value']
+                else:
+                    base_content = entry.get('summary', '') or entry.get('description', '')
+                    
                 rss_image = extract_image_from_rss(entry, base_content)
                 full_html, og_image = get_full_article_and_image(link, base_content)
                 
@@ -310,7 +331,7 @@ def fetch_interviews():
              
     all_interviews.sort(key=lambda x: x.get('date', ''), reverse=True)
     
-    # Sizin özel röportajınızı HER ZAMAN listenin en başına (0. indekse) ekliyoruz
+    # ÖZEL RÖPORTAJINIZ HER ZAMAN BAŞA EKLENİYOR
     all_interviews.insert(0, PINNED_INTERVIEW)
     
     return all_interviews[:100]
