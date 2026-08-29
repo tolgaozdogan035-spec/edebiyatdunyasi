@@ -67,12 +67,12 @@
         <div class="container mx-auto px-4 lg:px-8 py-2 flex justify-between items-center text-[11px] text-gray-500 uppercase tracking-wide font-bold">
             <div class="flex items-center space-x-4">
                 <span id="top-date">Yükleniyor...</span>
-                <span class="border-l border-gray-300 pl-4 flex items-center text-brand-red">
-                    <span class="w-2 h-2 rounded-full bg-brand-red mr-2 pulse-dot"></span> 5 DAKİKADA BİR OTOMATİK GÜNCELLEME
+                <span class="border-l border-gray-300 pl-4 flex items-center text-brand-red" id="last-update-time">
+                    <!-- JS ile Son Güncelleme Saati Buraya Gelecek -->
                 </span>
             </div>
             <div class="flex items-center space-x-6">
-                <span class="text-green-600"><i class="fab fa-google-drive mr-1"></i> Drive Arşivi Aktif</span>
+                <!-- Sosyal Medya İkonları vs. için ayrılmış boş alan -->
             </div>
         </div>
     </div>
@@ -153,7 +153,6 @@
             <section class="w-full bg-white p-6 md:p-8 rounded-md border border-gray-200 shadow-sm">
                 <div class="flex justify-between items-end border-b-2 border-brand-red pb-3 mb-8">
                     <h2 class="text-2xl md:text-3xl font-serif font-bold text-brand-text">Tüm Gelişmeler</h2>
-                    <span class="text-[10px] uppercase font-bold text-gray-500 bg-gray-100 px-3 py-1.5 rounded-sm">Drive Veritabanı</span>
                 </div>
                 <!-- Grid yapısına çevirerek tüm alanı daha verimli kullanalım -->
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-8" id="news-list">
@@ -199,7 +198,7 @@
                 <div class="flex flex-col md:flex-row justify-between items-center gap-4">
                     <div>
                         <h4 class="text-[10px] font-bold uppercase tracking-widest text-gray-500 mb-1">Kaynak Beyanı</h4>
-                        <p class="text-sm text-gray-800 font-medium">Bu haber <strong id="article-source-name" class="text-brand-red">Kaynak</strong> üzerinden otomatik derlenmiştir.</p>
+                        <p class="text-sm text-gray-800 font-medium">Bu haber <strong id="article-source-name" class="text-brand-red">Kaynak</strong> üzerinden derlenmiştir.</p>
                     </div>
                     <a id="article-original-link" href="#" target="_blank" rel="noopener noreferrer" class="bg-white border border-gray-300 text-gray-700 hover:text-white hover:bg-brand-red hover:border-brand-red px-5 py-2.5 rounded text-xs font-bold uppercase tracking-wider transition shadow-sm whitespace-nowrap">
                         Orijinal Metni İncele <i class="fas fa-external-link-alt ml-2"></i>
@@ -218,8 +217,7 @@
                 <p class="text-[10px] uppercase tracking-widest text-gray-500">Tam Otomatik Haber Çeviri ve Okuma Sistemi</p>
             </div>
             <div class="text-center md:text-right text-xs font-bold space-y-2">
-                <p><i class="fab fa-google-drive text-emerald-500 mr-1"></i> Drive Arşivi</p>
-                <p>&copy; <span id="year"></span> Sürüm 2.6 SPA</p>
+                <p>&copy; <span id="year"></span> Edebiyat Gündemi</p>
             </div>
         </div>
     </footer>
@@ -245,6 +243,7 @@
 
     <!-- STREAMING_CHUNK: Integrating Core Javascript Application State and Handlers... -->
     <script>
+        // Üst bar günün tarihi
         document.getElementById('top-date').textContent = new Date().toLocaleDateString('tr-TR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
         document.getElementById('year').textContent = new Date().getFullYear();
 
@@ -268,12 +267,24 @@
             try {
                 const response = await fetch(JSON_URL + '?v=' + new Date().getTime());
                 const data = await response.json();
+                
+                // Son Güncelleme Saatini üst bara yazdır
+                const now = new Date();
+                const timeString = now.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' });
+                document.getElementById('last-update-time').innerHTML = `<span class="w-2 h-2 rounded-full bg-brand-red mr-2 pulse-dot"></span> Son Güncelleme: ${timeString}`;
+
                 if(data && Array.isArray(data) && data.length > 0) {
                     globalArticles = data;
                     renderUI();
                 } else { throw new Error("Veri boş"); }
             } catch (error) {
                 console.warn("API Hatası", error);
+                
+                // Hata durumunda da saati yazdır
+                const now = new Date();
+                const timeString = now.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' });
+                document.getElementById('last-update-time').innerHTML = `<span class="w-2 h-2 rounded-full bg-brand-red mr-2 pulse-dot"></span> Son Deneme: ${timeString} (Hata)`;
+
                 globalArticles = [{
                     title: "Sistem Taraması Devam Ediyor", link: "#", source: "Bot Servisi",
                     date: new Date().toISOString(), category: "BİLGİ", desc: "Haber kaynakları güncellenmektedir.",
@@ -302,7 +313,6 @@
             const ticker = document.getElementById('ticker-content');
             let tickerHTML = '';
             globalArticles.slice(0, 15).forEach((a, index) => {
-                // Undefined önlemi eklendi
                 const sourceText = a.source ? a.source : 'Ajans';
                 tickerHTML += `<span class="ticker__item" onclick="openArticle(${index})"><i class="fas fa-star text-yellow-400 mr-2"></i> ${a.title} <span class="text-red-200 text-[10px] ml-1">(${sourceText})</span></span>`;
             });
@@ -349,7 +359,7 @@
                 `;
             });
 
-            // 4. List (Tam Genişlik Grid Formuna Çevrildi)
+            // 4. List (Tam Genişlik Grid Formu)
             const listContainer = document.getElementById('news-list');
             listContainer.innerHTML = '';
             globalArticles.slice(4).forEach(article => {
