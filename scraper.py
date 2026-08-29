@@ -15,41 +15,45 @@ import time
 # -------------------------------------------------------------------------
 RSS_SOURCES_NEWS = [
     # Türkiye'nin Seçkin Edebiyat ve Kitap Platformları
-    {"url": "https://www.edebiyathaber.net/feed/", "name": "Edebiyat Haber"},
-    {"url": "https://kayiprihtim.com/feed/", "name": "Kayıp Rıhtım"},
-    {"url": "https://kitapeki.com/feed/", "name": "Kitap Eki"},
-    {"url": "https://k24kitap.org/rss", "name": "K24 (Kriter & Edebiyat)"}, 
-    {"url": "https://oggito.com/rss", "name": "Oggito Edebiyat"},
-    {"url": "https://sanatkritik.com/feed/", "name": "Sanat Kritik"},
-    {"url": "https://www.sabitfikir.com/rss", "name": "Sabitfikir"},
-    {"url": "https://kalemkahveklavye.com/feed/", "name": "Kalem Kahve Klavye"},
-    {"url": "https://literaedebiyat.com/feed/", "name": "Litera Edebiyat"},
-    {"url": "https://parsomenfanzin.com/feed/", "name": "Parşömen Fanzin"},
-    {"url": "https://fikiredebiyat.com.tr/rss/kitap", "name": "Fikir Edebiyat"},
-    {"url": "https://www.agos.com.tr/tr/rss/kultur", "name": "Agos Kitap & Kültür"},
-    {"url": "https://www.dunyakitap.com.tr/rss", "name": "Dünya Kitap"},
+    {"url": "https://www.edebiyathaber.net/feed/", "name": "Edebiyat Haber", "isForeign": False},
+    {"url": "https://kayiprihtim.com/feed/", "name": "Kayıp Rıhtım", "isForeign": False},
+    {"url": "https://kitapeki.com/feed/", "name": "Kitap Eki", "isForeign": False},
+    {"url": "https://k24kitap.org/rss", "name": "K24 (Kriter & Edebiyat)", "isForeign": False}, 
+    {"url": "https://oggito.com/rss", "name": "Oggito Edebiyat", "isForeign": False},
+    {"url": "https://sanatkritik.com/feed/", "name": "Sanat Kritik", "isForeign": False},
+    {"url": "https://www.sabitfikir.com/rss", "name": "Sabitfikir", "isForeign": False},
+    {"url": "https://kalemkahveklavye.com/feed/", "name": "Kalem Kahve Klavye", "isForeign": False},
+    {"url": "https://literaedebiyat.com/feed/", "name": "Litera Edebiyat", "isForeign": False},
+    {"url": "https://parsomenfanzin.com/feed/", "name": "Parşömen Fanzin", "isForeign": False},
+    {"url": "https://fikiredebiyat.com.tr/rss/kitap", "name": "Fikir Edebiyat", "isForeign": False},
+    {"url": "https://www.agos.com.tr/tr/rss/kultur", "name": "Agos Kitap & Kültür", "isForeign": False},
+    {"url": "https://www.dunyakitap.com.tr/rss", "name": "Dünya Kitap", "isForeign": False},
+    {"url": "https://www.haberturk.com/rss/kategori/kultur-sanat.xml", "name": "Habertürk Kültür", "isForeign": False},
+    {"url": "https://www.ntv.com.tr/sanat.rss", "name": "NTV Sanat", "isForeign": False},
+    {"url": "https://www.cumhuriyet.com.tr/rss/kultur-sanat.xml", "name": "Cumhuriyet Kültür", "isForeign": False},
+    {"url": "https://www.gazeteduvar.com.tr/rss/kultur-sanat", "name": "Gazete Duvar Kültür", "isForeign": False},
     
-    # Uluslararası Prestijli Edebiyat ve Kitap İnceleme Mecraları (Çevrilecek)
-    {"url": "https://www.theguardian.com/books/rss", "name": "The Guardian Books"},
-    {"url": "https://lithub.com/feed/", "name": "Literary Hub"},
-    {"url": "https://electricliterature.com/feed/", "name": "Electric Literature"},
-    {"url": "https://www.theparisreview.org/blog/feed/", "name": "The Paris Review"},
-    {"url": "https://www.bookforum.com/feed", "name": "Bookforum"},
-    {"url": "https://lareviewofbooks.org/feed/", "name": "Los Angeles Review of Books"},
-    {"url": "https://granta.com/feed/", "name": "Granta Magazine"}
+    # Uluslararası Prestijli Edebiyat ve Kitap İnceleme Mecraları (KESİNLİKLE ÇEVRİLECEK)
+    {"url": "https://www.theguardian.com/books/rss", "name": "The Guardian Books", "isForeign": True},
+    {"url": "https://lithub.com/feed/", "name": "Literary Hub", "isForeign": True},
+    {"url": "https://electricliterature.com/feed/", "name": "Electric Literature", "isForeign": True},
+    {"url": "https://www.theparisreview.org/blog/feed/", "name": "The Paris Review", "isForeign": True},
+    {"url": "https://www.bookforum.com/feed", "name": "Bookforum", "isForeign": True},
+    {"url": "https://lareviewofbooks.org/feed/", "name": "Los Angeles Review of Books", "isForeign": True},
+    {"url": "https://granta.com/feed/", "name": "Granta Magazine", "isForeign": True}
 ]
 
 # -------------------------------------------------------------------------
 # 2. RÖPORTAJ SAYFASI (soylesi.html) İÇİN DÜNYANIN EN ÜNLÜ SÖYLEŞİ KAYNAKLARI
 # -------------------------------------------------------------------------
 RSS_SOURCES_INTERVIEWS = [
-    {"url": "https://www.theparisreview.org/blog/feed/", "name": "The Paris Review (Söyleşiler)"},
-    {"url": "https://lithub.com/category/interviews/feed/", "name": "Literary Hub Interviews"},
-    {"url": "https://electricliterature.com/category/interviews/feed/", "name": "Electric Lit Söyleşileri"},
-    {"url": "https://lareviewofbooks.org/feed/", "name": "LARB Interviews"},
-    {"url": "https://granta.com/feed/", "name": "Granta Söyleşileri"},
-    {"url": "https://bombmagazine.org/rss/", "name": "BOMB Magazine Interviews"},
-    {"url": "https://www.theguardian.com/books/interviews/rss", "name": "The Guardian Books Interviews"}
+    {"url": "https://www.theparisreview.org/blog/feed/", "name": "The Paris Review (Söyleşiler)", "isForeign": True},
+    {"url": "https://lithub.com/category/interviews/feed/", "name": "Literary Hub Interviews", "isForeign": True},
+    {"url": "https://electricliterature.com/category/interviews/feed/", "name": "Electric Lit Söyleşileri", "isForeign": True},
+    {"url": "https://lareviewofbooks.org/feed/", "name": "LARB Interviews", "isForeign": True},
+    {"url": "https://granta.com/feed/", "name": "Granta Söyleşileri", "isForeign": True},
+    {"url": "https://bombmagazine.org/rss/", "name": "BOMB Magazine Interviews", "isForeign": True},
+    {"url": "https://www.theguardian.com/books/interviews/rss", "name": "The Guardian Books Söyleşi", "isForeign": True}
 ]
 
 # ================= ORTAK YARDIMCI FONKSİYONLAR =================
@@ -121,7 +125,7 @@ def translate_html_content(html_content, source_name, article_link):
         translated_html = f"<p>{trans}</p>"
     else:
         for i, p in enumerate(paragraphs):
-            if i < 6: # Edebiyat içeriklerinin zenginliği için paragraf sayısı artırıldı
+            if i < 6: 
                 orig = p.get_text()
                 if len(orig.strip()) > 5:
                     trans = translate_text(orig)
@@ -150,13 +154,14 @@ def fetch_news():
     for source in RSS_SOURCES_NEWS:
         try:
             feed = feedparser.parse(source["url"])
-            is_foreign = any(domain in source["url"] for domain in ['guardian', 'lithub', 'publishers', 'parisreview', 'electricliterature', 'bookforum', 'lareviewofbooks', 'granta'])
+            is_foreign = source.get("isForeign", False)
             
             for entry in feed.entries[:4]:
                 title = entry.get('title', '')
                 content = entry.get('content', [{'value': ''}])[0].get('value', '') or entry.get('summary', '') or entry.get('description', '')
                 image = extract_image(entry, content)
                 
+                # KESİN ÇEVİRİ KONTROLÜ
                 if is_foreign:
                     title = translate_text(title)
                     time.sleep(0.3)
@@ -229,7 +234,7 @@ if __name__ == "__main__":
     os.makedirs("haberler", exist_ok=True)
 
     print("------------------------------------------")
-    print("Edebiyat odaklı haberler ve köşe yazıları taranıyor...")
+    print("Edebiyat odaklı haberler taranıyor ve yabancı kaynaklar Türkçeye çevriliyor...")
     news_articles = fetch_news()
     news_json = json.dumps(news_articles, ensure_ascii=False, indent=4)
     with open("haberler/haberler.json", "w", encoding="utf-8") as f:
