@@ -107,24 +107,87 @@ ALL_SOURCES = [
     {"url": "https://www.haberler.com/rss/kultur-sanat.xml", "name": "Haberler.com"},
     {"url": "https://www.sondakika.com/rss/kultur-sanat.xml", "name": "Sondakika Kültür Sanat"},
     {"url": "https://tr.euronews.com/rss?level=theme&name=kultur", "name": "Euronews"},
-    # SÖYLEŞİLER SİTESİ DOĞRUDAN LİSTEDE
     {"url": "https://edebiyatsoylesileri.com/feed/", "name": "Edebiyat Söyleşileri"}
 ]
 
-# --- 1. IP ENGELİ (GEOBLOCK) AŞICI RSS ÇEKİCİ ---
+# --- SIFIR HATA FOTOĞRAF DEDEKTÖRÜ ---
+def is_valid_image(url):
+    """Gelen URL'nin SAHTE bir fotoğraf olup olmadığını kontrol eder."""
+    if not url: return False
+    url = url.strip()
+    # Eğer link http ile başlamıyorsa, data:image kodlu sahte bir gıf ise REDDET.
+    if not url.startswith("http"): return False
+    # "Avatar", "logo" veya "1x1" boyutlu şeffaf lazy load resimlerini REDDET.
+    if any(x in url.lower() for x in ["avatar", "logo", "1x1", "data:image"]): return False
+    return True
+
+def extract_image_safely(entry, html_content):
+    """Gerçek resmi bulana kadar tüm olasılıkları dener, sahteleri ayıklar."""
+    img_url = None
+    
+    # 1. RSS medya etiketlerini tara
+    if isinstance(entry, dict):
+        if entry.get('media_content'): img_url = entry['media_content'][0].get('url')
+        elif entry.get('media_thumbnail'): img_url = entry['media_thumbnail'][0].get('url')
+        elif entry.get('enclosures'):
+            for enc in entry['enclosures']:
+                if 'image' in enc.get('type', ''): img_url = enc['href']
+    else:
+        if hasattr(entry, 'media_content'): img_url = entry.media_content[0].get('url')
+        elif hasattr(entry, 'media_thumbnail'): img_url = entry.media_thumbnail[0].get('url')
+        elif hasattr(entry, 'enclosures'):
+            for enc in entry.enclosures:
+                if 'image' in enc.get('type', ''): img_url = enc['href']
+
+    if is_valid_image(img_url): return img_url
+    
+    # 2. İçeriğin içindeki img etiketlerini derinlemesine tara
+    if html_content:
+        soup = BeautifulSoup(html_content, 'html.parser')
+        for img in soup.find_all('img'):
+            # Gerçek resim linki genellikle lazy-load etiketlerine gizlenir
+            src = img.get('data-src') or img.get('data-lazy-src') or img.get('src')
+            if is_valid_image(src):
+                return src
+
+    # 3. Eğer hiçbiri bulunamadıysa GARANTİ varsayılan resim
+    return "https://images.unsplash.com/photo-1506880018603-83d5b814b5a6?auto=format&fit=crop&w=1200&q=80"
+
+
+# --- SIFIR HATA METİN FİLTRESİ ---
+def clean_turkish_content(html_content, source_name):
+    if not html_content: return ""
+    soup = BeautifulSoup(html_content, 'html.parser')
+    for tag in soup.find_all(['a', 'img', 'script', 'style']):
+        tag.decompose()
+
+    valid_html = ""
+    for p in soup.find_all('p'):
+        text = p.get_text(strip=True)
+        text_lower = text.lower()
+        
+        # Çöp satırları sil
+        if len(text) < 150:
+            if any(w in text_lower for w in ["yorum", "okuma süresi", "yazar:", "tarafından yazıldı", "the post", "first appeared"]): continue
+        if any(w in text_lower for w in ['devamını oku', 'read more', 'tıklayın', 'bu yazı ilk önce', 'tamamını oku', 'haberin devamı', 'the post', 'first appeared']): continue
+            
+        if len(text) > 30:
+            valid_html += f"<p>{text}</p>"
+            
+    if not valid_html:
+        text = soup.get_text(strip=True)
+        for bad_phrase in ["The post", "the post", "first appeared on", "yazısı ilk önce"]:
+            if bad_phrase in text:
+                text = text.split(bad_phrase)[0]
+        if len(text) > 30:
+            valid_html = f"<p>{text}</p>"
+            
+    return valid_html + f"<br><hr><br><p><b>Kaynak Bilgisi:</b> Bu içerik {source_name} üzerinden derlenmiştir.</p>"
+
 def get_safe_feed(url):
-    """GitHub IP'sini engelleyen Türk sitelerine aracı tünellerle sızar."""
-    headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/121.0.0.0 Safari/537.36'}
+    """Önce normal, sonra rss2json API ile engelleri aşar."""
+    headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/121.0.0.0'}
     
-    # Adım 1: Doğrudan İstek (Engel yoksa çalışır)
-    try:
-        res = requests.get(url, headers=headers, timeout=8)
-        if res.status_code == 200:
-            feed = feedparser.parse(res.content)
-            if feed and feed.entries: return feed
-    except: pass
-    
-    # Adım 2: RSS2JSON API Tüneli (IP engelini %100 aşar)
     try:
         r2j_url = f"https://api.rss2json.com/v1/api.json?rss_url={requests.utils.quote(url)}"
         res = requests.get(r2j_url, timeout=10)
@@ -148,117 +211,19 @@ def get_safe_feed(url):
                 if dummy.entries: return dummy
     except: pass
     
-    # Adım 3: AllOrigins Proxy
     try:
-        ao_url = f"https://api.allorigins.win/raw?url={requests.utils.quote(url)}"
-        res = requests.get(ao_url, timeout=10)
-        if res.status_code == 200:
-            feed = feedparser.parse(res.content)
-            if feed and feed.entries: return feed
+        res = requests.get(url, headers=headers, timeout=10)
+        if res.status_code == 200: return feedparser.parse(res.content)
     except: pass
-
-    # Adım 4: Klasik Feedparser
+    
     try: return feedparser.parse(url)
     except: return None
 
-# --- 2. GİZLİ LAZY LOAD VE GEOBLOCK AŞICI FOTOĞRAF ÇEKİCİ ---
-def get_og_image(url):
-    """Hem lazy load gizli resimleri hem de IP engeli olan sitelerdeki resimleri proxy ile çeker."""
-    proxies = [
-        f"https://api.allorigins.win/raw?url={requests.utils.quote(url)}",
-        f"https://corsproxy.io/?{requests.utils.quote(url)}",
-        url
-    ]
-    headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/121.0.0.0 Safari/537.36'}
-    
-    for p in proxies:
-        try:
-            res = requests.get(p, headers=headers, timeout=8)
-            if res.status_code == 200 and "<html" in res.text.lower():
-                soup = BeautifulSoup(res.text, 'html.parser')
-                
-                # 1. Klasik OG Image
-                meta_img = soup.find('meta', property='og:image')
-                if meta_img and meta_img.get('content'): return meta_img.get('content')
-                
-                # 2. Lazy Load İçerik Fotoğrafları
-                article = soup.find('article') or soup.find('main') or soup
-                for img in article.find_all('img'):
-                    src = img.get('data-src') or img.get('data-lazy-src') or img.get('src')
-                    if src and src.startswith('http') and "logo" not in src.lower() and "avatar" not in src.lower():
-                        return src
-        except: continue
-    return None
-
-def extract_image_safely(entry, link):
-    img_url = None
-    if isinstance(entry, dict):
-        if entry.get('media_content'): img_url = entry['media_content'][0].get('url')
-        elif entry.get('media_thumbnail'): img_url = entry['media_thumbnail'][0].get('url')
-        elif entry.get('enclosures'):
-            for enc in entry['enclosures']:
-                if 'image' in enc.get('type', ''): img_url = enc['href']
-    else:
-        if hasattr(entry, 'media_content'): img_url = entry.media_content[0].get('url')
-        elif hasattr(entry, 'media_thumbnail'): img_url = entry.media_thumbnail[0].get('url')
-        elif hasattr(entry, 'enclosures'):
-            for enc in entry.enclosures:
-                if 'image' in enc.get('type', ''): img_url = enc['href']
-
-    if not img_url:
-        content = ""
-        if isinstance(entry, dict) and entry.get('content'): content = entry['content'][0].get('value', '')
-        elif hasattr(entry, 'content') and len(entry.content) > 0: content = entry.content[0].value
-        elif isinstance(entry, dict): content = entry.get('summary', '')
-        else: content = getattr(entry, 'summary', '')
-        
-        soup = BeautifulSoup(content, 'html.parser')
-        img = soup.find('img')
-        if img: img_url = img.get('data-src') or img.get('data-lazy-src') or img.get('src')
-
-    if not img_url and link:
-        img_url = get_og_image(link)
-
-    return img_url or "https://images.unsplash.com/photo-1506880018603-83d5b814b5a6?auto=format&fit=crop&w=1200&q=80"
-
-# --- 3. METİN TEMİZLEYİCİSİ ---
 def get_article_body(entry):
-    content = ""
-    if isinstance(entry, dict) and entry.get('content'):
-        content = entry['content'][0].get('value', '')
-    elif hasattr(entry, 'content') and len(entry.content) > 0:
-        content = entry.content[0].value
-    elif isinstance(entry, dict):
-        content = entry.get('summary', '')
-    else:
-        content = getattr(entry, 'summary', '')
-    return content
-
-def clean_turkish_content(html_content, source_name):
-    if not html_content: return ""
-    soup = BeautifulSoup(html_content, 'html.parser')
-    for tag in soup.find_all(['a', 'img', 'script', 'style']):
-        tag.decompose()
-
-    valid_html = ""
-    for p in soup.find_all('p'):
-        text = p.get_text(strip=True)
-        text_lower = text.lower()
-        if len(text) < 150:
-            if any(w in text_lower for w in ["yorum", "okuma süresi", "yazar:", "tarafından yazıldı", "the post", "first appeared"]): continue
-        if any(w in text_lower for w in ['devamını oku', 'read more', 'tıklayın', 'bu yazı ilk önce', 'tamamını oku', 'haberin devamı', 'the post', 'first appeared']): continue
-        if len(text) > 30:
-            valid_html += f"<p>{text}</p>"
-            
-    if not valid_html:
-        text = soup.get_text(strip=True)
-        for bad_phrase in ["The post", "the post", "first appeared on", "yazısı ilk önce"]:
-            if bad_phrase in text:
-                text = text.split(bad_phrase)[0]
-        if len(text) > 30:
-            valid_html = f"<p>{text}</p>"
-            
-    return valid_html + f"<br><hr><br><p><b>Kaynak Bilgisi:</b> Bu içerik {source_name} üzerinden derlenmiştir.</p>"
+    if isinstance(entry, dict) and entry.get('content'): return entry['content'][0].get('value', '')
+    elif hasattr(entry, 'content') and len(entry.content) > 0: return entry.content[0].value
+    elif isinstance(entry, dict): return entry.get('summary', '')
+    else: return getattr(entry, 'summary', '')
 
 def save_to_google_drive(json_str, file_name):
     try:
@@ -277,7 +242,7 @@ def save_to_google_drive(json_str, file_name):
             service.files().create(body={'name': file_name, 'mimeType': 'application/json'}, media_body=media).execute()
     except: pass
 
-# --- ANA MOTOR (SÖYLEŞİLERİ DOĞRUDAN SAYFAYA YÖNLENDİRİR) ---
+# --- ANA YÖNLENDİRİCİ MOTOR ---
 def build_archives():
     news_list = []
     interviews_list = []
@@ -286,12 +251,15 @@ def build_archives():
         feed = get_safe_feed(source["url"])
         if not feed: continue
         
-        for entry in getattr(feed, 'entries', [])[:5]:
+        # EDEBİYAT SÖYLEŞİLERİ İÇİN LİMİTİ 15'E ÇIKARTIYORUZ!
+        entry_limit = 15 if "soylesi" in source["url"].lower() else 5
+        
+        for entry in getattr(feed, 'entries', [])[:entry_limit]:
             try:
                 title = entry.get('title', '') if isinstance(entry, dict) else getattr(entry, 'title', '')
                 link = entry.get('link', '') if isinstance(entry, dict) else getattr(entry, 'link', '')
                 
-                # AKILLI FİLTRE (Edebiyat Söyleşileri %100 Röportaj Sayfasına Gider)
+                # Akıllı Kategori Ayrımı
                 is_interview = False
                 if any(w in title.lower() or w in link.lower() for w in ['röportaj', 'söyleşi', 'mülakat', 'interview']):
                     is_interview = True
@@ -299,7 +267,9 @@ def build_archives():
                     is_interview = True
 
                 raw_content = get_article_body(entry)
-                final_image = extract_image_safely(entry, link)
+                
+                # Yeni ve Güvenli Fotoğraf Ayıklayıcı
+                final_image = extract_image_safely(entry, raw_content)
                 final_content = clean_turkish_content(raw_content, source["name"])
                 
                 plain_desc = BeautifulSoup(final_content, 'html.parser').get_text()[:200] + "..."
@@ -323,27 +293,25 @@ def build_archives():
     news_list.sort(key=lambda x: x.get('date', ''), reverse=True)
     interviews_list.sort(key=lambda x: x.get('date', ''), reverse=True)
     
-    # SABİT RÖPORTAJINIZI EN BAŞA EKLE
+    # RÖPORTAJINIZI LİSTENİN BAŞINA SABİTLE
     interviews_list.insert(0, PINNED_INTERVIEW)
     
-    return news_list[:150], interviews_list[:100]
+    return news_list[:150], interviews_list[:150]
 
 if __name__ == "__main__":
     os.makedirs("haberler", exist_ok=True)
-    print("Tüm ulusal kaynaklar akıllı motor ve Proxy kalkanı ile taranıyor...")
+    print("Tüm ulusal kaynaklar akıllı resim filtresi ile taranıyor...")
     
     news, interviews = build_archives()
     
     try:
         with open("haberler/haberler.json", "w", encoding="utf-8") as f: json.dump(news, f, ensure_ascii=False, indent=4)
         save_to_google_drive(json.dumps(news, ensure_ascii=False, indent=4), "edebiyat_gundemi_arsiv.json")
-        print(f"Başarılı: {len(news)} haber eklendi.")
     except: pass
     
     try:
         with open("haberler/soylesiler.json", "w", encoding="utf-8") as f: json.dump(interviews, f, ensure_ascii=False, indent=4)
         save_to_google_drive(json.dumps(interviews, ensure_ascii=False, indent=4), "edebiyat_gundemi_soylesiler.json")
-        print(f"Başarılı: {len(interviews)} söyleşi (Sabit Röportaj dahil) eklendi.")
     except: pass
     
     print("İşlem eksiksiz tamamlandı.")
