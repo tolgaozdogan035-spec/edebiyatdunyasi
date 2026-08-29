@@ -1,422 +1,161 @@
-<!DOCTYPE html>
-<html lang="tr">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Uluslararası Edebiyat Röportajları | Edebiyat Gündemi</title>
+import feedparser
+import json
+import os
+import re
+from bs4 import BeautifulSoup
+import requests
+from google.oauth2 import service_account
+from googleapiclient.discovery import build
+from googleapiclient.http import MediaIoBaseUpload
+import io
+
+RSS_SOURCES_NEWS = [
+    {"url": "https://www.edebiyathaber.net/feed/", "name": "Edebiyat Haber"},
+    {"url": "https://kayiprihtim.com/feed/", "name": "Kayıp Rıhtım"},
+    {"url": "https://kitapeki.com/feed/", "name": "Kitap Eki"},
+    {"url": "https://k24kitap.org/rss", "name": "K24 Edebiyat"}, 
+    {"url": "https://oggito.com/rss", "name": "Oggito"},
+    {"url": "https://sanatkritik.com/feed/", "name": "Sanat Kritik"},
+    {"url": "https://www.sabitfikir.com/rss", "name": "Sabitfikir"},
+    {"url": "https://kalemkahveklavye.com/feed/", "name": "Kalem Kahve Klavye"},
+    {"url": "https://literaedebiyat.com/feed/", "name": "Litera Edebiyat"},
+    {"url": "https://parsomenfanzin.com/feed/", "name": "Parşömen Fanzin"},
+    {"url": "https://fikiredebiyat.com.tr/rss/kitap", "name": "Fikir Edebiyat"},
+    {"url": "https://www.agos.com.tr/tr/rss/kultur", "name": "Agos Kitap"},
+    {"url": "https://www.dunyakitap.com.tr/rss", "name": "Dünya Kitap"}
+]
+
+# Söyleşi odaklı spesifik kaynaklar
+RSS_SOURCES_INTERVIEWS = [
+    {"url": "https://www.edebiyathaber.net/tag/roportaj/feed/", "name": "Edebiyat Haber Röportaj"},
+    {"url": "https://oggito.com/rss", "name": "Oggito"},
+    {"url": "https://sanatkritik.com/feed/", "name": "Sanat Kritik"},
+    {"url": "https://kalemkahveklavye.com/feed/", "name": "Kalem Kahve Klavye"}
+]
+
+def extract_image(entry, content):
+    if hasattr(entry, 'media_content') and entry.media_content:
+        for media in entry.media_content:
+            if 'url' in media: return media['url']
+    if hasattr(entry, 'media_thumbnail') and entry.media_thumbnail:
+        if 'url' in entry.media_thumbnail[0]: return entry.media_thumbnail[0]['url']
+    if content:
+        soup = BeautifulSoup(content, 'html.parser')
+        img = soup.find('img')
+        if img and img.get('src'): return img['src']
+    return "https://images.unsplash.com/photo-1506880018603-83d5b814b5a6?auto=format&fit=crop&w=1200&q=80"
+
+def save_to_google_drive(json_str, file_name):
+    try:
+        creds_json = os.environ.get("GOOGLE_DRIVE_CREDENTIALS")
+        if not creds_json: return
+        creds_dict = json.loads(creds_json)
+        SCOPES = ['https://www.googleapis.com/auth/drive.file']
+        creds = service_account.Credentials.from_service_account_info(creds_dict, scopes=SCOPES)
+        service = build('drive', 'v3', credentials=creds)
+        results = service.files().list(q=f"name='{file_name}' and trashed=false", spaces='drive', fields='files(id, name)').execute()
+        items = results.get('files', [])
+        media = MediaIoBaseUpload(io.BytesIO(json_str.encode('utf-8')), mimetype='application/json', resumable=True)
+        if items:
+            service.files().update(fileId=items[0]['id'], media_body=media).execute()
+        else:
+            service.files().create(body={'name': file_name, 'mimeType': 'application/json'}, media_body=media).execute()
+    except Exception as e:
+        print(f"Drive Hatası ({file_name}): {e}")
+
+def clean_content(html_content, source_name):
+    if not html_content: 
+        return f"<p><i>Bu içerik {source_name} arşivinden derlenmiştir.</i></p>"
     
-    <!-- STREAMING_CHUNK: Loading External CSS and Web Fonts... -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,600;0,700;0,800;0,900;1,400&display=swap" rel="stylesheet">
-
-    <!-- STREAMING_CHUNK: Initializing Tailwind Configuration... -->
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        'brand-red': '#721c24', 'brand-dark': '#0b1120', 'brand-text': '#1a1a1a'
-                    },
-                    fontFamily: {
-                        'sans': ['Inter', 'sans-serif'], 'serif': ['Playfair Display', 'serif']
-                    }
-                }
-            }
-        }
-    </script>
-
-    <!-- STREAMING_CHUNK: Writing Custom Reader, Ad Banners and Animation CSS... -->
-    <style>
-        body { color: #1a1a1a; background-color: #fcfcfc; scroll-behavior: smooth; }
-        .line-clamp-2 { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
-        .line-clamp-3 { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
-        
-        /* Ticker Animasyonları ve Etkileşimler */
-        .ticker-wrap { width: 100%; overflow: hidden; background-color: #0b1120; } 
-        .ticker { display: inline-flex; white-space: nowrap; padding-right: 100%; animation: ticker 240s linear infinite; }
-        .ticker-wrap:hover .ticker { animation-play-state: paused; }
-        .ticker__item { display: inline-flex; align-items: center; padding: 0 1.5rem; color: white; font-size: 0.85rem; cursor: pointer; transition: color 0.2s ease; }
-        .ticker__item:hover { color: #60a5fa; } 
-        @keyframes ticker { 0% { transform: translate3d(0, 0, 0); } 100% { transform: translate3d(-100%, 0, 0); } }
-
-        /* Article Native Reader Styles */
-        .article-body p { margin-bottom: 1.5rem; line-height: 1.85; color: #374151; font-size: 1.15rem; font-family: 'Playfair Display', serif; }
-        .article-body img { max-width: 100%; height: auto; border-radius: 6px; margin: 2rem auto; display: block; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
-        .article-body h2, .article-body h3 { font-family: 'Playfair Display', serif; font-weight: 700; font-size: 1.75rem; margin-top: 2rem; color: #111827; }
-        .article-body blockquote { border-left: 4px solid #1d4ed8; padding-left: 1rem; font-style: italic; color: #4b5563; background: #eff6ff; padding: 1rem; }
-        .article-body a { color: #1d4ed8; text-decoration: none; font-weight: bold; pointer-events: none; cursor: default; }
-
-        /* Advertisement Banner Styles */
-        .ad-banner-horizontal { width: 100%; max-width: 970px; height: 90px; margin: 2rem auto; background-color: #f3f4f6; border: 1px solid #e5e7eb; display: flex; align-items: center; justify-content: center; color: #9ca3af; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.1em; font-weight: bold; }
-
-        #mobile-menu-container { transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); transform: translateX(-100%); }
-        #mobile-menu-container.open { transform: translateX(0); }
-        #mobile-menu-overlay { transition: opacity 0.3s; opacity: 0; pointer-events: none; }
-        #mobile-menu-overlay.open { opacity: 1; pointer-events: auto; }
-        
-        .pulse-dot { animation: pulse 2s infinite; }
-        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: .5; } }
-    </style>
-</head>
-<body class="font-sans">
-
-    <!-- STREAMING_CHUNK: Building the System Information Top Bar... -->
-    <div class="border-b border-gray-100 hidden md:block bg-white">
-        <div class="container mx-auto px-4 lg:px-8 py-2 flex justify-between items-center text-[11px] text-gray-500 uppercase tracking-wide font-bold">
-            <div class="flex items-center space-x-4">
-                <span id="top-date">Yükleniyor...</span>
-                <span class="border-l border-gray-300 pl-4 flex items-center text-blue-600" id="last-update-time">
-                    <!-- JS ile Son Güncelleme Saati Buraya Gelecek -->
-                </span>
-            </div>
-            <div class="flex items-center space-x-6">
-                <span class="text-blue-600"><i class="fas fa-globe-americas mr-1"></i> Uluslararası Söyleşi Arşivi Aktif</span>
-            </div>
-        </div>
-    </div>
-
-    <!-- STREAMING_CHUNK: Building Site Logo and Main Header... -->
-    <header class="py-8 md:py-12 text-center bg-white border-b border-gray-100">
-        <a href="index.html" class="inline-block group">
-            <h1 class="text-4xl md:text-6xl font-serif font-black tracking-tight text-brand-text mb-3">
-                Edebiyat <span class="text-brand-red">Gündemi</span>
-            </h1>
-            <p class="text-[10px] md:text-xs uppercase tracking-[0.3em] text-blue-600 font-bold">
-                DÜNYA EDEBİYATINDAN ÇEVİRİ RÖPORTAJLAR
-            </p>
-        </a>
-    </header>
-
-    <!-- STREAMING_CHUNK: Building Main Sticky Navigation... -->
-    <nav class="sticky top-0 bg-white/95 backdrop-blur-md z-40 shadow-sm border-b border-gray-200">
-        <div class="container mx-auto px-4 lg:px-8 py-3 flex justify-between items-center">
-            <!-- Mobile Menu Button -->
-            <button id="menu-btn" class="text-gray-800 text-xl hover:text-brand-red transition focus:outline-none p-2 md:hidden"><i class="fas fa-bars"></i></button>
+    soup = BeautifulSoup(html_content, 'html.parser')
+    for a in soup.find_all('a'): a.unwrap()
+    
+    # "Devamını Oku...", "Okumak için tıklayın" gibi kalıntıları ve link metinlerini temizle
+    for text_node in soup.find_all(text=True):
+        if any(w in text_node.lower() for w in ['devamını oku', 'read more', 'tıklayın', 'bu yazı ilk önce']):
+            text_node.extract()
             
-            <!-- Desktop Navigation Links -->
-            <div class="hidden md:flex flex-grow justify-center space-x-8 text-[13px] font-bold text-gray-700 uppercase tracking-widest">
-                <a href="index.html" class="hover:text-brand-red transition pb-1">Ana Sayfa</a>
-                <a href="soylesi.html" class="hover:text-brand-red transition text-brand-red border-b-2 border-brand-red pb-1">Röportaj</a>
-                <a href="yazarlar.html" class="hover:text-brand-red transition pb-1">Yazarlar</a>
-                <a href="reklam.html" class="hover:text-brand-red transition pb-1">Reklam</a>
-                <a href="iletisim.html" class="hover:text-brand-red transition pb-1">İletişim</a>
-                <a href="kunye.html" class="hover:text-brand-red transition pb-1">Künye</a>
-            </div>
+    cleaned_html = str(soup)
+    cleaned_html += f"<br><hr><br><p><b>Kaynak Bilgisi:</b> Bu içerik {source_name} üzerinden derlenmiştir.</p>"
+    return cleaned_html
 
-            <!-- Search Button -->
-            <button class="text-gray-800 text-xl hover:text-brand-red transition focus:outline-none p-2 ml-auto"><i class="fas fa-search"></i></button>
-        </div>
-    </nav>
-
-    <!-- STREAMING_CHUNK: Building Clickable News Ticker Interface... -->
-    <div class="flex bg-brand-dark text-white shadow-md relative z-30">
-        <div class="bg-blue-600 font-bold px-4 py-2 text-[10px] md:text-xs tracking-wider uppercase flex items-center whitespace-nowrap z-10 shadow-xl border-r border-blue-800">
-            <i class="fas fa-language mr-2 text-white"></i> ÇEVİRİ AKIŞI
-        </div>
-        <div class="ticker-wrap flex items-center cursor-default z-0">
-            <div class="ticker" id="ticker-content"><span class="ticker__item">Uluslararası röportajlar yükleniyor...</span></div>
-        </div>
-    </div>
-
-    <!-- STREAMING_CHUNK: Constructing the Main Content Grid, Ads and Reader View... -->
-    <main class="container mx-auto px-4 lg:px-8 py-10 min-h-screen relative">
-        
-        <div id="loading-spinner" class="py-32 text-center text-blue-600 flex flex-col items-center justify-center">
-            <i class="fas fa-globe-europe fa-spin text-5xl mb-6 text-gray-800"></i>
-            <h3 class="text-2xl font-serif font-bold mb-2 text-gray-800">Söyleşi Arşivi Yükleniyor</h3>
-            <p class="text-sm font-medium text-gray-500 max-w-sm mx-auto">Dünya edebiyatından çeviri röportajlar derleniyor...</p>
-        </div>
-
-        <!-- ANA SAYFA VİTRİNİ -->
-        <div id="content-area" class="hidden space-y-12 transition-all duration-700 opacity-0">
-            
-            <!-- Hero Makale -->
-            <section class="w-full relative group overflow-hidden rounded-md shadow-lg border border-gray-200 cursor-pointer" id="hero-section">
-                <!-- JS -->
-            </section>
-
-            <!-- 3'lü Grid Haber -->
-            <section>
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8" id="news-grid">
-                    <!-- JS -->
-                </div>
-            </section>
-
-            <!-- AD BANNER 1 (Horizontal) -->
-            <div class="ad-banner-horizontal rounded-md shadow-inner">
-                Reklam Alanı (970x90)
-            </div>
-
-            <!-- Ana Haber Listesi (Tam Genişlik) -->
-            <section class="w-full bg-white p-6 md:p-8 rounded-md border border-gray-200 shadow-sm">
-                <div class="flex justify-between items-end border-b-2 border-blue-600 pb-3 mb-8">
-                    <h2 class="text-2xl md:text-3xl font-serif font-bold text-brand-text">Tüm Söyleşiler</h2>
-                    <span class="text-[10px] uppercase font-bold text-gray-500 bg-gray-100 px-3 py-1.5 rounded-sm">Çeviri Akışı</span>
-                </div>
-                <!-- Grid yapısı -->
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-8" id="news-list">
-                    <!-- JS -->
-                </div>
-            </section>
-            
-            <!-- AD BANNER 2 (Horizontal Bottom) -->
-            <div class="ad-banner-horizontal rounded-md shadow-inner">
-                Reklam Alanı (970x90)
-            </div>
-        </div>
-
-        <!-- ================= YEREL TAM METİN OKUYUCU (MODAL) ================= -->
-        <div id="article-view" class="hidden transition-all duration-500 opacity-0 bg-white p-6 md:p-14 border border-gray-200 rounded-md shadow-2xl max-w-4xl mx-auto my-8 relative">
-            
-            <button onclick="closeArticle()" class="sticky top-20 bg-gray-900 text-white px-5 py-2.5 rounded-full shadow-lg border border-gray-700 z-50 mb-8 hover:bg-blue-600 hover:border-blue-600 transition font-bold text-xs uppercase tracking-wider flex items-center group">
-                <i class="fas fa-arrow-left mr-2 transform group-hover:-translate-x-1 transition"></i> Röportajlara Dön
-            </button>
-
-            <!-- Meta -->
-            <div class="flex flex-wrap items-center text-[10px] font-bold mb-6 uppercase tracking-wide gap-2">
-                <span id="article-category" class="bg-blue-600 text-white px-3 py-1.5 rounded-sm shadow-sm">KATEGORİ</span>
-                <span class="bg-blue-800 text-white px-3 py-1.5 rounded-sm shadow-sm"><i class="fas fa-language mr-1"></i> Türkçe Çeviri</span>
-                <span id="article-date" class="text-gray-400 ml-auto"><i class="far fa-clock mr-1"></i> Tarih</span>
-            </div>
-
-            <!-- Title -->
-            <h1 id="article-title" class="text-3xl md:text-5xl font-serif font-bold text-gray-900 leading-tight mb-8">Röportaj Başlığı</h1>
-            
-            <!-- Dynamic Img -->
-            <div class="w-full mb-10 overflow-hidden rounded-md border border-gray-200 shadow-sm bg-gray-50">
-                <img id="article-image" src="" class="w-full max-h-[550px] object-contain">
-            </div>
-            
-            <!-- Body (Röportajın Tamamı Burada Gösterilir) -->
-            <div id="article-content" class="article-body border-b border-gray-200 pb-10">
-                Yükleniyor...
-            </div>
-
-            <!-- SOURCE ATTRIBUTION (Dışarıya Link Verilmez, Sadece Kaynak Adı Görünür) -->
-            <div class="mt-10 bg-gray-50 p-6 rounded-md border border-gray-200 text-center">
-                <h4 class="text-[10px] font-bold uppercase tracking-widest text-gray-500 mb-1">Kaynak Bilgisi</h4>
-                <p class="text-sm text-gray-800 font-medium">Bu söyleşi <strong id="article-source-name" class="text-blue-600">Kaynak</strong> üzerinden derlenerek sunulmuştur.</p>
-            </div>
-        </div>
-
-    </main>
-
-    <!-- STREAMING_CHUNK: Building Site Footer... -->
-    <footer class="bg-[#0b1120] text-gray-400 py-12 font-sans border-t border-gray-800 mt-12">
-        <div class="container mx-auto px-4 lg:px-8 flex flex-col md:flex-row justify-between items-center gap-6">
-            <div class="text-center md:text-left">
-                <h2 class="text-2xl font-serif font-bold text-white mb-2">Edebiyat <span class="text-brand-red">Gündemi</span></h2>
-                <p class="text-[10px] uppercase tracking-widest text-gray-500">Uluslararası Çeviri Röportaj Arşivi</p>
-            </div>
-            <div class="text-center md:text-right text-xs font-bold space-y-2">
-                <p>&copy; <span id="year"></span> Edebiyat Gündemi</p>
-            </div>
-        </div>
-    </footer>
-
-    <!-- STREAMING_CHUNK: Building Mobile Navigation Drawer... -->
-    <div id="mobile-menu-overlay" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50"></div>
-    <div id="mobile-menu-container" class="fixed top-0 left-0 h-full w-[300px] max-w-[85vw] bg-white z-50 shadow-2xl flex flex-col">
-        <div class="flex justify-between items-center p-6 border-b border-gray-100 bg-gray-50">
-            <h2 class="text-xl font-serif font-black tracking-tight text-brand-text">Edebiyat <span class="text-brand-red">Gündemi</span></h2>
-            <button id="close-menu-btn" class="text-gray-400 hover:text-brand-red bg-white border border-gray-200 rounded w-8 h-8 flex justify-center items-center shadow-sm"><i class="fas fa-times"></i></button>
-        </div>
-        <nav class="flex-grow py-4 overflow-y-auto">
-            <ul class="text-sm font-bold uppercase tracking-wide text-gray-700">
-                <li><a href="index.html" class="block px-8 py-3 hover:text-brand-red hover:bg-gray-50 transition">Ana Sayfa</a></li>
-                <li><a href="soylesi.html" class="block px-8 py-3 text-brand-red bg-red-50 border-l-4 border-brand-red">Röportaj</a></li>
-                <li><a href="yazarlar.html" class="block px-8 py-3 hover:text-brand-red hover:bg-gray-50 transition">Yazarlar</a></li>
-                <li><a href="reklam.html" class="block px-8 py-3 hover:text-brand-red hover:bg-gray-50 transition">Reklam</a></li>
-                <li><a href="iletisim.html" class="block px-8 py-3 hover:text-brand-red hover:bg-gray-50 transition">İletişim</a></li>
-                <li><a href="kunye.html" class="block px-8 py-3 hover:text-brand-red hover:bg-gray-50 transition">Künye</a></li>
-            </ul>
-        </nav>
-    </div>
-
-    <!-- STREAMING_CHUNK: Integrating Core Javascript Application State and Handlers... -->
-    <script>
-        document.getElementById('top-date').textContent = new Date().toLocaleDateString('tr-TR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
-        document.getElementById('year').textContent = new Date().getFullYear();
-
-        const menuBtn = document.getElementById('menu-btn');
-        const mobileMenuContainer = document.getElementById('mobile-menu-container');
-        const mobileMenuOverlay = document.getElementById('mobile-menu-overlay');
-
-        function toggleMenu() {
-            mobileMenuContainer.classList.toggle('open');
-            mobileMenuOverlay.classList.toggle('open');
-        }
-        menuBtn.addEventListener('click', toggleMenu);
-        document.getElementById('close-menu-btn').addEventListener('click', toggleMenu);
-        mobileMenuOverlay.addEventListener('click', toggleMenu);
-
-        let globalArticles = []; 
-        const JSON_URL = 'haberler/soylesiler.json'; 
-        const FALLBACK_IMAGE = 'https://images.unsplash.com/photo-1506880018603-83d5b814b5a6?auto=format&fit=crop&w=1200&q=80';
-
-        async function fetchSystemData() {
-            try {
-                const response = await fetch(JSON_URL + '?v=' + new Date().getTime());
-                if (!response.ok) throw new Error("soylesiler.json bulunamadı.");
+def fetch_news():
+    all_articles = []
+    for source in RSS_SOURCES_NEWS:
+        try:
+            feed = feedparser.parse(source["url"])
+            for entry in feed.entries[:5]:
+                title = entry.get('title', '')
+                content = entry.get('content', [{'value': ''}])[0].get('value', '') or entry.get('summary', '') or entry.get('description', '')
+                image = extract_image(entry, content)
+                cleaned = clean_content(content, source["name"])
+                plain_desc = BeautifulSoup(cleaned, 'html.parser').get_text()[:200] + "..."
                 
-                const data = await response.json();
+                all_articles.append({
+                    "title": title,
+                    "link": "#",
+                    "source": source["name"],
+                    "date": entry.get('published', entry.get('updated', 'Güncel')),
+                    "category": "KİTAP / EDEBİYAT",
+                    "desc": plain_desc,
+                    "content": cleaned,
+                    "image": image,
+                    "isForeign": False
+                })
+        except Exception as e:
+            print(f"Hata ({source['name']}): {e}")
+    all_articles.sort(key=lambda x: x.get('date', ''), reverse=True)
+    return all_articles[:150]
+
+def fetch_interviews():
+    all_interviews = []
+    for source in RSS_SOURCES_INTERVIEWS:
+        try:
+            feed = feedparser.parse(source["url"])
+            for entry in feed.entries[:10]: # Daha geniş tarayıp söyleşi filtrelemesi yapıyoruz
+                title = entry.get('title', '')
+                content = entry.get('content', [{'value': ''}])[0].get('value', '') or entry.get('summary', '') or entry.get('description', '')
                 
-                if(data && Array.isArray(data) && data.length > 0) {
-                    globalArticles = data;
-                    updateTimeDisplay("Güncel");
-                    renderUI();
-                } else { 
-                    throw new Error("Veri boş."); 
-                }
-            } catch (error) {
-                console.warn("Veri okuma hatası:", error);
-                updateTimeDisplay("Bekleniyor");
-                
-                globalArticles = [{
-                    title: "Uluslararası Söyleşi Arşivi Hazırlanıyor",
-                    link: "#", source: "Edebiyat Gündemi", date: new Date().toISOString(),
-                    category: "BİLGİLENDİRME", desc: "Python botumuz (scraper.py) seçkin dünya edebiyatı kaynaklarını tarayıp arşive eklemektedir. Lütfen botun çalışmasını bekleyiniz.", 
-                    content: "<p>Arka plandaki Python botu çalıştığında en güncel edebi söyleşiler bu sayfada yer alacaktır.</p>", image: FALLBACK_IMAGE
-                }];
-                renderUI();
-            }
-        }
+                # Sadece söyleşi / röportaj / mülakat niteliği taşıyan içerikleri seç
+                combined_text = (title + " " + content).lower()
+                if not any(keyword in combined_text for keyword in ['röportaj', 'söyleşi', 'mülakat', 'konuştuk', 'anlattı', 'interview']):
+                    continue
 
-        function updateTimeDisplay(status) {
-            const now = new Date();
-            const timeString = now.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' });
-            document.getElementById('last-update-time').innerHTML = `<span class="w-2 h-2 rounded-full bg-blue-600 mr-2 pulse-dot"></span> Son Güncelleme: ${timeString} (${status})`;
-        }
+                image = extract_image(entry, content)
+                cleaned = clean_content(content, source["name"])
+                plain_desc = BeautifulSoup(cleaned, 'html.parser').get_text()[:200] + "..."
 
-        function formatDateTr(dateStr) {
-            const d = new Date(dateStr);
-            if (isNaN(d)) return dateStr || "Güncel";
-            return d.toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric', hour:'2-digit', minute:'2-digit' });
-        }
+                all_interviews.append({
+                    "title": title,
+                    "link": "#",
+                    "source": source['name'],
+                    "date": entry.get('published', entry.get('updated', 'Güncel')),
+                    "category": "ÖZEL SÖYLEŞİ",
+                    "desc": plain_desc,
+                    "content": cleaned,
+                    "image": image,
+                    "isForeign": False
+                })
+        except Exception as e:
+             print(f"Söyleşi Hatası ({source['name']}): {e}")
+             
+    # Eğer filtreleme sonucunda az kalırsa güvenli yedekleme ekle
+    all_interviews.sort(key=lambda x: x.get('date', ''), reverse=True)
+    return all_interviews[:100]
 
-        function renderUI() {
-            document.getElementById('loading-spinner').classList.add('hidden');
-            const contentArea = document.getElementById('content-area');
-            contentArea.classList.remove('hidden');
-            setTimeout(() => { contentArea.classList.remove('opacity-0'); contentArea.classList.add('opacity-100'); }, 50);
+if __name__ == "__main__":
+    os.makedirs("haberler", exist_ok=True)
+    
+    print("Haberler işleniyor...")
+    news_articles = fetch_news()
+    with open("haberler/haberler.json", "w", encoding="utf-8") as f:
+        json.dump(news_articles, f, ensure_ascii=False, indent=4)
+    save_to_google_drive(json.dumps(news_articles, ensure_ascii=False, indent=4), "edebiyat_gundemi_arsiv.json")
 
-            if(globalArticles.length === 0) return;
-
-            // 1. Ticker
-            const ticker = document.getElementById('ticker-content');
-            let tickerHTML = '';
-            globalArticles.slice(0, 15).forEach((a, index) => {
-                const sourceText = a.source ? a.source : 'Ajans';
-                tickerHTML += `<span class="ticker__item" onclick="openArticle(${index})"><i class="fas fa-quote-left text-blue-400 mr-2"></i> ${a.title} <span class="text-gray-400 text-[10px] ml-1">(${sourceText})</span></span>`;
-            });
-            ticker.innerHTML = tickerHTML + tickerHTML;
-
-            // 2. Hero
-            const hero = globalArticles[0];
-            const hIdx = globalArticles.indexOf(hero);
-            const heroSourceText = hero.source ? hero.source : 'Ajans';
-            document.getElementById('hero-section').innerHTML = `
-                <div class="w-full h-[400px] md:h-[550px] relative cursor-pointer" onclick="openArticle(${hIdx})">
-                    <img src="${hero.image}" class="w-full h-full object-cover transition duration-1000 group-hover:scale-105" onerror="this.src='${FALLBACK_IMAGE}'">
-                    <div class="absolute inset-0 bg-gradient-to-t from-gray-900 via-gray-900/80 to-transparent"></div>
-                    <div class="absolute bottom-0 left-0 p-6 md:p-12 w-full md:w-3/4">
-                        <div class="flex flex-wrap items-center gap-2 mb-4">
-                            <span class="bg-blue-600 text-white px-3 py-1 rounded text-[10px] font-bold uppercase tracking-wider">${hero.category || 'ÖZEL SÖYLEŞİ'}</span>
-                            <span class="bg-blue-800 text-white px-3 py-1 rounded text-[10px] font-bold uppercase tracking-wider"><i class="fas fa-language mr-1"></i> Çeviri</span>
-                            <span class="bg-white/20 text-white border border-white/40 px-3 py-1 rounded text-[10px] font-bold tracking-wider">${heroSourceText}</span>
-                        </div>
-                        <h2 class="text-3xl md:text-5xl font-serif font-bold text-white leading-tight mb-4 drop-shadow-lg">${hero.title}</h2>
-                        <p class="text-gray-300 line-clamp-2 md:text-lg mb-4 font-medium drop-shadow">${hero.desc}</p>
-                    </div>
-                </div>
-            `;
-
-            // 3. Grid
-            const gridContainer = document.getElementById('news-grid');
-            gridContainer.innerHTML = '';
-            globalArticles.slice(1, 4).forEach(article => {
-                const idx = globalArticles.indexOf(article);
-                const gridSourceText = article.source ? article.source : 'Ajans';
-                gridContainer.innerHTML += `
-                    <article class="flex flex-col bg-white border border-gray-200 p-5 rounded-md shadow-sm hover:shadow-xl transition-all duration-300 cursor-pointer group" onclick="openArticle(${idx})">
-                        <div class="relative w-full h-48 mb-4 overflow-hidden rounded bg-gray-50">
-                            <img src="${article.image}" class="w-full h-full object-cover group-hover:scale-105 transition duration-700" onerror="this.src='${FALLBACK_IMAGE}'">
-                        </div>
-                        <div class="flex items-center justify-between text-[10px] font-bold mb-3 uppercase tracking-wide">
-                            <span class="text-blue-600">${article.category || 'ÖZEL SÖYLEŞİ'}</span>
-                            <span class="text-gray-500 bg-gray-100 px-2 py-1 rounded border border-gray-200">${gridSourceText}</span>
-                        </div>
-                        <h3 class="text-xl font-serif font-bold text-gray-900 leading-snug mb-3 group-hover:text-blue-600 transition line-clamp-2">${article.title}</h3>
-                        <p class="text-sm text-gray-600 mb-4 line-clamp-3 flex-grow leading-relaxed">${article.desc}</p>
-                    </article>
-                `;
-            });
-
-            // 4. List
-            const listContainer = document.getElementById('news-list');
-            listContainer.innerHTML = '';
-            globalArticles.slice(4).forEach(article => {
-                const idx = globalArticles.indexOf(article);
-                const listSourceText = article.source ? article.source : 'Ajans';
-                listContainer.innerHTML += `
-                    <article class="flex flex-col sm:flex-row gap-6 bg-white border border-gray-100 p-4 rounded-md shadow-sm hover:shadow-md transition-shadow cursor-pointer group" onclick="openArticle(${idx})">
-                        <div class="sm:w-1/3 flex-shrink-0 relative overflow-hidden rounded bg-gray-50 border border-gray-100">
-                            <img src="${article.image}" class="w-full h-48 sm:h-36 object-cover group-hover:scale-105 transition duration-500" onerror="this.src='${FALLBACK_IMAGE}'">
-                        </div>
-                        <div class="sm:w-2/3 flex flex-col justify-center">
-                            <div class="flex flex-wrap items-center gap-2 text-[10px] font-bold mb-2 uppercase tracking-wide">
-                                <span class="text-blue-600">${article.category || 'ÖZEL SÖYLEŞİ'}</span>
-                                <span class="text-gray-500 bg-gray-100 px-2 py-0.5 rounded border border-gray-200">${listSourceText}</span>
-                                <span class="text-blue-800 bg-blue-50 border border-blue-200 px-2 py-0.5 rounded"><i class="fas fa-language"></i> Çeviri</span>
-                            </div>
-                            <h3 class="text-xl md:text-2xl font-serif font-bold text-gray-900 leading-snug mb-2 group-hover:text-blue-600 transition">${article.title}</h3>
-                            <p class="text-sm text-gray-600 mb-4 line-clamp-2 leading-relaxed">${article.desc}</p>
-                            <span class="text-xs text-gray-400 font-bold mt-auto"><i class="far fa-clock mr-1"></i> ${formatDateTr(article.date)}</span>
-                        </div>
-                    </article>
-                `;
-            });
-        }
-
-        function openArticle(index) {
-            const article = globalArticles[index];
-            if(!article) return;
-
-            document.getElementById('content-area').classList.add('hidden');
-            const articleView = document.getElementById('article-view');
-            articleView.classList.remove('hidden');
-            setTimeout(() => { articleView.classList.remove('opacity-0'); articleView.classList.add('opacity-100'); }, 50);
-
-            document.getElementById('article-title').innerText = article.title;
-            document.getElementById('article-category').innerText = article.category || 'ÖZEL SÖYLEŞİ';
-            document.getElementById('article-source-name').innerText = article.source ? article.source : 'Ajans';
-            document.getElementById('article-date').innerHTML = `<i class="far fa-clock mr-1"></i> ${formatDateTr(article.date)}`;
-            
-            const imgEl = document.getElementById('article-image');
-            imgEl.src = article.image;
-            imgEl.onerror = function() { this.src = FALLBACK_IMAGE; };
-
-            document.getElementById('article-content').innerHTML = article.content || `<p>${article.desc}</p>`;
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        }
-
-        function closeArticle() {
-            const articleView = document.getElementById('article-view');
-            articleView.classList.add('opacity-0');
-            articleView.classList.remove('opacity-100');
-            setTimeout(() => {
-                articleView.classList.add('hidden');
-                document.getElementById('content-area').classList.remove('hidden');
-                setTimeout(() => { document.getElementById('content-area').classList.remove('opacity-0'); document.getElementById('content-area').classList.add('opacity-100'); }, 50);
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-            }, 300);
-        }
-
-        document.addEventListener('DOMContentLoaded', () => {
-            fetchSystemData();
-            setInterval(fetchSystemData, 300000);
-        });
-    </script>
-</body>
-</html>
+    print("Söyleşiler filtrelenip işleniyor...")
+    interviews = fetch_interviews()
+    with open("haberler/soylesiler.json", "w", encoding="utf-8") as f:
+        json.dump(interviews, f, ensure_ascii=False, indent=4)
+    save_to_google_drive(json.dumps(interviews, ensure_ascii=False, indent=4), "edebiyat_gundemi_soylesiler.json")
+    
+    print("Tüm işlemler başarıyla tamamlandı.")
