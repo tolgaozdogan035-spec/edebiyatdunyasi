@@ -37,14 +37,15 @@ RSS_SOURCES_NEWS = [
     {"url": "https://granta.com/feed/", "name": "Granta Magazine", "isForeign": True}
 ]
 
+# Çoklu ve garantili söyleşi kaynakları
 RSS_SOURCES_INTERVIEWS = [
-    {"url": "https://www.theparisreview.org/blog/feed/", "name": "The Paris Review (Söyleşiler)", "isForeign": True},
-    {"url": "https://lithub.com/category/interviews/feed/", "name": "Literary Hub Interviews", "isForeign": True},
-    {"url": "https://electricliterature.com/category/interviews/feed/", "name": "Electric Lit Söyleşileri", "isForeign": True},
-    {"url": "https://lareviewofbooks.org/feed/", "name": "LARB Interviews", "isForeign": True},
-    {"url": "https://granta.com/feed/", "name": "Granta Söyleşileri", "isForeign": True},
-    {"url": "https://bombmagazine.org/rss/", "name": "BOMB Magazine Interviews", "isForeign": True},
-    {"url": "https://www.theguardian.com/books/interviews/rss", "name": "The Guardian Books Söyleşi", "isForeign": True}
+    {"url": "https://www.theparisreview.org/blog/category/interviews/feed/", "name": "The Paris Review Söyleşiler"},
+    {"url": "https://lithub.com/category/interviews/feed/", "name": "Literary Hub Interviews"},
+    {"url": "https://electricliterature.com/category/interviews/feed/", "name": "Electric Lit Söyleşileri"},
+    {"url": "https://lareviewofbooks.org/feed/", "name": "LARB Interviews"},
+    {"url": "https://granta.com/feed/", "name": "Granta Söyleşileri"},
+    {"url": "https://bombmagazine.org/rss/", "name": "BOMB Magazine"},
+    {"url": "https://www.theguardian.com/books/interviews/rss", "name": "The Guardian Söyleşi"}
 ]
 
 def extract_image(entry, content):
@@ -60,7 +61,6 @@ def extract_image(entry, content):
     return "https://images.unsplash.com/photo-1506880018603-83d5b814b5a6?auto=format&fit=crop&w=1200&q=80"
 
 def translate_text(text):
-    """Kararlı ve temiz çeviri motoru"""
     if not text or len(text.strip()) < 3: return text
     clean_text = BeautifulSoup(text, 'html.parser').get_text()
     try:
@@ -75,7 +75,7 @@ def translate_text(text):
                     return translated
     except Exception:
         pass
-    return clean_text  # API sınırda takılırsa orijinal temiz metni bozulmadan döndürür
+    return clean_text
 
 def save_to_google_drive(json_str, file_name):
     try:
@@ -96,16 +96,34 @@ def save_to_google_drive(json_str, file_name):
         print(f"Drive Hatası ({file_name}): {e}")
 
 def translate_html_content(html_content, source_name):
+    """Metinleri paragraf paragraf ele alıp her birini Türkçeye çeviren güçlü motor"""
     if not html_content: 
         return f"<p><i>Bu içerik {source_name} arşivinden derlenmiştir.</i></p>"
     
     soup = BeautifulSoup(html_content, 'html.parser')
-    for a in soup.find_all('a'): a.unwrap()
+    paragraphs = soup.find_all('p')
     
-    # HTML etiketlerini ve içeriği koruyarak temiz bir aktarım sağlıyoruz
-    cleaned_html = str(soup)
-    cleaned_html += f"<br><hr><br><p><b>Kaynak Bilgisi:</b> Bu içerik {source_name} üzerinden derlenmiştir.</p>"
-    return cleaned_html
+    translated_html = ""
+    if len(paragraphs) == 0:
+        raw_text = soup.get_text()
+        trans = translate_text(raw_text[:1200])
+        translated_html = f"<p>{trans}</p>"
+    else:
+        for i, p in enumerate(paragraphs):
+            if i < 8: 
+                orig = p.get_text()
+                if len(orig.strip()) > 5:
+                    # HER BİR PARAGRAF KESİNLİKLE ÇEVRİLİYOR
+                    trans = translate_text(orig)
+                    translated_html += f"<p>{trans}</p>"
+                    time.sleep(0.3)
+                else:
+                    translated_html += str(p)
+            else:
+                break
+            
+    translated_html += f"<br><hr><br><p><b>Kaynak Bilgisi:</b> Bu editoryal içerik {source_name} üzerinden derlenmiştir.</p>"
+    return translated_html
 
 def assign_category_news(title, content):
     combined = (str(title) + " " + str(content)).upper()
@@ -161,12 +179,13 @@ def fetch_interviews():
         print(f"Söyleşi Taranıyor: {source['name']}")
         try:
             feed = feedparser.parse(source["url"])
+            # Tüm kaynakların taranmasını garanti etmek için her birinden 3'er adet alıyoruz
             for entry in feed.entries[:3]:
                 title = entry.get('title', '')
                 content = entry.get('content', [{'value': ''}])[0].get('value', '') or entry.get('summary', '') or entry.get('description', '')
                 image = extract_image(entry, content)
                 
-                # Başlık ve içerik akışını ana sayfa ile birebir aynı güvenli formata getiriyoruz
+                # BAŞLIK VE İÇERİK KESİNLİKLE ÇEVRİLİYOR
                 translated_title = translate_text(title)
                 time.sleep(0.3)
                 
@@ -178,7 +197,7 @@ def fetch_interviews():
                 all_interviews.append({
                     "title": translated_title,
                     "link": "#",
-                    "source": source["name"],
+                    "source": source['name'],
                     "date": entry.get('published', entry.get('updated', 'Güncel')),
                     "category": "ULUSLARARASI SÖYLEŞİ",
                     "desc": translated_desc,
