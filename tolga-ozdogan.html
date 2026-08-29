@@ -6,7 +6,7 @@
     <title>Tolga Özdoğan - Edebiyat Gündemi</title>
     <style>
         body { 
-            background-color: #f8f9fa; 
+            background-color: #f8f9fa; /* Ana sayfaya uyumlu aydınlık zemin */
             color: #333; 
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
             margin: 0; 
@@ -34,8 +34,14 @@
             border-radius: 8px; 
             padding: 30px; 
             border: 1px solid #e1e5eb; 
-            border-left: 4px solid #cda962; /* Gold çizgi vurgusu */
+            border-left: 4px solid #cda962; /* Edebi gold çizgi vurgusu */
             box-shadow: 0 2px 10px rgba(0,0,0,0.02);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .article-item:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 15px rgba(0,0,0,0.06);
         }
         
         .article-date { 
@@ -50,15 +56,17 @@
         .article-title { 
             font-family: 'Georgia', serif; 
             font-size: 1.6rem; 
-            color: #1a2b4c; 
+            color: #1a2b4c; /* Kurumsal lacivert */
             margin: 0 0 15px 0; 
             text-decoration: none;
+            line-height: 1.4;
         }
         
         .article-desc { 
             color: #555; 
-            line-height: 1.6; 
+            line-height: 1.7; 
             margin-bottom: 20px; 
+            font-size: 1.05rem;
         }
         
         .read-more { 
@@ -66,9 +74,14 @@
             text-decoration: none; 
             font-weight: bold; 
             font-size: 0.9rem;
-            transition: 0.2s;
+            transition: color 0.2s;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
-        .read-more:hover { color: #1a2b4c; }
+        
+        .read-more:hover { 
+            color: #1a2b4c; 
+        }
 
         /* SAĞ SÜTUN: YAZAR KİMLİĞİ */
         .sidebar-column { 
@@ -93,11 +106,12 @@
             object-fit: cover; 
             margin-bottom: 20px; 
             border: 3px solid #f0f2f5;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
         }
         
         .profile-name { 
             font-family: 'Georgia', serif; 
-            font-size: 1.5rem; 
+            font-size: 1.6rem; 
             color: #1a2b4c; 
             margin: 0 0 5px 0; 
         }
@@ -121,6 +135,7 @@
         @media (max-width: 850px) {
             .container { flex-direction: column-reverse; }
             .sidebar-column, .articles-column { width: 100%; }
+            .sidebar-column { position: relative; top: 0; }
         }
     </style>
 </head>
@@ -130,12 +145,13 @@
         
         <!-- YAZILARIN YÜKLENDİĞİ ALAN -->
         <div class="articles-column" id="yazi-listesi">
-            <p style="text-align: center; color: #888;">Köşe yazıları yükleniyor...</p>
+            <p style="text-align: center; color: #888; font-size: 1.1rem; padding: 40px;">Yazılar yükleniyor...</p>
         </div>
 
         <!-- YAZAR PROFİL KUTUSU -->
         <div class="sidebar-column">
             <div class="profile-box">
+                <!-- Fotoğraf adı boşlukluysa %20 hayat kurtarır -->
                 <img src="images/Tolga%202.png" onerror="this.src='images/tolga_ozdogan.png'" alt="Tolga Özdoğan" class="profile-img">
                 <h2 class="profile-name">Tolga Özdoğan</h2>
                 <p class="profile-title">Yazar</p>
@@ -145,16 +161,20 @@
 
     </div>
 
-    <!-- BOTUN ÇEKTİĞİ YAZILARI EKRANA BASAN KOD -->
+    <!-- BOTUN ÇEKTİĞİ YAZILARI EKRANA BASAN KOD (CACHE KIRICI İLE) -->
     <script>
-        fetch('haberler/tolga_yazilari.json')
-            .then(response => response.json())
+        // '?v=' parametresi tarayıcının eski hatayı inatla göstermesini engeller
+        fetch('haberler/tolga_yazilari.json?v=' + new Date().getTime())
+            .then(response => {
+                if (!response.ok) throw new Error("Dosya GitHub'a henüz yüklenmemiş.");
+                return response.json();
+            })
             .then(data => {
                 const container = document.getElementById('yazi-listesi');
                 container.innerHTML = ''; 
                 
                 if(!data || data.length === 0) {
-                    container.innerHTML = '<p style="color:#555;">Henüz yazı bulunmamaktadır.</p>';
+                    container.innerHTML = '<p style="color:#555; text-align:center; padding:40px;">Henüz yazı bulunmamaktadır.</p>';
                     return;
                 }
 
@@ -162,7 +182,9 @@
                     const html = `
                         <div class="article-item">
                             <span class="article-date">${yazi.date}</span>
-                            <h2 class="article-title">${yazi.title}</h2>
+                            <h2 class="article-title">
+                                <a href="${yazi.link}" target="_blank" style="color: inherit; text-decoration: none;">${yazi.title}</a>
+                            </h2>
                             <p class="article-desc">${yazi.desc}</p>
                             <a href="${yazi.link}" target="_blank" class="read-more">Yazının Devamını Oku &rarr;</a>
                         </div>
@@ -171,7 +193,12 @@
                 });
             })
             .catch(err => {
-                document.getElementById('yazi-listesi').innerHTML = '<p style="color:#e74c3c;">Yazılar sunucudan çekilirken bir sorun oluştu. Lütfen daha sonra tekrar deneyin.</p>';
+                document.getElementById('yazi-listesi').innerHTML = `
+                    <div style="text-align: center; padding: 40px; background: #fff; border-radius: 8px; border: 1px solid #e1e5eb;">
+                        <p style="color:#e74c3c; font-weight: bold; font-size: 1.1rem; margin-bottom: 10px;">Yazılar sunucuya yükleniyor...</p>
+                        <p style="color:#666; font-size: 0.95rem;">Lütfen 1-2 dakika bekleyip sayfayı yenileyin.</p>
+                    </div>`;
+                console.log("Hata detayı:", err);
             });
     </script>
 </body>
