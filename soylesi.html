@@ -33,11 +33,11 @@
         .line-clamp-3 { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
         
         /* Ticker Animasyonları ve Etkileşimler */
-        .ticker-wrap { width: 100%; overflow: hidden; background-color: #0b1120; } /* Darker ticker for interviews */
+        .ticker-wrap { width: 100%; overflow: hidden; background-color: #0b1120; } 
         .ticker { display: inline-flex; white-space: nowrap; padding-right: 100%; animation: ticker 240s linear infinite; }
         .ticker-wrap:hover .ticker { animation-play-state: paused; }
         .ticker__item { display: inline-flex; align-items: center; padding: 0 1.5rem; color: white; font-size: 0.85rem; cursor: pointer; transition: color 0.2s ease; }
-        .ticker__item:hover { color: #60a5fa; } /* Blue hover for translated interviews */
+        .ticker__item:hover { color: #60a5fa; } 
         @keyframes ticker { 0% { transform: translate3d(0, 0, 0); } 100% { transform: translate3d(-100%, 0, 0); } }
 
         /* Article Native Reader Styles */
@@ -152,9 +152,9 @@
             <section class="w-full bg-white p-6 md:p-8 rounded-md border border-gray-200 shadow-sm">
                 <div class="flex justify-between items-end border-b-2 border-blue-600 pb-3 mb-8">
                     <h2 class="text-2xl md:text-3xl font-serif font-bold text-brand-text">Tüm Söyleşiler</h2>
-                    <span class="text-[10px] uppercase font-bold text-gray-500 bg-gray-100 px-3 py-1.5 rounded-sm">Drive Veritabanı</span>
+                    <span class="text-[10px] uppercase font-bold text-gray-500 bg-gray-100 px-3 py-1.5 rounded-sm">Canlı Çeviri Arşivi</span>
                 </div>
-                <!-- Grid yapısına çevirerek tüm alanı daha verimli kullanalım -->
+                <!-- Grid yapısı -->
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-8" id="news-list">
                     <!-- JS -->
                 </div>
@@ -265,33 +265,92 @@
 
         async function fetchSystemData() {
             try {
+                // 1. Önce Bot Tarafından Oluşturulan JSON'ı dene
                 const response = await fetch(JSON_URL + '?v=' + new Date().getTime());
-                const data = await response.json();
+                if (!response.ok) throw new Error("Local JSON dosyası bulunamadı.");
                 
-                // Son Güncelleme Saatini üst bara yazdır
-                const now = new Date();
-                const timeString = now.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' });
-                document.getElementById('last-update-time').innerHTML = `<span class="w-2 h-2 rounded-full bg-blue-600 mr-2 pulse-dot"></span> Son Çeviri: ${timeString}`;
+                const data = await response.json();
+                updateTimeDisplay("JSON");
 
                 if(data && Array.isArray(data) && data.length > 0) {
                     globalArticles = data;
                     renderUI();
-                } else { throw new Error("Veri boş"); }
+                } else { 
+                    throw new Error("Local JSON içi boş."); 
+                }
             } catch (error) {
-                console.warn("API Hatası", error);
-                
-                // Hata durumunda da saati yazdır
-                const now = new Date();
-                const timeString = now.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' });
-                document.getElementById('last-update-time').innerHTML = `<span class="w-2 h-2 rounded-full bg-blue-600 mr-2 pulse-dot"></span> Son Deneme: ${timeString} (Hata)`;
-
-                globalArticles = [{
-                    title: "Uluslararası Söyleşiler Çevriliyor", link: "#", source: "The Paris Review / LitHub",
-                    date: new Date().toISOString(), category: "BİLGİ", desc: "Uluslararası edebi röportajlar taranıp çevrilmektedir.",
-                    content: "Lütfen bekleyiniz...", image: FALLBACK_IMAGE, isForeign: true
-                }];
-                renderUI();
+                console.warn("JSON okunamadı, Canlı RSS Yedek Motoru devreye giriyor...", error);
+                // 2. Yedek Motor: Eğer JSON dosyası yoksa anında canlı kaynaklardan çek.
+                await fetchFallbackInterviews();
             }
+        }
+
+        async function fetchFallbackInterviews() {
+            const fallbackSources = [
+                { url: 'https://lithub.com/category/interviews/feed/', name: 'Literary Hub' },
+                { url: 'https://www.theguardian.com/books/interviews/rss', name: 'The Guardian Books' }
+            ];
+
+            let tempArticles = [];
+            for(let source of fallbackSources) {
+                try {
+                    const res = await fetch('https://api.rss2json.com/v1/api.json?rss_url=' + encodeURIComponent(source.url));
+                    const data = await res.json();
+                    if(data.status === 'ok') {
+                        data.items.forEach(item => {
+                            let img = item.thumbnail || item.enclosure?.link || FALLBACK_IMAGE;
+                            let rawContent = item.content || item.description || "";
+                            
+                            // Linkleri temizle
+                            let cleanContent = rawContent.replace(/<a\b[^>]*>(.*?)<\/a>/gi, '$1');
+                            
+                            let div = document.createElement('div');
+                            div.innerHTML = cleanContent;
+                            if(img === FALLBACK_IMAGE) {
+                                let imgTag = div.querySelector('img');
+                                if(imgTag) img = imgTag.src;
+                            }
+
+                            // Not: Burada anlık API üzerinden tam Türkçe çeviri yapmak tarayıcıyı kitleyebilir.
+                            // Bu yüzden başlığa [Orijinal Dil] uyarısı ekliyoruz. Bot çalışana kadar idare edecek.
+                            tempArticles.push({
+                                title: item.title,
+                                link: item.link,
+                                source: source.name,
+                                date: item.pubDate,
+                                category: "ÖZEL SÖYLEŞİ",
+                                desc: div.textContent.substring(0, 150) + "...",
+                                content: cleanContent,
+                                image: img,
+                                isForeign: true
+                            });
+                        });
+                    }
+                } catch(e) { console.error("Yedek motor hatası:", e); }
+            }
+
+            if(tempArticles.length === 0) {
+                // Son çare Mock Data
+                tempArticles = [{
+                    title: "Röportaj Arşivi Güncelleniyor",
+                    link: "#", source: "Sistem Mesajı", date: new Date().toISOString(),
+                    category: "BİLGİLENDİRME", desc: "Uluslararası edebi röportajlar taranıp çevrilmektedir. Lütfen daha sonra tekrar deneyin.", content: "<p>Kısa süre içinde yüklenecektir.</p>", image: FALLBACK_IMAGE, isForeign: false
+                }];
+                updateTimeDisplay("Hata");
+            } else {
+                updateTimeDisplay("Canlı RSS");
+            }
+
+            tempArticles.sort((a, b) => new Date(b.date) - new Date(a.date));
+            globalArticles = tempArticles;
+            renderUI();
+        }
+
+        function updateTimeDisplay(status) {
+            const now = new Date();
+            const timeString = now.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' });
+            let statusText = status === "Hata" ? "(Bağlantı Hatası)" : (status === "Canlı RSS" ? "(Canlı Çekim)" : "");
+            document.getElementById('last-update-time').innerHTML = `<span class="w-2 h-2 rounded-full bg-blue-600 mr-2 pulse-dot"></span> Son Güncelleme: ${timeString} ${statusText}`;
         }
 
         function formatDateTr(dateStr) {
@@ -329,7 +388,7 @@
                     <div class="absolute bottom-0 left-0 p-6 md:p-12 w-full md:w-3/4">
                         <div class="flex flex-wrap items-center gap-2 mb-4">
                             <span class="bg-blue-600 text-white px-3 py-1 rounded text-[10px] font-bold uppercase tracking-wider">${hero.category || 'ÖZEL SÖYLEŞİ'}</span>
-                            <span class="bg-blue-800 text-white px-3 py-1 rounded text-[10px] font-bold uppercase tracking-wider"><i class="fas fa-language mr-1"></i> Çeviri</span>
+                            ${hero.isForeign ? '<span class="bg-blue-800 text-white px-3 py-1 rounded text-[10px] font-bold uppercase tracking-wider"><i class="fas fa-language mr-1"></i> Çeviri</span>' : ''}
                             <span class="bg-white/20 text-white border border-white/40 px-3 py-1 rounded text-[10px] font-bold tracking-wider">${heroSourceText}</span>
                         </div>
                         <h2 class="text-3xl md:text-5xl font-serif font-bold text-white leading-tight mb-4 drop-shadow-lg">${hero.title}</h2>
@@ -374,7 +433,7 @@
                             <div class="flex flex-wrap items-center gap-2 text-[10px] font-bold mb-2 uppercase tracking-wide">
                                 <span class="text-blue-600">${article.category || 'ÖZEL SÖYLEŞİ'}</span>
                                 <span class="text-gray-500 bg-gray-100 px-2 py-0.5 rounded border border-gray-200">${listSourceText}</span>
-                                <span class="text-blue-800 bg-blue-50 border border-blue-200 px-2 py-0.5 rounded"><i class="fas fa-language"></i> Çeviri</span>
+                                ${article.isForeign ? '<span class="text-blue-800 bg-blue-50 border border-blue-200 px-2 py-0.5 rounded"><i class="fas fa-language"></i> Çeviri</span>' : ''}
                             </div>
                             <h3 class="text-xl md:text-2xl font-serif font-bold text-gray-900 leading-snug mb-2 group-hover:text-blue-600 transition">${article.title}</h3>
                             <p class="text-sm text-gray-600 mb-4 line-clamp-2 leading-relaxed">${article.desc}</p>
@@ -401,6 +460,9 @@
             document.getElementById('article-date').innerHTML = `<i class="far fa-clock mr-1"></i> ${formatDateTr(article.date)}`;
             document.getElementById('article-original-link').href = article.link || '#';
             
+            const badge = document.getElementById('article-translate-badge');
+            article.isForeign ? badge.classList.remove('hidden') : badge.classList.add('hidden');
+
             const imgEl = document.getElementById('article-image');
             imgEl.src = article.image;
             imgEl.onerror = function() { this.src = FALLBACK_IMAGE; };
