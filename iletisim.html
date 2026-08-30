@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edebiyat Gündemi | İletişim</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,600;0,700;0,800;0,900;1,400&display=swap" rel="stylesheet">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'brand-red': '#721c24', 'brand-dark': '#0b1120', 'brand-text': '#1a1a1a'
+                    },
+                    fontFamily: {
+                        'sans': ['Inter', 'sans-serif'], 'serif': ['Playfair Display', 'serif']
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body { color: #1a1a1a; background-color: #fcfcfc; scroll-behavior: smooth; }
+        
+        /* Ticker Animasyonları */
+        .ticker-wrap { width: 100%; overflow: hidden; background-color: #0b1120; } 
+        .ticker { display: inline-flex; white-space: nowrap; padding-right: 100%; animation: ticker 120s linear infinite; }
+        .ticker-wrap:hover .ticker { animation-play-state: paused; }
+        .ticker__item { display: inline-flex; align-items: center; padding: 0 1.5rem; color: white; font-size: 0.85rem; cursor: pointer; transition: color 0.2s ease; }
+        .ticker__item:hover { color: #60a5fa; } 
+        @keyframes ticker { 0% { transform: translate3d(0, 0, 0); } 100% { transform: translate3d(-100%, 0, 0); } }
+
+        #mobile-menu-container { transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); transform: translateX(-100%); }
+        #mobile-menu-container.open { transform: translateX(0); }
+        #mobile-menu-overlay { transition: opacity 0.3s; opacity: 0; pointer-events: none; }
+        #mobile-menu-overlay.open { opacity: 1; pointer-events: auto; }
+        
+        .pulse-dot { animation: pulse 2s infinite; }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: .5; } }
+    </style>
+</head>
+<body class="font-sans">
+
+    <!-- Sistem Bilgi Üst Barı -->
+    <div class="border-b border-gray-100 hidden md:block bg-white">
+        <div class="container mx-auto px-4 lg:px-8 py-2 flex justify-between items-center text-[11px] text-gray-500 uppercase tracking-wide font-bold">
+            <div class="flex items-center space-x-4">
+                <span id="top-date">Yükleniyor...</span>
+            </div>
+            <div class="flex items-center space-x-6">
+                <span class="text-blue-600"><i class="fas fa-envelope mr-1"></i> İletişim Kanalları</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Site Logosu ve Başlık -->
+    <header class="py-8 md:py-12 text-center bg-white border-b border-gray-100">
+        <a href="index.html" class="inline-block group">
+            <h1 class="text-4xl md:text-6xl font-serif font-black tracking-tight text-brand-text mb-3">
+                Edebiyat <span class="text-brand-red">Gündemi</span>
+            </h1>
+            <p class="text-[10px] md:text-xs uppercase tracking-[0.3em] text-blue-600 font-bold">
+                GÜNCEL EDEBİYAT HABERLERİ VE KÜLTÜR SANAT
+            </p>
+        </a>
+    </header>
+
+    <!-- Navigasyon Menüsü -->
+    <nav class="sticky top-0 bg-white/95 backdrop-blur-md z-40 shadow-sm border-b border-gray-200">
+        <div class="container mx-auto px-4 lg:px-8 py-3 flex justify-between items-center">
+            <button id="menu-btn" class="text-gray-800 text-xl hover:text-brand-red transition focus:outline-none p-2 md:hidden"><i class="fas fa-bars"></i></button>
+            
+            <div class="hidden md:flex flex-grow justify-center space-x-8 text-[13px] font-bold text-gray-700 uppercase tracking-widest">
+                <a href="index.html" class="hover:text-brand-red transition pb-1">Ana Sayfa</a>
+                <a href="soylesi.html" class="hover:text-brand-red transition pb-1">Röportaj</a>
+                <a href="yazarlar.html" class="hover:text-brand-red transition pb-1">Yazarlar</a>
+                <a href="reklam.html" class="hover:text-brand-red transition pb-1">Reklam</a>
+                <a href="iletisim.html" class="hover:text-brand-red transition text-brand-red border-b-2 border-brand-red pb-1">İletişim</a>
+                <a href="kunye.html" class="hover:text-brand-red transition pb-1">Künye</a>
+            </div>
+
+            <button class="text-gray-800 text-xl hover:text-brand-red transition focus:outline-none p-2 ml-auto"><i class="fas fa-search"></i></button>
+        </div>
+    </nav>
+
+    <!-- Son Dakika Akışı (Ticker) -->
+    <div class="flex bg-brand-dark text-white shadow-md relative z-30">
+        <div class="bg-blue-600 font-bold px-4 py-2 text-[10px] md:text-xs tracking-wider uppercase flex items-center whitespace-nowrap z-10 shadow-xl border-r border-blue-800">
+            <i class="fas fa-paper-plane mr-2 text-white"></i> İLETİŞİM
+        </div>
+        <div class="ticker-wrap flex items-center cursor-default z-0">
+            <div class="ticker">
+                <span class="ticker__item"><i class="fas fa-envelope text-blue-400 mr-2"></i> gundemiedebiyat@gmail.com</span>
+                <span class="ticker__item"><i class="fab fa-instagram text-pink-400 mr-2"></i> Instagram: @edebiyatgundemim</span>
+                <span class="ticker__item"><i class="fas fa-book text-amber-400 mr-2"></i> 1000Kitap: edebiyatgundemi</span>
+                <span class="ticker__item"><i class="fas fa-map-marker-alt text-blue-400 mr-2"></i> İzmir / Türkiye</span>
+                <span class="ticker__item"><i class="fas fa-envelope text-blue-400 mr-2"></i> gundemiedebiyat@gmail.com</span>
+                <span class="ticker__item"><i class="fab fa-instagram text-pink-400 mr-2"></i> Instagram: @edebiyatgundemim</span>
+                <span class="ticker__item"><i class="fas fa-book text-amber-400 mr-2"></i> 1000Kitap: edebiyatgundemi</span>
+                <span class="ticker__item"><i class="fas fa-map-marker-alt text-blue-400 mr-2"></i> İzmir / Türkiye</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- ANA İÇERİK: İLETİŞİM SAYFASI -->
+    <main class="container mx-auto px-4 lg:px-8 py-16 min-h-screen">
+        
+        <div class="max-w-5xl mx-auto bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden">
+            
+            <!-- Üst Başlık -->
+            <div class="p-8 md:p-12 border-b border-gray-100 text-center">
+                <h2 class="text-3xl md:text-4xl font-serif font-bold text-gray-900 mb-4">Bizimle İletişime Geçin</h2>
+                <div class="w-16 h-1 bg-brand-red mx-auto rounded mb-6"></div>
+                <p class="text-gray-600 leading-relaxed max-w-lg mx-auto">
+                    Yayınevi bültenleri, kitap tanıtım talepleri, röportaj önerileri veya her türlü edebiyata dair paylaşımlarınız için aşağıdaki kanallar üzerinden bizimle kurşun geçirmez bir köprü kurabilirsiniz.
+                </p>
+            </div>
+
+            <!-- İletişim Kartları Grid (E-posta, Instagram, 1000Kitap, Konum) -->
+            <div class="p-8 md:p-12 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                
+                <!-- E-posta Kartı -->
+                <div class="bg-gray-50 p-6 rounded-lg border border-gray-200 text-center flex flex-col justify-between hover:border-blue-500 transition-colors">
+                    <div>
+                        <div class="w-12 h-12 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mx-auto mb-4 text-lg">
+                            <i class="fas fa-envelope"></i>
+                        </div>
+                        <h3 class="font-bold text-gray-900 mb-1 uppercase tracking-wide text-xs">E-Posta</h3>
+                        <p class="text-[11px] text-gray-500 mb-3">Bülten ve yazışmalar için:</p>
+                    </div>
+                    <a href="mailto:gundemiedebiyat@gmail.com" class="text-blue-600 font-bold hover:underline text-xs break-all">
+                        gundemiedebiyat@gmail.com
+                    </a>
+                </div>
+
+                <!-- Instagram Kartı -->
+                <div class="bg-gray-50 p-6 rounded-lg border border-gray-200 text-center flex flex-col justify-between hover:border-pink-500 transition-colors">
+                    <div>
+                        <div class="w-12 h-12 bg-pink-100 text-pink-600 rounded-full flex items-center justify-center mx-auto mb-4 text-lg">
+                            <i class="fab fa-instagram"></i>
+                        </div>
+                        <h3 class="font-bold text-gray-900 mb-1 uppercase tracking-wide text-xs">Instagram</h3>
+                        <p class="text-[11px] text-gray-500 mb-3">Sosyal medya takibi:</p>
+                    </div>
+                    <a href="https://instagram.com/edebiyatgundemim" target="_blank" rel="noopener noreferrer" class="text-pink-600 font-bold hover:underline text-xs">
+                        @edebiyatgundemim
+                    </a>
+                </div>
+
+                <!-- 1000Kitap Kartı -->
+                <div class="bg-gray-50 p-6 rounded-lg border border-gray-200 text-center flex flex-col justify-between hover:border-amber-500 transition-colors">
+                    <div>
+                        <div class="w-12 h-12 bg-amber-100 text-amber-600 rounded-full flex items-center justify-center mx-auto mb-4 text-lg">
+                            <i class="fas fa-book"></i>
+                        </div>
+                        <h3 class="font-bold text-gray-900 mb-1 uppercase tracking-wide text-xs">1000Kitap</h3>
+                        <p class="text-[11px] text-gray-500 mb-3">Kitap yorum ve paylaşımları:</p>
+                    </div>
+                    <a href="https://1000kitap.com/edebiyatgundemi" target="_blank" rel="noopener noreferrer" class="text-amber-600 font-bold hover:underline text-xs">
+                        edebiyatgundemi
+                    </a>
+                </div>
+
+                <!-- Konum Kartı -->
+                <div class="bg-gray-50 p-6 rounded-lg border border-gray-200 text-center flex flex-col justify-between hover:border-red-500 transition-colors">
+                    <div>
+                        <div class="w-12 h-12 bg-red-100 text-brand-red rounded-full flex items-center justify-center mx-auto mb-4 text-lg">
+                            <i class="fas fa-map-marker-alt"></i>
+                        </div>
+                        <h3 class="font-bold text-gray-900 mb-1 uppercase tracking-wide text-xs">Şehir</h3>
+                        <p class="text-[11px] text-gray-500 mb-3">Merkez ofis:</p>
+                    </div>
+                    <span class="text-gray-800 font-bold text-xs">
+                        İzmir, Türkiye
+                    </span>
+                </div>
+
+            </div>
+
+            <!-- Alt Bilgilendirme Notu -->
+            <div class="bg-gray-50 px-8 py-6 border-t border-gray-100 text-center text-xs text-gray-500">
+                <p><i class="fas fa-clock text-blue-600 mr-1"></i> Gönderilen tüm mesajlar titizlikle incelenmekte olup, en geç 24 saat içinde dönüş sağlanmaktadır.</p>
+            </div>
+
+        </div>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-[#0b1120] text-gray-400 py-12 font-sans border-t border-gray-800 mt-12">
+        <div class="container mx-auto px-4 lg:px-8 flex flex-col md:flex-row justify-between items-center gap-6">
+            <div class="text-center md:text-left">
+                <h2 class="text-2xl font-serif font-bold text-white mb-2">Edebiyat <span class="text-brand-red">Gündemi</span></h2>
+                <p class="text-[10px] uppercase tracking-widest text-gray-500">Güncel Edebiyat Haberleri ve Kültür Sanat</p>
+            </div>
+            <div class="text-center md:text-right text-xs font-bold space-y-2">
+                <p>&copy; <span id="year"></span> Edebiyat Gündemi. Tüm Hakları Saklıdır.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Mobil Menü Çekmecesi -->
+    <div id="mobile-menu-overlay" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50"></div>
+    <div id="mobile-menu-container" class="fixed top-0 left-0 h-full w-[300px] max-w-[85vw] bg-white z-50 shadow-2xl flex flex-col">
+        <div class="flex justify-between items-center p-6 border-b border-gray-100 bg-gray-50">
+            <h2 class="text-xl font-serif font-black tracking-tight text-brand-text">Edebiyat <span class="text-brand-red">Gündemi</span></h2>
+            <button id="close-menu-btn" class="text-gray-400 hover:text-brand-red bg-white border border-gray-200 rounded w-8 h-8 flex justify-center items-center shadow-sm"><i class="fas fa-times"></i></button>
+        </div>
+        <nav class="flex-grow py-4 overflow-y-auto">
+            <ul class="text-sm font-bold uppercase tracking-wide text-gray-700">
+                <li><a href="index.html" class="block px-8 py-3 hover:text-brand-red hover:bg-gray-50 transition">Ana Sayfa</a></li>
+                <li><a href="soylesi.html" class="block px-8 py-3 hover:text-brand-red hover:bg-gray-50 transition">Röportaj</a></li>
+                <li><a href="yazarlar.html" class="block px-8 py-3 hover:text-brand-red hover:bg-gray-50 transition">Yazarlar</a></li>
+                <li><a href="reklam.html" class="block px-8 py-3 hover:text-brand-red hover:bg-gray-50 transition">Reklam</a></li>
+                <li><a href="iletisim.html" class="block px-8 py-3 text-brand-red bg-red-50 border-l-4 border-brand-red">İletişim</a></li>
+                <li><a href="kunye.html" class="block px-8 py-3 hover:text-brand-red hover:bg-gray-50 transition">Künye</a></li>
+            </ul>
+        </nav>
+    </div>
+
+    <!-- JavaScript -->
+    <script>
+        document.getElementById('top-date').textContent = new Date().toLocaleDateString('tr-TR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+        document.getElementById('year').textContent = new Date().getFullYear();
+
+        const menuBtn = document.getElementById('menu-btn');
+        const mobileMenuContainer = document.getElementById('mobile-menu-container');
+        const mobileMenuOverlay = document.getElementById('mobile-menu-overlay');
+
+        function toggleMenu() {
+            mobileMenuContainer.classList.toggle('open');
+            mobileMenuOverlay.classList.toggle('open');
+        }
+        menuBtn.addEventListener('click', toggleMenu);
+        document.getElementById('close-menu-btn').addEventListener('click', toggleMenu);
+        mobileMenuOverlay.addEventListener('click', toggleMenu);
+    </script>
+</body>
+</html>
