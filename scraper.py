@@ -466,80 +466,85 @@ def save_to_google_drive(json_str, file_name):
     pass
 
 
-# --- SADECE EDEBİYAT YARIŞMALARINI ÇEKEN ÖZEL FONKSİYON ---
+# --- GÜNCELLENMİŞ EDEBİYAT YARIŞMALARI TARAYICISI ---
 def scrape_edebiyat_odulleri():
-  url = "https://www.guncel-egitim.org/yarisma/edebiyat-yarismalari/"
-  headers = {
-      "User-Agent": (
-          "Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/121.0.0.0"
-          " Safari/537.36"
-      )
-  }
-  oduller_listesi = []
-  try:
-    res = requests.get(url, headers=headers, timeout=15)
-    res.encoding = "utf-8"
-    if res.status_code == 200:
-      soup = BeautifulSoup(res.text, "html.parser")
+    url = "https://www.guncel-egitim.org/yarisma/edebiyat-yarismalari/"
+    headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/121.0.0.0 Safari/537.36'}
+    oduller_listesi = []
+    try:
+        res = requests.get(url, headers=headers, timeout=15)
+        res.encoding = 'utf-8'
+        if res.status_code == 200:
+            soup = BeautifulSoup(res.text, 'html.parser')
+            
+            # Sitedeki tüm bağlantıları ve kart yapılarını tarayarak gerçek yarışma ilanlarını yakalayalım
+            for box in soup.find_all(['div', 'article', 'li', 'section']):
+                title_tag = box.find(['h2', 'h3', 'h4', 'a'])
+                if not title_tag: continue
+                title = title_tag.get_text(strip=True)
+                
+                title_lower = title.lower()
+                # Sadece genel kategori başlıklarını eleyip asıl yarışma duyurularını alıyoruz
+                if any(exclude in title_lower for exclude in ["resim yarışmaları", "fotoğraf yarışmaları", "karikatür yarışmaları", "tasarım yarışmaları", "proje yarışmaları", "kısa film"]):
+                    continue
+                    
+                if not any(keyword in title_lower for keyword in ["edebiyat", "şiir", "roman", "öykü", "hikaye", "yarışma", "ödül", "kitap", "deneme", "mektup"]):
+                    continue
+                    
+                if len(title) < 10: continue
+                
+                link_tag = box.find('a', href=True)
+                link = link_tag['href'] if link_tag else url
+                if not link.startswith('http'):
+                    link = "https://www.guncel-egitim.org" + link
+                
+                desc = title
+                p_tag = box.find('p')
+                if p_tag and len(p_tag.get_text(strip=True)) > 15:
+                    desc = p_tag.get_text(strip=True)
+                
+                if not any(o['title'] == title for o in oduller_listesi):
+                    oduller_listesi.append({
+                        "title": title,
+                        "link": link,
+                        "source": "Güncel Eğitim",
+                        "date": "Güncel Duyuru",
+                        "desc": desc[:250] + "..."
+                    })
+    except Exception as e:
+        print("Edebiyat ödülleri çekilirken hata:", e, flush=True)
 
-      for post in soup.find_all(
-          ["article", "div", "li"], class_=re.compile("post|item|entry|yarism")
-      ):
-        title_tag = post.find(["h2", "h3", "h4", "a"])
-        if not title_tag:
-          continue
-        title = title_tag.get_text(strip=True)
+    # Eğer özel filtrelemede çok az veri kalırsa site ana başlıklarındaki tüm linkleri tarayarak güvenli yedek oluşturalım
+    if len(oduller_listesi) == 0:
+        try:
+            res = requests.get(url, headers=headers, timeout=15)
+            soup = BeautifulSoup(res.text, 'html.parser')
+            for a in soup.find_all('a', href=True):
+                t = a.get_text(strip=True)
+                l = a['href']
+                if any(k in t.lower() for k in ["edebiyat", "şiir", "roman", "öykü", "ödül", "yarışma"]) and len(t) > 15:
+                    if not l.startswith('http'): l = "https://www.guncel-egitim.org" + l
+                    if not any(o['title'] == t for o in oduller_listesi):
+                        oduller_listesi.append({
+                            "title": t,
+                            "link": l,
+                            "source": "Güncel Eğitim",
+                            "date": "Güncel Duyuru",
+                            "desc": "Ulusal edebiyat yarışması ve başvuru detayları."
+                        })
+        except: pass
 
-        title_lower = title.lower()
-        if not any(
-            keyword in title_lower
-            for keyword in [
-                "edebiyat",
-                "şiir",
-                "roman",
-                "öykü",
-                "hikaye",
-                "yarışma",
-                "ödül",
-                "kitap",
-            ]
-        ):
-          continue
-
-        if len(title) < 10:
-          continue
-
-        link_tag = post.find("a", href=True)
-        link = link_tag["href"] if link_tag else url
-
-        desc = title
-        p_tag = post.find("p")
-        if p_tag and len(p_tag.get_text(strip=True)) > 20:
-          desc = p_tag.get_text(strip=True)
-
-        if not any(o["title"] == title for o in oduller_listesi):
-          oduller_listesi.append({
-              "title": title,
-              "link": link,
-              "source": "Güncel Eğitim",
-              "date": "Güncel Duyuru",
-              "desc": desc[:250] + "...",
-          })
-  except Exception as e:
-    print("Edebiyat ödülleri çekilirken hata:", e)
-
-  if not oduller_listesi:
-    oduller_listesi = [{
-        "title": "Güncel Edebiyat ve Şiir Yarışmaları",
-        "link": "https://www.guncel-egitim.org/yarisma/edebiyat-yarismalari/",
-        "source": "Güncel Eğitim",
-        "date": "Güncel Duyuru",
-        "desc": (
-            "Yazarlar ve şairler için ulusal düzeyde düzenlenen en güncel"
-            " edebiyat yarışmaları, ödül detayları ve başvuru koşulları."
-        ),
-    }]
-  return oduller_listesi
+    if not oduller_listesi:
+        oduller_listesi = [
+            {
+                "title": "Güncel Edebiyat ve Şiir Yarışmaları",
+                "link": "https://www.guncel-egitim.org/yarisma/edebiyat-yarismalari/",
+                "source": "Güncel Eğitim",
+                "date": "Güncel Duyuru",
+                "desc": "Yazarlar ve şairler için ulusal düzeyde düzenlenen en güncel edebiyat yarışmaları, ödül detayları ve başvuru koşulları."
+            }
+        ]
+    return oduller_listesi
 
 
 # --- ANA YÖNLENDİRİCİ MOTOR ---
