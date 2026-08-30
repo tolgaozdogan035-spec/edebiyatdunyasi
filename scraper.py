@@ -1,3 +1,4 @@
+import io
 import json
 import os
 import re
@@ -205,13 +206,6 @@ ALL_SOURCES = [
         "url": "https://edebiyatsoylesileri.com/rss",
         "name": "Edebiyat Söyleşileri",
         "is_interview": True,
-    },
-    {
-        "url": (
-            "https://www.guncel-egitim.org/yarisma/edebiyat-yarismalari/feed/"
-        ),
-        "name": "Edebiyat Yarışmaları",
-        "is_interview": False,
     },
 ]
 
@@ -472,7 +466,7 @@ def save_to_google_drive(json_str, file_name):
     pass
 
 
-# --- ÖDÜL VE YARIŞMA TARAYICI KANCASI ---
+# --- SADECE EDEBİYAT YARIŞMALARINI ÇEKEN ÖZEL FONKSİYON ---
 def scrape_edebiyat_odulleri():
   url = "https://www.guncel-egitim.org/yarisma/edebiyat-yarismalari/"
   headers = {
@@ -487,6 +481,7 @@ def scrape_edebiyat_odulleri():
     res.encoding = "utf-8"
     if res.status_code == 200:
       soup = BeautifulSoup(res.text, "html.parser")
+
       for post in soup.find_all(
           ["article", "div", "li"], class_=re.compile("post|item|entry|yarism")
       ):
@@ -494,6 +489,23 @@ def scrape_edebiyat_odulleri():
         if not title_tag:
           continue
         title = title_tag.get_text(strip=True)
+
+        title_lower = title.lower()
+        if not any(
+            keyword in title_lower
+            for keyword in [
+                "edebiyat",
+                "şiir",
+                "roman",
+                "öykü",
+                "hikaye",
+                "yarışma",
+                "ödül",
+                "kitap",
+            ]
+        ):
+          continue
+
         if len(title) < 10:
           continue
 
