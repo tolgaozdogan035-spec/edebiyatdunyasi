@@ -69,6 +69,9 @@
         
         .pulse-dot { animation: pulse 2s infinite; }
         @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: .5; } }
+
+        /* Slider Fade Efekti */
+        .slider-slide { transition: opacity 1s ease-in-out; }
     </style>
 </head>
 <body class="font-sans">
@@ -79,7 +82,7 @@
             <div class="flex items-center space-x-4">
                 <span id="top-date">Yükleniyor...</span>
                 <span class="border-l border-gray-300 pl-4 flex items-center text-blue-600" id="last-update-time">
-                    <!-- JS ile Son Güncelleme Saati Buraya Gelecek -->
+                    <!-- JS ile Son Güncelleme Saati -->
                 </span>
             </div>
             <div class="flex items-center space-x-6">
@@ -140,26 +143,42 @@
         <!-- ANA SAYFA VİTRİNİ -->
         <div id="content-area" class="hidden space-y-12 transition-all duration-700 opacity-0">
             
-            <!-- BANNER 1 (Leyla Yasak Mevsim - EN ÜSTTE) -->
+            <!-- BANNER 1 (En Üstte) -->
             <div class="banner-container mt-2">
                 <a href="https://www.kitapyurdu.com/kitap/leyla-yasak-mevsim/764961.html?manufacturer_id=296396" target="_blank" rel="noopener noreferrer">
                     <img src="images/Banner-1.jfif" alt="Leyla Yasak Mevsim - Tolga Özdoğan">
                 </a>
             </div>
 
-            <!-- 3'lü Grid Haber (Yüksekliği Yarı Yarıya Küçültüldü: h-28 / max-h-28) -->
+            <!-- 3'lü Grid Haber (Kompakt Yükseklik) -->
             <section>
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8" id="news-grid">
                     <!-- JS -->
                 </div>
             </section>
 
-            <!-- Hero Makale (Büyük Manşet Bloğu) -->
-            <section class="w-full relative group overflow-hidden rounded-md shadow-lg border border-gray-200 cursor-pointer" id="hero-section">
-                <!-- JS -->
+            <!-- 5'Lİ OTOMATİK SLİDER MANŞET BLOĞU -->
+            <section class="w-full relative group overflow-hidden rounded-md shadow-lg border border-gray-200 bg-gray-900 h-[400px] md:h-[550px]" id="hero-slider-container">
+                <div id="slider-slides-wrapper" class="w-full h-full relative"></div>
+
+                <button onclick="prevSlide()" class="absolute left-4 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/80 text-white w-10 h-10 rounded-full flex items-center justify-center z-20 transition backdrop-blur-sm focus:outline-none">
+                    <i class="fas fa-chevron-left"></i>
+                </button>
+                <button onclick="nextSlide()" class="absolute right-4 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/80 text-white w-10 h-10 rounded-full flex items-center justify-center z-20 transition backdrop-blur-sm focus:outline-none">
+                    <i class="fas fa-chevron-right"></i>
+                </button>
+
+                <div id="slider-dots" class="absolute bottom-4 right-6 flex space-x-2 z-20"></div>
             </section>
 
-            <!-- Ana Haber Listesi (Tam Genişlik) -->
+            <!-- İKİNCİ BANNER (Slider'ın Altı / Tüm Haberlerin Üstü) -->
+            <div class="banner-container">
+                <a href="https://www.kitapyurdu.com/kitap/kaosun-mimari-insan/762120.html?manufacturer_id=296396" target="_blank" rel="noopener noreferrer">
+                    <img src="images/Banner-2.jfif" alt="Kaosun Mimarı İnsan - Tolga Özdoğan">
+                </a>
+            </div>
+
+            <!-- Ana Haber Listesi (Tüm Haberler) -->
             <section class="w-full bg-white p-6 md:p-8 rounded-md border border-gray-200 shadow-sm">
                 <div class="flex justify-between items-end border-b-2 border-blue-600 pb-3 mb-8">
                     <h2 class="text-2xl md:text-3xl font-serif font-bold text-brand-text">Tüm Haberler</h2>
@@ -170,10 +189,10 @@
                 </div>
             </section>
             
-            <!-- BANNER 2 (Kaosun Mimarı İnsan) -->
+            <!-- ÜÇÜNCÜ BANNER (Sayfa Sonu) -->
             <div class="banner-container">
-                <a href="https://www.kitapyurdu.com/kitap/kaosun-mimari-insan/762120.html?manufacturer_id=296396" target="_blank" rel="noopener noreferrer">
-                    <img src="images/Banner-2.jfif" alt="Kaosun Mimarı İnsan - Tolga Özdoğan">
+                <a href="https://www.kitapyurdu.com/kitap/leyla-yasak-mevsim/764961.html?manufacturer_id=296396" target="_blank" rel="noopener noreferrer">
+                    <img src="images/Banner-1.jfif" alt="Leyla Yasak Mevsim - Tolga Özdoğan">
                 </a>
             </div>
 
@@ -264,6 +283,8 @@
         mobileMenuOverlay.addEventListener('click', toggleMenu);
 
         let globalArticles = []; 
+        let currentSlideIndex = 0;
+        let slideInterval = null;
         const JSON_URL = 'haberler/haberler.json'; 
         const FALLBACK_IMAGE = 'https://images.unsplash.com/photo-1506880018603-83d5b814b5a6?auto=format&fit=crop&w=1200&q=80';
 
@@ -324,29 +345,13 @@
             });
             ticker.innerHTML = tickerHTML + tickerHTML;
 
-            // 2. Hero (Büyük Manşet)
-            const hero = globalArticles[0];
-            const hIdx = globalArticles.indexOf(hero);
-            const heroSourceText = hero.source ? hero.source : 'Ajans';
-            document.getElementById('hero-section').innerHTML = `
-                <div class="w-full h-[400px] md:h-[550px] relative cursor-pointer" onclick="openArticle(${hIdx})">
-                    <img src="${hero.image}" class="w-full h-full object-cover transition duration-1000 group-hover:scale-105" onerror="this.src='${FALLBACK_IMAGE}'">
-                    <div class="absolute inset-0 bg-gradient-to-t from-gray-900 via-gray-900/80 to-transparent"></div>
-                    <div class="absolute bottom-0 left-0 p-6 md:p-12 w-full md:w-3/4">
-                        <div class="flex flex-wrap items-center gap-2 mb-4">
-                            <span class="bg-blue-600 text-white px-3 py-1 rounded text-[10px] font-bold uppercase tracking-wider">${hero.category || 'GÜNCEL'}</span>
-                            <span class="bg-white/20 text-white border border-white/40 px-3 py-1 rounded text-[10px] font-bold tracking-wider">${heroSourceText}</span>
-                        </div>
-                        <h2 class="text-3xl md:text-5xl font-serif font-bold text-white leading-tight mb-4 drop-shadow-lg">${hero.title}</h2>
-                        <p class="text-gray-300 line-clamp-2 md:text-lg mb-4 font-medium drop-shadow">${hero.desc}</p>
-                    </div>
-                </div>
-            `;
+            // 2. 5'li Slider Manşet Bloğunu Oluştur
+            renderSlider();
 
-            // 3. Grid (Yüksekliği yarı yarıya küçültüldü: h-28 / max-h-28)
+            // 3. Grid (3'lü Kompakt Yükseklik)
             const gridContainer = document.getElementById('news-grid');
             gridContainer.innerHTML = '';
-            globalArticles.slice(1, 4).forEach(article => {
+            globalArticles.slice(5, 8).forEach(article => {
                 const idx = globalArticles.indexOf(article);
                 const gridSourceText = article.source ? article.source : 'Ajans';
                 gridContainer.innerHTML += `
@@ -364,10 +369,10 @@
                 `;
             });
 
-            // 4. List
+            // 4. List (Geri kalanlar - Tüm Haberler)
             const listContainer = document.getElementById('news-list');
             listContainer.innerHTML = '';
-            globalArticles.slice(4).forEach(article => {
+            globalArticles.slice(8).forEach(article => {
                 const idx = globalArticles.indexOf(article);
                 const listSourceText = article.source ? article.source : 'Ajans';
                 listContainer.innerHTML += `
@@ -389,6 +394,90 @@
             });
         }
 
+        // --- SLİDER MANTIĞI VE 8 SANİYELİK OTOMATİK GEÇİŞ ---
+        function renderSlider() {
+            const sliderWrapper = document.getElementById('slider-slides-wrapper');
+            const dotsContainer = document.getElementById('slider-dots');
+            sliderWrapper.innerHTML = '';
+            dotsContainer.innerHTML = '';
+
+            const sliderArticles = globalArticles.slice(0, 5);
+
+            sliderArticles.forEach((article, index) => {
+                const globalIdx = globalArticles.indexOf(article);
+                const sourceText = article.source ? article.source : 'Ajans';
+                const opacityClass = index === 0 ? 'opacity-100 z-10' : 'opacity-0 absolute inset-0 z-0 pointer-events-none';
+
+                sliderWrapper.innerHTML += `
+                    <div class="slider-slide absolute inset-0 w-full h-full cursor-pointer ${opacityClass}" data-index="${index}" onclick="openArticle(${globalIdx})">
+                        <img src="${article.image}" class="w-full h-full object-cover transition duration-1000" onerror="this.src='${FALLBACK_IMAGE}'">
+                        <div class="absolute inset-0 bg-gradient-to-t from-gray-900 via-gray-900/80 to-transparent"></div>
+                        <div class="absolute bottom-0 left-0 p-6 md:p-12 w-full md:w-3/4">
+                            <div class="flex flex-wrap items-center gap-2 mb-4">
+                                <span class="bg-blue-600 text-white px-3 py-1 rounded text-[10px] font-bold uppercase tracking-wider">${article.category || 'GÜNCEL'}</span>
+                                <span class="bg-white/20 text-white border border-white/40 px-3 py-1 rounded text-[10px] font-bold tracking-wider">${sourceText}</span>
+                            </div>
+                            <h2 class="text-2xl md:text-4xl font-serif font-bold text-white leading-tight mb-3 drop-shadow-lg">${article.title}</h2>
+                            <p class="text-gray-300 line-clamp-2 text-sm md:text-base mb-2 font-medium drop-shadow">${article.desc}</p>
+                        </div>
+                    </div>
+                `;
+
+                const activeDotClass = index === 0 ? 'bg-blue-600 w-6' : 'bg-white/50 w-2.5';
+                dotsContainer.innerHTML += `
+                    <button onclick="goToSlide(${index})" class="h-2.5 rounded-full transition-all duration-300 ${activeDotClass} focus:outline-none" data-dot-index="${index}"></button>
+                `;
+            });
+
+            if (slideInterval) clearInterval(slideInterval);
+            slideInterval = setInterval(nextSlide, 8000);
+        }
+
+        function showSlide(index) {
+            const slides = document.querySelectorAll('.slider-slide');
+            const dots = document.querySelectorAll('#slider-dots button');
+            if (slides.length === 0) return;
+
+            if (index >= slides.length) currentSlideIndex = 0;
+            else if (index < 0) currentSlideIndex = slides.length - 1;
+            else currentSlideIndex = index;
+
+            slides.forEach((slide, idx) => {
+                if (idx === currentSlideIndex) {
+                    slide.classList.remove('opacity-0', 'absolute', 'inset-0', 'z-0', 'pointer-events-none');
+                    slide.classList.add('opacity-100', 'z-10');
+                } else {
+                    slide.classList.remove('opacity-100', 'z-10');
+                    slide.classList.add('opacity-0', 'absolute', 'inset-0', 'z-0', 'pointer-events-none');
+                }
+            });
+
+            dots.forEach((dot, idx) => {
+                if (idx === currentSlideIndex) {
+                    dot.classList.remove('bg-white/50', 'w-2.5');
+                    dot.classList.add('bg-blue-600', 'w-6');
+                } else {
+                    dot.classList.remove('bg-blue-600', 'w-6');
+                    dot.classList.add('bg-white/50', 'w-2.5');
+                }
+            });
+        }
+
+        function nextSlide() {
+            showSlide(currentSlideIndex + 1);
+        }
+
+        function prevSlide() {
+            showSlide(currentSlideIndex - 1);
+        }
+
+        function goToSlide(index) {
+            showSlide(index);
+            clearInterval(slideInterval);
+            slideInterval = setInterval(nextSlide, 8000);
+        }
+
+        // --- MODAL OKUYUCU FONKSİYONLARI ---
         function openArticle(index) {
             const article = globalArticles[index];
             if(!article) return;
