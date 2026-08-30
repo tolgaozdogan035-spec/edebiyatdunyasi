@@ -3,202 +3,252 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tolga Özdoğan - Edebiyat Gündemi</title>
+    <title>Tolga Özdoğan - Köşe Yazıları | Edebiyat Gündemi</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,600;0,700;0,800;0,900;1,400&display=swap" rel="stylesheet">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'brand-red': '#721c24', 'brand-dark': '#0b1120', 'brand-text': '#1a1a1a'
+                    },
+                    fontFamily: {
+                        'sans': ['Inter', 'sans-serif'], 'serif': ['Playfair Display', 'serif']
+                    }
+                }
+            }
+        }
+    </script>
+
     <style>
-        body { 
-            background-color: #f8f9fa; /* Ana sayfaya uyumlu aydınlık zemin */
-            color: #333; 
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
-            margin: 0; 
-            padding: 40px 20px; 
-        }
+        body { color: #1a1a1a; background-color: #fcfcfc; scroll-behavior: smooth; }
+        .line-clamp-2 { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+        .line-clamp-3 { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
         
-        .container { 
-            max-width: 1100px; 
-            margin: 0 auto; 
-            display: flex; 
-            gap: 40px; 
-            align-items: flex-start; 
-        }
-        
-        /* SOL SÜTUN: KÖŞE YAZILARI */
-        .articles-column { 
-            flex: 2; 
-            display: flex; 
-            flex-direction: column; 
-            gap: 25px; 
-        }
-        
-        .article-item { 
-            background-color: #ffffff; 
-            border-radius: 8px; 
-            padding: 30px; 
-            border: 1px solid #e1e5eb; 
-            border-left: 4px solid #cda962; /* Edebi gold çizgi vurgusu */
-            box-shadow: 0 2px 10px rgba(0,0,0,0.02);
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-        }
-        
-        .article-item:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 6px 15px rgba(0,0,0,0.06);
-        }
-        
-        .article-date { 
-            color: #888; 
-            font-size: 0.85rem; 
-            margin-bottom: 10px; 
-            display: block; 
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-        
-        .article-title { 
-            font-family: 'Georgia', serif; 
-            font-size: 1.6rem; 
-            color: #1a2b4c; /* Kurumsal lacivert */
-            margin: 0 0 15px 0; 
-            text-decoration: none;
-            line-height: 1.4;
-        }
-        
-        .article-desc { 
-            color: #555; 
-            line-height: 1.7; 
-            margin-bottom: 20px; 
-            font-size: 1.05rem;
-        }
-        
-        .read-more { 
-            color: #cda962; 
-            text-decoration: none; 
-            font-weight: bold; 
-            font-size: 0.9rem;
-            transition: color 0.2s;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-        
-        .read-more:hover { 
-            color: #1a2b4c; 
-        }
+        /* Ticker Animasyonları */
+        .ticker-wrap { width: 100%; overflow: hidden; background-color: #0b1120; } 
+        .ticker { display: inline-flex; white-space: nowrap; padding-right: 100%; animation: ticker 240s linear infinite; }
+        .ticker-wrap:hover .ticker { animation-play-state: paused; }
+        .ticker__item { display: inline-flex; align-items: center; padding: 0 1.5rem; color: white; font-size: 0.85rem; cursor: pointer; transition: color 0.2s ease; }
+        .ticker__item:hover { color: #60a5fa; } 
+        @keyframes ticker { 0% { transform: translate3d(0, 0, 0); } 100% { transform: translate3d(-100%, 0, 0); } }
 
-        /* SAĞ SÜTUN: YAZAR KİMLİĞİ */
-        .sidebar-column { 
-            flex: 1; 
-            position: sticky; 
-            top: 40px; 
-        }
-        
-        .profile-box { 
-            background-color: #ffffff; 
-            border-radius: 8px; 
-            padding: 40px 30px; 
-            text-align: center; 
-            border: 1px solid #e1e5eb;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.04);
-        }
-        
-        .profile-img { 
-            width: 160px; 
-            height: 160px; 
-            border-radius: 50%; 
-            object-fit: cover; 
-            margin-bottom: 20px; 
-            border: 3px solid #f0f2f5;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
-        }
-        
-        .profile-name { 
-            font-family: 'Georgia', serif; 
-            font-size: 1.6rem; 
-            color: #1a2b4c; 
-            margin: 0 0 5px 0; 
-        }
-        
-        .profile-title { 
-            color: #cda962; 
-            font-size: 0.85rem; 
-            letter-spacing: 2px; 
-            text-transform: uppercase; 
-            margin: 0 0 20px 0; 
-            font-weight: 600;
-        }
-        
-        .profile-bio { 
-            font-style: italic; 
-            color: #666; 
-            line-height: 1.6; 
-            font-size: 0.95rem; 
-        }
+        /* Kitapyurdu Banner Stilleri */
+        .banner-container { width: 100%; max-width: 970px; margin: 2rem auto; border-radius: 6px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.08); transition: transform 0.3s ease, box-shadow 0.3s ease; }
+        .banner-container:hover { transform: translateY(-2px) scale(1.005); box-shadow: 0 8px 25px rgba(0,0,0,0.15); }
+        .banner-container img { width: 100%; height: auto; display: block; }
 
-        @media (max-width: 850px) {
-            .container { flex-direction: column-reverse; }
-            .sidebar-column, .articles-column { width: 100%; }
-            .sidebar-column { position: relative; top: 0; }
-        }
+        #mobile-menu-container { transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); transform: translateX(-100%); }
+        #mobile-menu-container.open { transform: translateX(0); }
+        #mobile-menu-overlay { transition: opacity 0.3s; opacity: 0; pointer-events: none; }
+        #mobile-menu-overlay.open { opacity: 1; pointer-events: auto; }
+        
+        .pulse-dot { animation: pulse 2s infinite; }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: .5; } }
     </style>
 </head>
-<body>
+<body class="font-sans">
 
-    <div class="container">
-        
-        <!-- YAZILARIN YÜKLENDİĞİ ALAN -->
-        <div class="articles-column" id="yazi-listesi">
-            <p style="text-align: center; color: #888; font-size: 1.1rem; padding: 40px;">Yazılar yükleniyor...</p>
-        </div>
-
-        <!-- YAZAR PROFİL KUTUSU -->
-        <div class="sidebar-column">
-            <div class="profile-box">
-                <!-- Fotoğraf adı boşlukluysa %20 hayat kurtarır -->
-                <img src="images/Tolga%202.png" onerror="this.src='images/tolga_ozdogan.png'" alt="Tolga Özdoğan" class="profile-img">
-                <h2 class="profile-name">Tolga Özdoğan</h2>
-                <p class="profile-title">Yazar</p>
-                <p class="profile-bio">"Kelimelerle dünyayı yeniden kurmak, insanı en çok da kendi labirentlerinde özgürleştiren tek yoldur."</p>
+    <!-- Sistem Bilgi Üst Barı -->
+    <div class="border-b border-gray-100 hidden md:block bg-white">
+        <div class="container mx-auto px-4 lg:px-8 py-2 flex justify-between items-center text-[11px] text-gray-500 uppercase tracking-wide font-bold">
+            <div class="flex items-center space-x-4">
+                <span id="top-date">Yükleniyor...</span>
+                <span class="border-l border-gray-300 pl-4 flex items-center text-blue-600" id="last-update-time"></span>
+            </div>
+            <div class="flex items-center space-x-6">
+                <span class="text-blue-600"><i class="fas fa-pen-nib mr-1"></i> Yazar Köşesi</span>
             </div>
         </div>
-
     </div>
 
-    <!-- BOTUN ÇEKTİĞİ YAZILARI EKRANA BASAN KOD (CACHE KIRICI İLE) -->
+    <!-- Site Logosu ve Başlık -->
+    <header class="py-8 md:py-12 text-center bg-white border-b border-gray-100">
+        <a href="index.html" class="inline-block group">
+            <h1 class="text-4xl md:text-6xl font-serif font-black tracking-tight text-brand-text mb-3">
+                Edebiyat <span class="text-brand-red">Gündemi</span>
+            </h1>
+            <p class="text-[10px] md:text-xs uppercase tracking-[0.3em] text-blue-600 font-bold">
+                TOLGA ÖZDOĞAN - KÖŞE YAZILARI
+            </p>
+        </a>
+    </header>
+
+    <!-- Navigasyon Menüsü (Eksiksiz Tam Liste) -->
+    <nav class="sticky top-0 bg-white/95 backdrop-blur-md z-40 shadow-sm border-b border-gray-200">
+        <div class="container mx-auto px-4 lg:px-8 py-3 flex justify-between items-center">
+            <button id="menu-btn" class="text-gray-800 text-xl hover:text-brand-red transition focus:outline-none p-2 md:hidden"><i class="fas fa-bars"></i></button>
+            
+            <div class="hidden md:flex flex-grow justify-center space-x-8 text-[13px] font-bold text-gray-700 uppercase tracking-widest">
+                <a href="index.html" class="hover:text-brand-red transition pb-1">Ana Sayfa</a>
+                <a href="soylesiler.html" class="hover:text-brand-red transition pb-1">Röportaj</a>
+                <a href="yazarlar.html" class="hover:text-brand-red transition text-brand-red border-b-2 border-brand-red pb-1">Yazarlar</a>
+                <a href="reklam.html" class="hover:text-brand-red transition pb-1">Reklam</a>
+                <a href="iletisim.html" class="hover:text-brand-red transition pb-1">İletişim</a>
+                <a href="kunye.html" class="hover:text-brand-red transition pb-1">Künye</a>
+            </div>
+
+            <button class="text-gray-800 text-xl hover:text-brand-red transition focus:outline-none p-2 ml-auto"><i class="fas fa-search"></i></button>
+        </div>
+    </nav>
+
+    <!-- Son Dakika Akışı (Ticker) -->
+    <div class="flex bg-brand-dark text-white shadow-md relative z-30">
+        <div class="bg-blue-600 font-bold px-4 py-2 text-[10px] md:text-xs tracking-wider uppercase flex items-center whitespace-nowrap z-10 shadow-xl border-r border-blue-800">
+            <i class="fas fa-bolt mr-2 text-white"></i> KÖŞE YAZILARI
+        </div>
+        <div class="ticker-wrap flex items-center cursor-default z-0">
+            <div class="ticker" id="ticker-content"><span class="ticker__item">Yazılar yükleniyor...</span></div>
+        </div>
+    </div>
+
+    <!-- ANA İÇERİK ALANI -->
+    <main class="container mx-auto px-4 lg:px-8 py-10 min-h-screen relative">
+        
+        <!-- BANNER 1 (ÜST REKLAM: LEYLA YASAK MEVSİM) -->
+        <div class="banner-container">
+            <a href="https://www.kitapyurdu.com/kitap/leyla-yasak-mevsim/764961.html?manufacturer_id=296396" target="_blank" rel="noopener noreferrer">
+                <img src="images/Banner-1.jfif" alt="Leyla Yasak Mevsim - Tolga Özdoğan">
+            </a>
+        </div>
+
+        <div id="loading-spinner" class="py-20 text-center text-blue-600 flex flex-col items-center justify-center">
+            <i class="fas fa-feather-alt fa-spin text-4xl mb-4 text-gray-800"></i>
+            <h3 class="text-xl font-serif font-bold mb-1 text-gray-800">Köşe Yazıları Yükleniyor</h3>
+        </div>
+
+        <!-- İKİ KOLONLU YAZAR PROFİL VE YAZI ALANI -->
+        <div id="content-area" class="hidden grid grid-cols-1 lg:grid-cols-3 gap-8 transition-all duration-700 opacity-0 mt-8">
+            
+            <!-- SOL 2 KOLON: KÖŞE YAZILARI -->
+            <div class="lg:col-span-2 space-y-6" id="yazi-listesi">
+                <!-- JS ile yazılar buraya gelecek -->
+            </div>
+
+            <!-- SAĞ 1 KOLON: SABİT YAZAR PROFİL KUTUSU -->
+            <div class="lg:col-span-1">
+                <div class="sticky top-24 bg-white border border-gray-200 rounded-lg p-8 text-center shadow-sm">
+                    <div class="relative w-36 h-36 mx-auto mb-6 rounded-full overflow-hidden border-4 border-amber-500/30 shadow-md">
+                        <img src="images/Tolga%202.png" onerror="this.src='images/tolga_ozdogan.png'" alt="Tolga Özdoğan" class="w-full h-full object-cover">
+                    </div>
+                    <h3 class="text-2xl font-serif font-bold text-gray-900 mb-1">Tolga Özdoğan</h3>
+                    <p class="text-xs uppercase font-bold text-amber-600 tracking-widest mb-4">Yazar</p>
+                    <p class="text-sm italic text-gray-600 leading-relaxed border-t border-gray-100 pt-4">
+                        "Kelimelerle dünyayı yeniden kurmak, insanı en çok da kendi labirentlerinde özgürleştiren tek yoldur."
+                    </p>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- BANNER 2 (ALT REKLAM: KAOSUN MİMARI İNSAN) -->
+        <div class="banner-container mt-12">
+            <a href="https://www.kitapyurdu.com/kitap/kaosun-mimari-insan/762120.html?manufacturer_id=296396" target="_blank" rel="noopener noreferrer">
+                <img src="images/Banner-2.jfif" alt="Kaosun Mimarı İnsan - Tolga Özdoğan">
+            </a>
+        </div>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-[#0b1120] text-gray-400 py-12 font-sans border-t border-gray-800 mt-12">
+        <div class="container mx-auto px-4 lg:px-8 flex flex-col md:flex-row justify-between items-center gap-6">
+            <div class="text-center md:text-left">
+                <h2 class="text-2xl font-serif font-bold text-white mb-2">Edebiyat <span class="text-brand-red">Gündemi</span></h2>
+                <p class="text-[10px] uppercase tracking-widest text-gray-500">Güncel Edebiyat Haberleri ve Kültür Sanat</p>
+            </div>
+            <div class="text-center md:text-right text-xs font-bold space-y-2">
+                <p>&copy; <span id="year"></span> Edebiyat Gündemi. Tüm Hakları Saklıdır.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Mobil Menü Çekmecesi -->
+    <div id="mobile-menu-overlay" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50"></div>
+    <div id="mobile-menu-container" class="fixed top-0 left-0 h-full w-[300px] max-w-[85vw] bg-white z-50 shadow-2xl flex flex-col">
+        <div class="flex justify-between items-center p-6 border-b border-gray-100 bg-gray-50">
+            <h2 class="text-xl font-serif font-black tracking-tight text-brand-text">Edebiyat <span class="text-brand-red">Gündemi</span></h2>
+            <button id="close-menu-btn" class="text-gray-400 hover:text-brand-red bg-white border border-gray-200 rounded w-8 h-8 flex justify-center items-center shadow-sm"><i class="fas fa-times"></i></button>
+        </div>
+        <nav class="flex-grow py-4 overflow-y-auto">
+            <ul class="text-sm font-bold uppercase tracking-wide text-gray-700">
+                <li><a href="index.html" class="block px-8 py-3 hover:text-brand-red hover:bg-gray-50 transition">Ana Sayfa</a></li>
+                <li><a href="soylesiler.html" class="block px-8 py-3 hover:text-brand-red hover:bg-gray-50 transition">Röportaj</a></li>
+                <li><a href="yazarlar.html" class="block px-8 py-3 text-brand-red bg-red-50 border-l-4 border-brand-red">Yazarlar</a></li>
+                <li><a href="reklam.html" class="block px-8 py-3 hover:text-brand-red hover:bg-gray-50 transition">Reklam</a></li>
+                <li><a href="iletisim.html" class="block px-8 py-3 hover:text-brand-red hover:bg-gray-50 transition">İletişim</a></li>
+                <li><a href="kunye.html" class="block px-8 py-3 hover:text-brand-red hover:bg-gray-50 transition">Künye</a></li>
+            </ul>
+        </nav>
+    </div>
+
+    <!-- JavaScript Mantığı ve Önbellek Kırıcı -->
     <script>
-        // '?v=' parametresi tarayıcının eski hatayı inatla göstermesini engeller
+        document.getElementById('top-date').textContent = new Date().toLocaleDateString('tr-TR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+        document.getElementById('year').textContent = new Date().getFullYear();
+
+        const menuBtn = document.getElementById('menu-btn');
+        const mobileMenuContainer = document.getElementById('mobile-menu-container');
+        const mobileMenuOverlay = document.getElementById('mobile-menu-overlay');
+
+        function toggleMenu() {
+            mobileMenuContainer.classList.toggle('open');
+            mobileMenuOverlay.classList.toggle('open');
+        }
+        menuBtn.addEventListener('click', toggleMenu);
+        document.getElementById('close-menu-btn').addEventListener('click', toggleMenu);
+        mobileMenuOverlay.addEventListener('click', toggleMenu);
+
+        // Önbellek kırıcı ile yazar yazılarını çekme
         fetch('haberler/tolga_yazilari.json?v=' + new Date().getTime())
             .then(response => {
-                if (!response.ok) throw new Error("Dosya GitHub'a henüz yüklenmemiş.");
+                if (!response.ok) throw new Error("tolga_yazilari.json henüz yüklenmemiş.");
                 return response.json();
             })
             .then(data => {
                 const container = document.getElementById('yazi-listesi');
-                container.innerHTML = ''; 
+                const loading = document.getElementById('loading-spinner');
+                const contentArea = document.getElementById('content-area');
                 
+                loading.style.display = 'none';
+                contentArea.classList.remove('hidden');
+                setTimeout(() => contentArea.classList.remove('opacity-0'), 50);
+
                 if(!data || data.length === 0) {
-                    container.innerHTML = '<p style="color:#555; text-align:center; padding:40px;">Henüz yazı bulunmamaktadır.</p>';
+                    container.innerHTML = '<div class="bg-white p-8 rounded-lg border border-gray-200 text-center text-gray-500">Henüz köşe yazısı bulunmamaktadır.</div>';
                     return;
                 }
 
+                // Ticker akışını doldur
+                const ticker = document.getElementById('ticker-content');
+                let tickerHTML = '';
+                data.forEach(yazi => {
+                    tickerHTML += `<span class="ticker__item"><i class="fas fa-pen-nib text-blue-400 mr-2"></i> ${yazi.title}</span>`;
+                });
+                ticker.innerHTML = tickerHTML + tickerHTML;
+
+                container.innerHTML = '';
                 data.forEach(yazi => {
                     const html = `
-                        <div class="article-item">
-                            <span class="article-date">${yazi.date}</span>
-                            <h2 class="article-title">
-                                <a href="${yazi.link}" target="_blank" style="color: inherit; text-decoration: none;">${yazi.title}</a>
+                        <article class="bg-white border border-gray-200 p-8 rounded-lg shadow-sm hover:shadow-md transition">
+                            <span class="text-xs font-bold text-gray-400 uppercase tracking-widest block mb-2"><i class="far fa-calendar-alt mr-1"></i> ${yazi.date}</span>
+                            <h2 class="text-2xl font-serif font-bold text-gray-900 mb-4 leading-snug">
+                                <a href="${yazi.link}" target="_blank" class="hover:text-blue-600 transition">${yazi.title}</a>
                             </h2>
-                            <p class="article-desc">${yazi.desc}</p>
-                            <a href="${yazi.link}" target="_blank" class="read-more">Yazının Devamını Oku &rarr;</a>
-                        </div>
+                            <p class="text-gray-600 mb-6 leading-relaxed">${yazi.desc}</p>
+                            <a href="${yazi.link}" target="_blank" class="inline-block text-xs font-bold text-amber-600 uppercase tracking-widest border border-amber-500/40 px-4 py-2 rounded hover:bg-amber-500 hover:text-white transition">Yazının Devamını Oku &rarr;</a>
+                        </article>
                     `;
                     container.innerHTML += html;
                 });
             })
             .catch(err => {
-                document.getElementById('yazi-listesi').innerHTML = `
-                    <div style="text-align: center; padding: 40px; background: #fff; border-radius: 8px; border: 1px solid #e1e5eb;">
-                        <p style="color:#e74c3c; font-weight: bold; font-size: 1.1rem; margin-bottom: 10px;">Yazılar sunucuya yükleniyor...</p>
-                        <p style="color:#666; font-size: 0.95rem;">Lütfen 1-2 dakika bekleyip sayfayı yenileyin.</p>
-                    </div>`;
-                console.log("Hata detayı:", err);
+                document.getElementById('loading-spinner').innerHTML = '<p class="text-gray-500">Yazılar yükleniyor, lütfen bekleyin...</p>';
+                console.log("Hata:", err);
             });
     </script>
 </body>
