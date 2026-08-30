@@ -87,16 +87,15 @@
         </a>
     </header>
 
-    <!-- Ana Navigasyon (Linkler Düzeltildi) -->
+    <!-- Ana Navigasyon (Linkler Kesin Olarak Düzeltildi) -->
     <nav class="sticky top-0 bg-white/95 backdrop-blur-md z-40 shadow-sm border-b border-gray-200">
         <div class="container mx-auto px-4 lg:px-8 py-3 flex justify-between items-center">
             <button id="menu-btn" class="text-gray-800 text-xl hover:text-brand-red transition focus:outline-none p-2 md:hidden"><i class="fas fa-bars"></i></button>
             
             <div class="hidden md:flex flex-grow justify-center space-x-8 text-[13px] font-bold text-gray-700 uppercase tracking-widest">
                 <a href="index.html" class="hover:text-brand-red transition text-brand-red border-b-2 border-brand-red pb-1">Ana Sayfa</a>
-                <!-- Link kesin olarak soylesiler.html yapıldı -->
-                <a href="soylesiler.html" class="hover:text-brand-red transition pb-1">Röportaj</a>
-                <!-- Link kesin olarak yazarlar.html yapıldı -->
+                <!-- Link deponuzdaki fiziksel dosya adı olan soylesi.html yapıldı -->
+                <a href="soylesi.html" class="hover:text-brand-red transition pb-1">Röportaj</a>
                 <a href="yazarlar.html" class="hover:text-brand-red transition pb-1">Yazarlar</a>
                 <a href="reklam.html" class="hover:text-brand-red transition pb-1">Reklam</a>
                 <a href="iletisim.html" class="hover:text-brand-red transition pb-1">İletişim</a>
@@ -168,28 +167,33 @@
 
         </div>
 
-        <!-- YEREL TAM METİN OKUYUCU (MODAL) -->
+        <!-- ================= YEREL TAM METİN OKUYUCU (MODAL) ================= -->
         <div id="article-view" class="hidden transition-all duration-500 opacity-0 bg-white p-6 md:p-14 border border-gray-200 rounded-md shadow-2xl max-w-4xl mx-auto my-8 relative">
             
             <button onclick="closeArticle()" class="sticky top-20 bg-gray-900 text-white px-5 py-2.5 rounded-full shadow-lg border border-gray-700 z-50 mb-8 hover:bg-blue-600 hover:border-blue-600 transition font-bold text-xs uppercase tracking-wider flex items-center group">
                 <i class="fas fa-arrow-left mr-2 transform group-hover:-translate-x-1 transition"></i> Habere Dön
             </button>
 
+            <!-- Meta -->
             <div class="flex flex-wrap items-center text-[10px] font-bold mb-6 uppercase tracking-wide gap-2">
                 <span id="article-category" class="bg-blue-600 text-white px-3 py-1.5 rounded-sm shadow-sm">KATEGORİ</span>
                 <span id="article-date" class="text-gray-400 ml-auto"><i class="far fa-clock mr-1"></i> Tarih</span>
             </div>
 
+            <!-- Title -->
             <h1 id="article-title" class="text-3xl md:text-5xl font-serif font-bold text-gray-900 leading-tight mb-8">Haber Başlığı</h1>
             
+            <!-- Dynamic Img -->
             <div class="w-full mb-10 overflow-hidden rounded-md border border-gray-200 shadow-sm bg-gray-50">
                 <img id="article-image" src="" class="w-full max-h-[550px] object-contain">
             </div>
             
+            <!-- Body -->
             <div id="article-content" class="article-body border-b border-gray-200 pb-10">
                 Yükleniyor...
             </div>
 
+            <!-- Kaynak Bilgisi -->
             <div class="mt-10 bg-gray-50 p-6 rounded-md border border-gray-200 text-center">
                 <h4 class="text-[10px] font-bold uppercase tracking-widest text-gray-500 mb-1">Kaynak Bilgisi</h4>
                 <p class="text-sm text-gray-800 font-medium">Bu içerik <strong id="article-source-name" class="text-blue-600">Kaynak</strong> üzerinden derlenerek sunulmuştur.</p>
@@ -221,9 +225,8 @@
         <nav class="flex-grow py-4 overflow-y-auto">
             <ul class="text-sm font-bold uppercase tracking-wide text-gray-700">
                 <li><a href="index.html" class="block px-8 py-3 text-brand-red bg-red-50 border-l-4 border-brand-red">Ana Sayfa</a></li>
-                <!-- Mobil menüde de link kesin olarak soylesiler.html yapıldı -->
-                <li><a href="soylesiler.html" class="block px-8 py-3 hover:text-brand-red hover:bg-gray-50 transition">Röportaj</a></li>
-                <!-- Mobil menüde link kesin olarak yazarlar.html yapıldı -->
+                <!-- Mobil menüde de link deponuzdaki dosya adı olan soylesi.html yapıldı -->
+                <li><a href="soylesi.html" class="block px-8 py-3 hover:text-brand-red hover:bg-gray-50 transition">Röportaj</a></li>
                 <li><a href="yazarlar.html" class="block px-8 py-3 hover:text-brand-red hover:bg-gray-50 transition">Yazarlar</a></li>
                 <li><a href="reklam.html" class="block px-8 py-3 hover:text-brand-red hover:bg-gray-50 transition">Reklam</a></li>
                 <li><a href="iletisim.html" class="block px-8 py-3 hover:text-brand-red hover:bg-gray-50 transition">İletişim</a></li>
