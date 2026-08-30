@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edebiyat Gündemi | Reklam ve İşbirliği</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,600;0,700;0,800;0,900;1,400&display=swap" rel="stylesheet">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'brand-red': '#721c24', 'brand-dark': '#0b1120', 'brand-text': '#1a1a1a'
+                    },
+                    fontFamily: {
+                        'sans': ['Inter', 'sans-serif'], 'serif': ['Playfair Display', 'serif']
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body { color: #1a1a1a; background-color: #fcfcfc; scroll-behavior: smooth; }
+        
+        /* Ticker Animasyonları */
+        .ticker-wrap { width: 100%; overflow: hidden; background-color: #0b1120; } 
+        .ticker { display: inline-flex; white-space: nowrap; padding-right: 100%; animation: ticker 120s linear infinite; }
+        .ticker-wrap:hover .ticker { animation-play-state: paused; }
+        .ticker__item { display: inline-flex; align-items: center; padding: 0 1.5rem; color: white; font-size: 0.85rem; cursor: pointer; transition: color 0.2s ease; }
+        .ticker__item:hover { color: #60a5fa; } 
+        @keyframes ticker { 0% { transform: translate3d(0, 0, 0); } 100% { transform: translate3d(-100%, 0, 0); } }
+
+        #mobile-menu-container { transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); transform: translateX(-100%); }
+        #mobile-menu-container.open { transform: translateX(0); }
+        #mobile-menu-overlay { transition: opacity 0.3s; opacity: 0; pointer-events: none; }
+        #mobile-menu-overlay.open { opacity: 1; pointer-events: auto; }
+        
+        .pulse-dot { animation: pulse 2s infinite; }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: .5; } }
+
+        /* Reklam Kutusu Özel Efektleri */
+        .ad-box-preview {
+            background-image: repeating-linear-gradient(45deg, #f3f4f6 25%, transparent 25%, transparent 75%, #f3f4f6 75%, #f3f4f6), repeating-linear-gradient(45deg, #f3f4f6 25%, #ffffff 25%, #ffffff 75%, #f3f4f6 75%, #f3f4f6);
+            background-position: 0 0, 10px 10px;
+            background-size: 20px 20px;
+            transition: all 0.3s ease;
+        }
+        .ad-box-preview:hover {
+            border-color: #3b82f6;
+            box-shadow: 0 10px 25px rgba(59, 130, 246, 0.15);
+        }
+    </style>
+</head>
+<body class="font-sans">
+
+    <!-- Sistem Bilgi Üst Barı -->
+    <div class="border-b border-gray-100 hidden md:block bg-white">
+        <div class="container mx-auto px-4 lg:px-8 py-2 flex justify-between items-center text-[11px] text-gray-500 uppercase tracking-wide font-bold">
+            <div class="flex items-center space-x-4">
+                <span id="top-date">Yükleniyor...</span>
+            </div>
+            <div class="flex items-center space-x-6">
+                <span class="text-blue-600"><i class="fas fa-bullhorn mr-1"></i> Reklam ve İşbirlikleri</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Site Logosu ve Başlık -->
+    <header class="py-8 md:py-12 text-center bg-white border-b border-gray-100">
+        <a href="index.html" class="inline-block group">
+            <h1 class="text-4xl md:text-6xl font-serif font-black tracking-tight text-brand-text mb-3">
+                Edebiyat <span class="text-brand-red">Gündemi</span>
+            </h1>
+            <p class="text-[10px] md:text-xs uppercase tracking-[0.3em] text-blue-600 font-bold">
+                GÜNCEL EDEBİYAT HABERLERİ VE KÜLTÜR SANAT
+            </p>
+        </a>
+    </header>
+
+    <!-- Navigasyon Menüsü -->
+    <nav class="sticky top-0 bg-white/95 backdrop-blur-md z-40 shadow-sm border-b border-gray-200">
+        <div class="container mx-auto px-4 lg:px-8 py-3 flex justify-between items-center">
+            <button id="menu-btn" class="text-gray-800 text-xl hover:text-brand-red transition focus:outline-none p-2 md:hidden"><i class="fas fa-bars"></i></button>
+            
+            <div class="hidden md:flex flex-grow justify-center space-x-8 text-[13px] font-bold text-gray-700 uppercase tracking-widest">
+                <a href="index.html" class="hover:text-brand-red transition pb-1">Ana Sayfa</a>
+                <a href="soylesi.html" class="hover:text-brand-red transition pb-1">Röportaj</a>
+                <a href="yazarlar.html" class="hover:text-brand-red transition pb-1">Yazarlar</a>
+                <a href="reklam.html" class="hover:text-brand-red transition text-brand-red border-b-2 border-brand-red pb-1">Reklam</a>
+                <a href="iletisim.html" class="hover:text-brand-red transition pb-1">İletişim</a>
+                <a href="kunye.html" class="hover:text-brand-red transition pb-1">Künye</a>
+            </div>
+
+            <button class="text-gray-800 text-xl hover:text-brand-red transition focus:outline-none p-2 ml-auto"><i class="fas fa-search"></i></button>
+        </div>
+    </nav>
+
+    <!-- Son Dakika Akışı (Ticker) -->
+    <div class="flex bg-brand-dark text-white shadow-md relative z-30">
+        <div class="bg-blue-600 font-bold px-4 py-2 text-[10px] md:text-xs tracking-wider uppercase flex items-center whitespace-nowrap z-10 shadow-xl border-r border-blue-800">
+            <i class="fas fa-handshake mr-2 text-white"></i> İŞBİRLİĞİ
+        </div>
+        <div class="ticker-wrap flex items-center cursor-default z-0">
+            <div class="ticker">
+                <span class="ticker__item"><i class="fas fa-bullhorn text-blue-400 mr-2"></i> Markanızı nitelikli okur kitlesiyle buluşturun.</span>
+                <span class="ticker__item"><i class="fas fa-book-open text-blue-400 mr-2"></i> Kitap tanıtımları, yayınevi bültenleri ve özel projeler için bize ulaşın.</span>
+                <span class="ticker__item"><i class="fas fa-bullhorn text-blue-400 mr-2"></i> Markanızı nitelikli okur kitlesiyle buluşturun.</span>
+                <span class="ticker__item"><i class="fas fa-book-open text-blue-400 mr-2"></i> Kitap tanıtımları, yayınevi bültenleri ve özel projeler için bize ulaşın.</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- ANA İÇERİK: REKLAM REHBERİ -->
+    <main class="container mx-auto px-4 lg:px-8 py-12 min-h-screen">
+        
+        <div class="max-w-4xl mx-auto bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden">
+            
+            <!-- Üst Başlık ve Giriş -->
+            <div class="p-8 md:p-12 border-b border-gray-100 text-center">
+                <h2 class="text-3xl md:text-4xl font-serif font-bold text-gray-900 mb-4">Reklam ve İşbirliği Rehberi</h2>
+                <div class="w-16 h-1 bg-brand-red mx-auto rounded mb-6"></div>
+                <p class="text-gray-600 leading-relaxed text-lg font-serif italic">
+                    Edebiyat Gündemi; nitelikli edebiyat okurlarına, kültür-sanat profesyonellerine ve yazar adaylarına doğrudan ulaşabileceğiniz vizyoner bir platformdur. Yeni çıkan kitaplarınızı, yayınevi projelerinizi veya kültürel etkinliklerinizi doğru kitleyle buluşturmak için aşağıdaki yerleşim alanlarımızı değerlendirebilirsiniz.
+                </p>
+            </div>
+
+            <!-- Banner Yerleşim Alanları -->
+            <div class="p-8 md:p-12 space-y-12">
+                <h3 class="text-xl font-bold text-gray-800 uppercase tracking-widest border-l-4 border-blue-600 pl-3 mb-8">Banner Yerleşim Alanları</h3>
+
+                <!-- Alan 1: Ana Sayfa Üst -->
+                <div class="space-y-4">
+                    <div class="flex justify-between items-center mb-2">
+                        <h4 class="font-bold text-gray-900"><i class="fas fa-desktop text-blue-500 mr-2"></i> Header Altı (Premium Ana Banner)</h4>
+                        <span class="bg-gray-100 text-gray-600 px-3 py-1 rounded text-xs font-bold border border-gray-200">970 x 90 px</span>
+                    </div>
+                    <p class="text-sm text-gray-500 mb-2">Web sitemizin en üstünde, menünün hemen altında yer alır. Sayfaya giren ziyaretçinin ilk karşılaştığı, en yüksek görünürlüğe sahip alandır. (Mobilde otomatik olarak ekran genişliğine uyarlanır).</p>
+                    
+                    <div class="w-full h-[90px] border-2 border-dashed border-gray-300 ad-box-preview rounded flex items-center justify-center cursor-crosshair">
+                        <span class="text-gray-400 font-bold uppercase tracking-widest text-sm text-center px-4">PREMIUM BANNER ALANI <br> <span class="text-[10px] text-blue-500">970x90 Masaüstü | Tam Genişlik Mobil</span></span>
+                    </div>
+                </div>
+
+                <!-- Alan 2: İçerik Arası / Liste Altı -->
+                <div class="space-y-4 pt-6 border-t border-gray-100">
+                    <div class="flex justify-between items-center mb-2">
+                        <h4 class="font-bold text-gray-900"><i class="fas fa-layer-group text-blue-500 mr-2"></i> İçerik Arası & Sayfa Altı</h4>
+                        <span class="bg-gray-100 text-gray-600 px-3 py-1 rounded text-xs font-bold border border-gray-200">970 x 90 px</span>
+                    </div>
+                    <p class="text-sm text-gray-500 mb-2">Haber akışının arasında veya haber listelerinin bitiminde okuyucuyu yakalayan stratejik konumlandırma. Okur, içerikleri tüketirken doğal bir akışta markanızla karşılaşır.</p>
+                    
+                    <div class="w-full h-[90px] border-2 border-dashed border-gray-300 ad-box-preview rounded flex items-center justify-center cursor-crosshair">
+                        <span class="text-gray-400 font-bold uppercase tracking-widest text-sm text-center px-4">İÇERİK ARASI BANNER <br> <span class="text-[10px] text-blue-500">970x90 Masaüstü | Tam Genişlik Mobil</span></span>
+                    </div>
+                </div>
+
+                <!-- Alan 3: Sidebar (Gelecekteki eklentiler veya özel durumlar için bilgi) -->
+                <div class="space-y-4 pt-6 border-t border-gray-100">
+                    <div class="flex justify-between items-center mb-2">
+                        <h4 class="font-bold text-gray-900"><i class="fas fa-square text-blue-500 mr-2"></i> Kare Banner (Özel Projeler)</h4>
+                        <span class="bg-gray-100 text-gray-600 px-3 py-1 rounded text-xs font-bold border border-gray-200">300 x 250 px</span>
+                    </div>
+                    <p class="text-sm text-gray-500 mb-2">Yazar profilleri veya röportaj içerikleri gibi özel sayfalarda, içeriğin yanında veya mobil akışta kare formatında yer alan banner düzenidir.</p>
+                    
+                    <div class="w-[300px] h-[250px] border-2 border-dashed border-gray-300 ad-box-preview rounded flex items-center justify-center mx-auto cursor-crosshair">
+                        <span class="text-gray-400 font-bold uppercase tracking-widest text-sm text-center px-4">KARE BANNER <br> <span class="text-[10px] text-blue-500">300x250 px</span></span>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- İletişim Call-to-Action Bölümü -->
+            <div class="bg-[#0b1120] text-center p-10 md:p-16">
+                <h3 class="text-2xl font-serif font-bold text-white mb-4">Gelin, Birlikte Çalışalım</h3>
+                <p class="text-gray-400 mb-8 max-w-xl mx-auto text-sm">
+                    Fiyatlandırma, uzun dönemli anlaşmalar, yayın içi sponsorluk (advertorial içerik) ve banner gösterimleri hakkında detaylı bilgi almak için bize doğrudan e-posta gönderebilirsiniz.
+                </p>
+                <a href="mailto:gundemiedebiyat@gmail.com" class="inline-flex items-center bg-brand-red hover:bg-red-800 text-white font-bold py-4 px-8 rounded-full shadow-lg transition-transform transform hover:-translate-y-1">
+                    <i class="fas fa-envelope mr-3 text-xl"></i>
+                    gundemiedebiyat@gmail.com
+                </a>
+                <p class="text-gray-500 text-xs mt-6">E-postalarınıza en geç 24 saat içerisinde dönüş yapılmaktadır.</p>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-[#0b1120] text-gray-400 py-12 font-sans border-t border-gray-800 mt-12">
+        <div class="container mx-auto px-4 lg:px-8 flex flex-col md:flex-row justify-between items-center gap-6">
+            <div class="text-center md:text-left">
+                <h2 class="text-2xl font-serif font-bold text-white mb-2">Edebiyat <span class="text-brand-red">Gündemi</span></h2>
+                <p class="text-[10px] uppercase tracking-widest text-gray-500">Güncel Edebiyat Haberleri ve Kültür Sanat</p>
+            </div>
+            <div class="text-center md:text-right text-xs font-bold space-y-2">
+                <p>&copy; <span id="year"></span> Edebiyat Gündemi. Tüm Hakları Saklıdır.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Mobil Menü Çekmecesi -->
+    <div id="mobile-menu-overlay" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50"></div>
+    <div id="mobile-menu-container" class="fixed top-0 left-0 h-full w-[300px] max-w-[85vw] bg-white z-50 shadow-2xl flex flex-col">
+        <div class="flex justify-between items-center p-6 border-b border-gray-100 bg-gray-50">
+            <h2 class="text-xl font-serif font-black tracking-tight text-brand-text">Edebiyat <span class="text-brand-red">Gündemi</span></h2>
+            <button id="close-menu-btn" class="text-gray-400 hover:text-brand-red bg-white border border-gray-200 rounded w-8 h-8 flex justify-center items-center shadow-sm"><i class="fas fa-times"></i></button>
+        </div>
+        <nav class="flex-grow py-4 overflow-y-auto">
+            <ul class="text-sm font-bold uppercase tracking-wide text-gray-700">
+                <li><a href="index.html" class="block px-8 py-3 hover:text-brand-red hover:bg-gray-50 transition">Ana Sayfa</a></li>
+                <li><a href="soylesi.html" class="block px-8 py-3 hover:text-brand-red hover:bg-gray-50 transition">Röportaj</a></li>
+                <li><a href="yazarlar.html" class="block px-8 py-3 hover:text-brand-red hover:bg-gray-50 transition">Yazarlar</a></li>
+                <li><a href="reklam.html" class="block px-8 py-3 text-brand-red bg-red-50 border-l-4 border-brand-red">Reklam</a></li>
+                <li><a href="iletisim.html" class="block px-8 py-3 hover:text-brand-red hover:bg-gray-50 transition">İletişim</a></li>
+                <li><a href="kunye.html" class="block px-8 py-3 hover:text-brand-red hover:bg-gray-50 transition">Künye</a></li>
+            </ul>
+        </nav>
+    </div>
+
+    <!-- JavaScript (Arayüz Mantığı) -->
+    <script>
+        document.getElementById('top-date').textContent = new Date().toLocaleDateString('tr-TR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+        document.getElementById('year').textContent = new Date().getFullYear();
+
+        const menuBtn = document.getElementById('menu-btn');
+        const mobileMenuContainer = document.getElementById('mobile-menu-container');
+        const mobileMenuOverlay = document.getElementById('mobile-menu-overlay');
+
+        function toggleMenu() {
+            mobileMenuContainer.classList.toggle('open');
+            mobileMenuOverlay.classList.toggle('open');
+        }
+        menuBtn.addEventListener('click', toggleMenu);
+        document.getElementById('close-menu-btn').addEventListener('click', toggleMenu);
+        mobileMenuOverlay.addEventListener('click', toggleMenu);
+    </script>
+</body>
+</html>
