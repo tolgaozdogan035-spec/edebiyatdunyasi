@@ -35,6 +35,11 @@
         .ticker__item:hover { color: #60a5fa; } 
         @keyframes ticker { 0% { transform: translate3d(0, 0, 0); } 100% { transform: translate3d(-100%, 0, 0); } }
 
+        /* Kitapyurdu Banner Stilleri */
+        .banner-container { width: 100%; max-width: 970px; margin: 2rem auto; border-radius: 6px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.08); transition: transform 0.3s ease, box-shadow 0.3s ease; }
+        .banner-container:hover { transform: translateY(-2px) scale(1.005); box-shadow: 0 8px 25px rgba(0,0,0,0.15); }
+        .banner-container img { width: 100%; height: auto; display: block; }
+
         #mobile-menu-container { transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); transform: translateX(-100%); }
         #mobile-menu-container.open { transform: translateX(0); }
         #mobile-menu-overlay { transition: opacity 0.3s; opacity: 0; pointer-events: none; }
@@ -73,7 +78,7 @@
         </a>
     </header>
 
-    <!-- Navigasyon Menüsü (Eksiksiz Tam Liste) -->
+    <!-- Navigasyon Menüsü (Tüm Sayfa Linkleri Tam ve Doğru Hedefli) -->
     <nav class="sticky top-0 bg-white/95 backdrop-blur-md z-40 shadow-sm border-b border-gray-200">
         <div class="container mx-auto px-4 lg:px-8 py-3 flex justify-between items-center">
             <button id="menu-btn" class="text-gray-800 text-xl hover:text-brand-red transition focus:outline-none p-2 md:hidden"><i class="fas fa-bars"></i></button>
@@ -104,19 +109,25 @@
     </div>
 
     <!-- ANA İÇERİK: YAZARLAR VİTRİNİ -->
-    <main class="container mx-auto px-4 lg:px-8 py-16 min-h-[60vh]">
+    <main class="container mx-auto px-4 lg:px-8 py-10 min-h-[60vh]">
         
-        <div class="text-center mb-12">
+        <!-- BANNER 1 (ÜST REKLAM: LEYLA YASAK MEVSİM) -->
+        <div class="banner-container">
+            <a href="https://www.kitapyurdu.com/kitap/leyla-yasak-mevsim/764961.html?manufacturer_id=296396" target="_blank" rel="noopener noreferrer">
+                <img src="images/Banner-1.jfif" alt="Leyla Yasak Mevsim - Tolga Özdoğan">
+            </a>
+        </div>
+
+        <div class="text-center my-10">
             <h2 class="text-3xl md:text-4xl font-serif font-bold text-gray-900 mb-3">Köşe Yazarları</h2>
             <div class="w-16 h-1 bg-amber-500 mx-auto rounded"></div>
         </div>
 
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 max-w-5xl mx-auto">
             
-            <!-- TOLGA ÖZDOĞAN KARTİ -->
+            <!-- TOLGA ÖZDOĞAN KARTI -->
             <a href="tolga-ozdogan.html" class="bg-white border border-gray-200 rounded-lg p-8 text-center shadow-sm hover:shadow-xl transition-all duration-300 group block">
                 <div class="relative w-36 h-36 mx-auto mb-6 rounded-full overflow-hidden border-4 border-amber-500/30 shadow-md group-hover:border-amber-500 transition">
-                    <!-- Boşluk sorununa karşı %20 kodlu resim yolu -->
                     <img src="images/Tolga%202.png" onerror="this.src='images/tolga_ozdogan.png'" alt="Tolga Özdoğan" class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
                 </div>
                 <h3 class="text-2xl font-serif font-bold text-gray-900 mb-2 group-hover:text-blue-600 transition">Tolga Özdoğan</h3>
@@ -124,6 +135,14 @@
             </a>
 
         </div>
+
+        <!-- BANNER 2 (ALT REKLAM: KAOSUN MİMARI İNSAN) -->
+        <div class="banner-container mt-16">
+            <a href="https://www.kitapyurdu.com/kitap/kaosun-mimari-insan/762120.html?manufacturer_id=296396" target="_blank" rel="noopener noreferrer">
+                <img src="images/Banner-2.jfif" alt="Kaosun Mimarı İnsan - Tolga Özdoğan">
+            </a>
+        </div>
+
     </main>
 
     <!-- Footer -->
@@ -139,7 +158,7 @@
         </div>
     </footer>
 
-    <!-- Mobil Menü Çekmecesi -->
+    <!-- Mobil Menü Çekmecesi (soylesiler.html Bağlantısı Düzeltildi) -->
     <div id="mobile-menu-overlay" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50"></div>
     <div id="mobile-menu-container" class="fixed top-0 left-0 h-full w-[300px] max-w-[85vw] bg-white z-50 shadow-2xl flex flex-col">
         <div class="flex justify-between items-center p-6 border-b border-gray-100 bg-gray-50">
