@@ -137,24 +137,24 @@
             <p class="text-sm font-medium text-gray-500 max-w-sm mx-auto">Güncel edebiyat haberleri ve kültür-sanat akışı derleniyor...</p>
         </div>
 
-        <!-- ANA SAYFA VİTRİNİ (3'lü Grid ve Banner EN ÜSTE TAŞINDI) -->
+        <!-- ANA SAYFA VİTRİNİ -->
         <div id="content-area" class="hidden space-y-12 transition-all duration-700 opacity-0">
             
-            <!-- 3'lü Grid Haber (EN ÜSTTE) -->
+            <!-- BANNER 1 (Leyla Yasak Mevsim - EN ÜSTTE) -->
+            <div class="banner-container mt-2">
+                <a href="https://www.kitapyurdu.com/kitap/leyla-yasak-mevsim/764961.html?manufacturer_id=296396" target="_blank" rel="noopener noreferrer">
+                    <img src="images/Banner-1.jfif" alt="Leyla Yasak Mevsim - Tolga Özdoğan">
+                </a>
+            </div>
+
+            <!-- 3'lü Grid Haber (Yüksekliği Yarı Yarıya Küçültüldü: h-28 / max-h-28) -->
             <section>
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8" id="news-grid">
                     <!-- JS -->
                 </div>
             </section>
 
-            <!-- BANNER 1 (Leyla Yasak Mevsim) -->
-            <div class="banner-container">
-                <a href="https://www.kitapyurdu.com/kitap/leyla-yasak-mevsim/764961.html?manufacturer_id=296396" target="_blank" rel="noopener noreferrer">
-                    <img src="images/Banner-1.jfif" alt="Leyla Yasak Mevsim - Tolga Özdoğan">
-                </a>
-            </div>
-
-            <!-- Hero Makale (Büyük Manşet Bloğu - Şimdi Alt Kısıma Taşındı) -->
+            <!-- Hero Makale (Büyük Manşet Bloğu) -->
             <section class="w-full relative group overflow-hidden rounded-md shadow-lg border border-gray-200 cursor-pointer" id="hero-section">
                 <!-- JS -->
             </section>
@@ -324,7 +324,7 @@
             });
             ticker.innerHTML = tickerHTML + tickerHTML;
 
-            // 2. Hero (Artık Alt Kısımda)
+            // 2. Hero (Büyük Manşet)
             const hero = globalArticles[0];
             const hIdx = globalArticles.indexOf(hero);
             const heroSourceText = hero.source ? hero.source : 'Ajans';
@@ -343,23 +343,23 @@
                 </div>
             `;
 
-            // 3. Grid (Artık En Üstte)
+            // 3. Grid (Yüksekliği yarı yarıya küçültüldü: h-28 / max-h-28)
             const gridContainer = document.getElementById('news-grid');
             gridContainer.innerHTML = '';
             globalArticles.slice(1, 4).forEach(article => {
                 const idx = globalArticles.indexOf(article);
                 const gridSourceText = article.source ? article.source : 'Ajans';
                 gridContainer.innerHTML += `
-                    <article class="flex flex-col bg-white border border-gray-200 p-5 rounded-md shadow-sm hover:shadow-xl transition-all duration-300 cursor-pointer group" onclick="openArticle(${idx})">
-                        <div class="relative w-full h-48 mb-4 overflow-hidden rounded bg-gray-50">
+                    <article class="flex flex-col bg-white border border-gray-200 p-4 rounded-md shadow-sm hover:shadow-xl transition-all duration-300 cursor-pointer group" onclick="openArticle(${idx})">
+                        <div class="relative w-full h-28 max-h-28 mb-3 overflow-hidden rounded bg-gray-50">
                             <img src="${article.image}" class="w-full h-full object-cover group-hover:scale-105 transition duration-700" onerror="this.src='${FALLBACK_IMAGE}'">
                         </div>
-                        <div class="flex items-center justify-between text-[10px] font-bold mb-3 uppercase tracking-wide">
+                        <div class="flex items-center justify-between text-[10px] font-bold mb-2 uppercase tracking-wide">
                             <span class="text-blue-600">${article.category || 'GÜNCEL'}</span>
-                            <span class="text-gray-500 bg-gray-100 px-2 py-1 rounded border border-gray-200">${gridSourceText}</span>
+                            <span class="text-gray-500 bg-gray-100 px-2 py-0.5 rounded border border-gray-200">${gridSourceText}</span>
                         </div>
-                        <h3 class="text-xl font-serif font-bold text-gray-900 leading-snug mb-3 group-hover:text-blue-600 transition line-clamp-2">${article.title}</h3>
-                        <p class="text-sm text-gray-600 mb-4 line-clamp-3 flex-grow leading-relaxed">${article.desc}</p>
+                        <h3 class="text-base font-serif font-bold text-gray-900 leading-snug mb-2 group-hover:text-blue-600 transition line-clamp-2">${article.title}</h3>
+                        <p class="text-xs text-gray-600 mb-3 line-clamp-2 flex-grow leading-relaxed">${article.desc}</p>
                     </article>
                 `;
             });
