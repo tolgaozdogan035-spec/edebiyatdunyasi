@@ -28,18 +28,11 @@
         "desc": "Yıldırım Belediyesi Roman Yarışması..."
     },
     {
-        "title": "28. TBD Bilimkurgu Öykü Yarışması 2026",
-        "link": "https://www.guncel-egitim.org/tbd-bilimkurgu-oyku-yarismasi/",
+        "title": "ROTAÖYKÜ Rotary Öykü Yarışması",
+        "link": "https://www.guncel-egitim.org/rotaoyku-rotary-oyku-yarismasi/",
         "source": "Güncel Eğitim",
         "date": "Güncel Duyuru",
-        "desc": "28. TBD Bilimkurgu Öykü Yarışması 2026..."
-    },
-    {
-        "title": "26 Eylül Türk Dil Bayramı Edebiyat Yarışmaları",
-        "link": "https://www.guncel-egitim.org/26-eylul-turk-dil-bayrami-edebiyat-yarismalari/",
-        "source": "Güncel Eğitim",
-        "date": "Güncel Duyuru",
-        "desc": "26 Eylül Türk Dil Bayramı Edebiyat Yarışmaları..."
+        "desc": "ROTAÖYKÜ Rotary Öykü Yarışması..."
     },
     {
         "title": "Seyhan Livaneli Anısına Öykü Yarışması 2026",
@@ -49,11 +42,25 @@
         "desc": "Seyhan Livaneli Anısına Öykü Yarışması 2026..."
     },
     {
-        "title": "ROTAÖYKÜ Rotary Öykü Yarışması",
-        "link": "https://www.guncel-egitim.org/rotaoyku-rotary-oyku-yarismasi/",
+        "title": "28. TBD Bilimkurgu Öykü Yarışması 2026",
+        "link": "https://www.guncel-egitim.org/tbd-bilimkurgu-oyku-yarismasi/",
         "source": "Güncel Eğitim",
         "date": "Güncel Duyuru",
-        "desc": "ROTAÖYKÜ Rotary Öykü Yarışması..."
+        "desc": "28. TBD Bilimkurgu Öykü Yarışması 2026..."
+    },
+    {
+        "title": "Yaşasın Edebiyat Kısa Öykü İle Novella Ve Köşe Yazısı Yarışması",
+        "link": "https://www.guncel-egitim.org/yasasin-edebiyat-kisa-oyku-ile-novella-ve-kose-yazisi-yarismasi/",
+        "source": "Güncel Eğitim",
+        "date": "Güncel Duyuru",
+        "desc": "Yaşasın Edebiyat Kısa Öykü İle Novella Ve Köşe Yazısı Yarışması..."
+    },
+    {
+        "title": "26 Eylül Türk Dil Bayramı Edebiyat Yarışmaları",
+        "link": "https://www.guncel-egitim.org/26-eylul-turk-dil-bayrami-edebiyat-yarismalari/",
+        "source": "Güncel Eğitim",
+        "date": "Güncel Duyuru",
+        "desc": "26 Eylül Türk Dil Bayramı Edebiyat Yarışmaları..."
     },
     {
         "title": "İlyas Halil Öykü Ödülü Yarışması",
@@ -96,12 +103,5 @@
         "source": "Güncel Eğitim",
         "date": "Güncel Duyuru",
         "desc": "5. Süreyya Ağaoğlu Makale Yarışması 2026..."
-    },
-    {
-        "title": "11. Vedat Günyol Deneme Yarışması 2026",
-        "link": "https://www.guncel-egitim.org/vedat-gunyol-deneme-yarismasi/",
-        "source": "Güncel Eğitim",
-        "date": "Güncel Duyuru",
-        "desc": "11. Vedat Günyol Deneme Yarışması 2026..."
     }
 ]
