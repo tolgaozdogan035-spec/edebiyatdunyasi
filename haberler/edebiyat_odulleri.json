@@ -21,6 +21,13 @@
         "desc": "Bilgi – Kitap Okuma Yarışmaları..."
     },
     {
+        "title": "12. EÇEV Gençler Öykü – Şiir Yarışması",
+        "link": "https://www.guncel-egitim.org/ecev-gencler-oyku-siir-yarismasi/",
+        "source": "Güncel Eğitim",
+        "date": "Güncel Duyuru",
+        "desc": "12. EÇEV Gençler Öykü – Şiir Yarışması..."
+    },
+    {
         "title": "Yıldırım Belediyesi Roman Yarışması",
         "link": "https://www.guncel-egitim.org/yildirim-belediyesi-roman-yarismasi/",
         "source": "Güncel Eğitim",
@@ -96,12 +103,5 @@
         "source": "Güncel Eğitim",
         "date": "Güncel Duyuru",
         "desc": "TUDEM Edebiyat Ödülleri Kısa Roman Yarışması 2026..."
-    },
-    {
-        "title": "5. Süreyya Ağaoğlu Makale Yarışması 2026",
-        "link": "https://www.guncel-egitim.org/sureyya-agaoglu-makale-yarismasi/",
-        "source": "Güncel Eğitim",
-        "date": "Güncel Duyuru",
-        "desc": "5. Süreyya Ağaoğlu Makale Yarışması 2026..."
     }
 ]
