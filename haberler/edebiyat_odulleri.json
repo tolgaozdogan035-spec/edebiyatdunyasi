@@ -21,6 +21,13 @@
         "desc": "Bilgi – Kitap Okuma Yarışmaları..."
     },
     {
+        "title": "Akşehir Belediyesi Tarık Buğra Ulusal Öykü Yarışması",
+        "link": "https://www.guncel-egitim.org/aksehir-belediyesi-tarik-bugra-ulusal-oyku-yarismasi/",
+        "source": "Güncel Eğitim",
+        "date": "Güncel Duyuru",
+        "desc": "Akşehir Belediyesi Tarık Buğra Ulusal Öykü Yarışması..."
+    },
+    {
         "title": "29 Ekim Cumhuriyet Bayramı Resim Şiir Ve Kompozisyon Yarışması 2026",
         "link": "https://www.guncel-egitim.org/29-ekim-cumhuriyet-bayrami-resim-siir-ve-kompozisyon-yarismasi/",
         "source": "Güncel Eğitim",
@@ -96,12 +103,5 @@
         "source": "Güncel Eğitim",
         "date": "Güncel Duyuru",
         "desc": "İlyas Halil Öykü Ödülü Yarışması..."
-    },
-    {
-        "title": "13. Simit Çay Edebiyat Etkinlikleri Şiir Yarışması 2026",
-        "link": "https://www.guncel-egitim.org/simit-cay-edebiyat-etkinlikleri-siir-yarismasi/",
-        "source": "Güncel Eğitim",
-        "date": "Güncel Duyuru",
-        "desc": "13. Simit Çay Edebiyat Etkinlikleri Şiir Yarışması 2026..."
     }
 ]
